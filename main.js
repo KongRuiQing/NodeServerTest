@@ -15,7 +15,7 @@ findServer.listen(PORT, HOST);
 console.log('Server 监听 ' + HOST +':'+ PORT);
 
 findServer.on('connection', function(sock) {
-    console.log('开启服务器: ' +sock.remoteAddress +':'+ sock.remotePort);
+    console.log('新的客户端: ' +sock.remoteAddress +':'+ sock.remotePort);
     
     player.createPlayer(sock);
 });
