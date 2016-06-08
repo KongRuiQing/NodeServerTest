@@ -3,7 +3,7 @@ var db = require('../mysqlproxy');
 
 exports.login = function(data,target,callback)
 {
-	var login_callback = function(success){
+	var login_callback = function(success,content){
 		var ret = {
 			account:data['Account']
 		};
@@ -21,6 +21,7 @@ exports.login = function(data,target,callback)
 				//ret.result = 2;
 			}
 			g_playerlist.setLogin(target,data['Account']);
+			target.SetUserId(content['id']);
 			ret.result = 0;
 		}
 		

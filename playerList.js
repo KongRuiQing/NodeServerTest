@@ -60,7 +60,7 @@ g_playerlist.findPlayerBySock = function(sock)
 			var ip2 = sock.remoteAddress;
 			var port2 = sock.remotePort;
 			if( ip1 == ip2 && port1 == port2){
-				console.log("Find Sock");
+				//console.log("Find Sock");
 				return this.playerlist[p];
 			}
 		}

@@ -2,12 +2,18 @@ var net = require('net');
 var db = require('./mysqlproxy');
 var iconv = require('iconv-lite');
 var player = require("./player");
+var http = require('http');
+var path=require('path');
+var url=require('url');
 
+var query_server = require("./QueryServer/server");
+var image_file_server = require("./ImageFileServer/Server");
 require("./playerList");
 
 var HOST = '192.168.0.120';
 var PORT = 9888;
-
+var QUERY_PORT = 9889;
+var IMAGE_FILE_PORT = 9890;
 
 var findServer = net.createServer();
 
@@ -15,7 +21,10 @@ findServer.listen(PORT, HOST);
 console.log('Server 监听 ' + HOST +':'+ PORT);
 
 findServer.on('connection', function(sock) {
-    console.log('新的客户端: ' +sock.remoteAddress +':'+ sock.remotePort);
-    
-    player.createPlayer(sock);
+	console.log('新的客户端: ' +sock.remoteAddress +':'+ sock.remotePort);
+	player.createPlayer(sock);
 });
+
+query_server.start(HOST,QUERY_PORT);
+image_file_server.start(HOST,IMAGE_FILE_PORT);
+
