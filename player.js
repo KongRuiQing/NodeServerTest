@@ -7,6 +7,10 @@ function player(sock){
 	this.verify_code = "";
 	this.telphone = "";
 	this.userid = 0;
+	this.name = "";
+	this.signature = "";
+	this.head = "";
+
 	//this.socket.setKeepAlive(true);
 	this.socket.on('data', this.recvData);
     
@@ -150,9 +154,30 @@ player.prototype.GetUserId = function()
 	return this.userid;
 }
 
-player.prototype.SetUserId = function(id){
-	this.userid = id;
+player.prototype.SetUserLogin = function(player_info){
+	this.userid = player_info['id'];
+	this.name = player_info['name'];
+	this.signature = player_info['signature'];
+	this.head = player_info['head'];
 }
+
+player.prototype.SendAgreeBeFriend = function(uid){
+
+	var ret = {
+		"Method":"agree_be_friend",
+		"DataBody":{
+			"method":"accept",
+			"friend_id":uid,
+			"friend_info":{
+				"id":uid,
+				"name" : this.name,
+				"signature" : this.signature,
+				"head" : this.head
+			}
+		}
+	};
+	sendMessage(ret);
+};
 
 exports.createPlayer = function(sock)
 {

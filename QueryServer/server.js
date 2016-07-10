@@ -8,7 +8,8 @@ var handle_http = {};
 handle_http['/area'] = http_handler.getAreaMenu;
 handle_http['/shop'] = http_handler.getShop;
 handle_http['/shop_detail'] = http_handler.getShopDetail;
-
+handle_http['/ad_image'] = http_handler.getAdImage;
+handle_http['/shop_spread'] = http_handler.getShopSpread;
 exports.start = function(Host,Port)
 {
 	server = http.createServer(function(request, response){

@@ -8,33 +8,18 @@ BEGIN
 	execute stmtsql; 
 	deallocate prepare stmtsql;
 	/*0*/
-	set @strsql = concat('select ','*',' from ','shop_image ','where ','image_type=','1 ','and ','id =',_shopid);
+	set @strsql = concat('select ','*',' from ','shop_item left join item on shop_item.item_id = item.item_id where shop_id =',_shopid);
 
 	prepare stmtsql from @strsql; 
 	execute stmtsql; 
 	deallocate prepare stmtsql;
-/*1*/
-	set @strsql = concat('select * from shop_detail where id=',_shopid);
+	
+	set @strsql = concat('select * from shop where Id = ' ,_shopid);
 	prepare stmtsql from @strsql; 
 	execute stmtsql; 
 	deallocate prepare stmtsql;
-/*2*/
-	set @strsql = concat('select * from shop where Id =',_shopid);
-	prepare stmtsql from @strsql; 
-	execute stmtsql; 
-	deallocate prepare stmtsql;
-/*3*/
-	set @strsql = concat('select * from shop_attention where shop_id = ',_shopid);
-	prepare stmtsql from @strsql; 
-	execute stmtsql; 
-	deallocate prepare stmtsql;
-/*4*/
-	set @strsql = concat('select ','*',' from ','shop_image ','where ',' ','image_type=','2 ','and ','id =',_shopid);
 
-	prepare stmtsql from @strsql; 
-	execute stmtsql; 
-	deallocate prepare stmtsql;
-/*5*/
+	/*5*/
 
 END;;
 

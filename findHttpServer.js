@@ -34,3 +34,4 @@ exports.getShopDetail = function(query,callback)
 		}
 	})
 }
+
