@@ -1,34 +1,38 @@
 
 var db = require('../mysqlproxy');
-
+var util = require('util');
 exports.login = function(data,target,callback)
 {
-	var login_callback = function(success){
-		var ret = {
-			account:data['Account']
-		};
+	db.checkLogin(data['Account'],data['Password'],function(success,content){
+		var ret = {};
+		if(success){
+			if(content['result']){
+				var findPlayer = g_playerlist.findPlayerByAccount(data['Account']);
 
-		if(success == false)
-		{
-			ret.result = 1;
-		}
-		else
-		{
-			var findPlayer = g_playerlist.findPlayerByAccount(data['Account']);
-			if(findPlayer != null)
-			{
-				g_playerlist.removePlayerByAccount(data['Account']);
-				//ret.result = 2;
-			}
-			g_playerlist.setLogin(target,data['Account']);
-			ret.result = 0;
-		}
-		
-		callback(target,ret,"Login");
-		
-	};
+				if(findPlayer != null)
+				{
+					g_playerlist.removePlayerByAccount(data['Account']);
+				}
+				//console.log(util.inspect(content));
 
-	db.checkLogin(data['Account'],data['Password'],login_callback);
+				g_playerlist.setLogin(target,data['Account']);
+
+				target.SetUserLogin(content['user_info']);
+
+				ret['result'] = 0;
+				ret['user_info'] = content['user_info'];
+
+		}else{
+			ret["result"] = 2;
+
+		}
+	}else{
+		ret["result"] = 1;
+
+	}
+
+	callback(target,ret,'Login');
+});
 	
 }
 
