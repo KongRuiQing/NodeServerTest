@@ -63,10 +63,16 @@ exports.checkLogin = function(account,password,callback){
 			logger.error(err);
 			callback(false,null);
 		}else{
+
+			if(db_result.length != 3){
+				console.log("err");
+				callback(true,{'result':false});
+				return;
+			}
 			var db_set = db_result[0];
 			var user_id = parseInt(db_set[0].id);
 
-			//console.log(util.inspect(db_result[3]));
+			
 			
 			if(user_id > 0){
 				var user_info = {};

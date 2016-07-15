@@ -1,7 +1,7 @@
 var http = require('http');
 var url=require('url');
 var http_handler = require("./http_handler");
-var logger = require('./logger').logger();
+var logger = require('../logger').logger();
 var server =null;
 
 var handle_http = {};
