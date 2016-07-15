@@ -482,9 +482,10 @@ exports.getAdImage = function(callback){
 	});
 }
 
-exports.getAllShopSpread = function(page,area_code,callback){
+exports.getAllShopSpread = function(page,query,callback){
 	
-	connection.query("CALL p_get_all_shop_spread(?,?,?)",[page,10,area_code],function(err,result){
+
+	connection.query("CALL p_get_all_shop_spread(?,?,?,?,?,?)",[page,10,query['area_code'],query['zone_code'],query['cate_code'],query['sort_code']],function(err,result){
 		if(err){
 			logger.error(err);
 			callback(false,null);
@@ -492,6 +493,8 @@ exports.getAllShopSpread = function(page,area_code,callback){
 			var db_set = result[0];
 			var json_result = [];
 			for(var i in db_set){
+				json_result.push(db_set[i]);
+				json_result.push(db_set[i]);
 				json_result.push(db_set[i]);
 			}
 			callback(true,json_result);

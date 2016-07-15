@@ -60,9 +60,15 @@ exports.getAdImage = function(query,callback){
 
 exports.getShopSpread = function(query,callback){
 
-	var area_code = query['area_code'] || "116002";
-	
-	db.getAllShopSpread(query['page'],query['area_code'],function(success,content){
+	var city_no = query['city_no'] || "167";
+	var area_code = query['area_code'] || '';
+	var cate_code = query['category'] || '';
+	var sort_code = query['sortby'] || '';
+	db.getAllShopSpread(query['page'],{
+		'city_no':city_no,
+		'area_code':area_code,
+		'cate_code':cate_code,
+		'sort_code':sort_code},function(success,content){
 		if(success){
 			var json_value = {};
 			json_value['page'] = query['page'];

@@ -77,15 +77,15 @@ exports.start = function(Host,Port)
 							};
 							response.end(JSON.stringify(json_result));
 						} else {
-                    		response.writeHead(200, {'content-type': 'text/plain'});
+							response.writeHead(200, {'content-type': 'text/plain'});
 							var json_result = {
 								'result':0,
 								'fileName':targetFile,
 								'imageIndex' : fields['imageIndex']
 							};
 							response.end(JSON.stringify(json_result));
-                		}
-            		});
+						}
+					});
 				});
 			}
 			
@@ -106,22 +106,33 @@ exports.start = function(Host,Port)
 						'Content-Type': 'text/plain'
 					});
 					response.write("This request URL " + pathname + " was not found on this server.");
+					response.end();
 					
 				} else {
-					fs.readFile(realPath, "binary", function (err, file) {
-						if (err) {
-							console.log(err);
-							response.writeHead(500, {
-								'Content-Type': 'text/plain'
-							});
-							response.end(err);
-						} else {
-							var contentType = mime[ext] || "text/plain";
-							response.writeHead(200, {'Content-Type': contentType});
-							response.write(file, "binary");
-							response.end();
-						}
-					});
+					var fs_state = fs.statSync(realPath);
+					if(fs_state.isFile()){
+						fs.readFile(realPath, "binary", function (err, file) {
+							if (err) {
+								console.log(err);
+								response.writeHead(500, {
+									'Content-Type': 'text/plain'
+								});
+								response.end(err);
+							} else {
+								var contentType = mime[ext] || "text/plain";
+								response.writeHead(200, {'Content-Type': contentType});
+								response.write(file, "binary");
+								response.end();
+							}
+						});
+					}else{
+						response.writeHead(404, {
+							'Content-Type': 'text/plain'
+						});
+						response.write("This request URL " + pathname + " was not found on this server.");
+						response.end();
+					}
+					
 				}
 			});
 		}
