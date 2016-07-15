@@ -1,8 +1,8 @@
 var iconv = require('iconv-lite');
-
+var logger = require('./logger').logger();
 function player(sock){
 
-	this.socket = sock.ref();
+	this.socket = sock;
 	this.account = "";
 	this.verify_code = "";
 	this.telphone = "";
@@ -13,10 +13,10 @@ function player(sock){
 
 	//this.socket.setKeepAlive(true);
 	this.socket.on('data', this.recvData);
-    
-    this.socket.on("close",this.closeConnection);
-    this.socket.on("end",this.closeConnection);
-    this.socket.on("error",this.errorFind);
+
+	this.socket.on("close",this.closeConnection);
+	this.socket.on("end",this.closeConnection);
+	this.socket.on("error",this.errorFind);
 
 }
 
@@ -24,41 +24,42 @@ function player(sock){
 
 player.prototype.recvData = function(data)
 {
-	var buffer = new Buffer(data);
-	var packet_lenth = buffer.readInt32LE(0);
-	var packet_type = buffer.readInt16LE(4);
-	var packet_option = buffer.readInt8(6)
+	try{
+		var buffer = new Buffer(data);
 
+		var packet_lenth = buffer.readInt32LE(0);
+		var packet_type = buffer.readInt16LE(4);
+		var packet_option = buffer.readInt8(6);
+		if(packet_type < 0)
+		{
+			//console.log("ping from client");
+			var  pingBuf = new Buffer(8);
+			pingBuf.writeInt32LE(4,0);
+			pingBuf.writeUInt16LE(0,4);
+			pingBuf.writeInt16LE(0,6);
 
-	if(packet_type < 0)
-	{
-		//console.log("ping from client");
-		var  pingBuf = new Buffer(8);
-		pingBuf.writeInt32LE(4,0);
-		pingBuf.writeUInt16LE(0,4);
-		pingBuf.writeInt16LE(0,6);
-
-		this.write(pingBuf);
-	}
-	else
-	{
-		try{
+			this.write(pingBuf);
+		}
+		else
+		{
 			var data_length = buffer.readInt16LE(7);
 			var dataBuffer = buffer.slice(9);
 			var dataBody = iconv.decode(dataBuffer, 'GBK');
-			//console.log('LENGTH :' + data_length + 'and DATA ' +  ': ' + dataBody);
-
 			messageDispatch(this,JSON.parse(dataBody));
-			
-		}catch(e){
-			console.log(e);
 		}
+
+	}catch(e){
+		console.log(e);
 	}
 }
 
 player.prototype.errorFind = function()
 {
-
+	console.log("error");
+	var p = g_playerlist.findPlayerBySock(this);
+	if(p != null){
+		g_playerlist.removePlayerbySocket(this);
+	}
 }
 
 player.prototype.closeConnection = function(data)
@@ -183,10 +184,7 @@ exports.createPlayer = function(sock)
 {
 	var p = new player(sock);
 	g_playerlist.addPlayer(p);
-	if(p.socket != null)
-	{
-		console.log("all player num is : " + g_playerlist.playerlist.length);
-	}
+	logger.log("PlAYER","create new player");
 	return p;
 } 
 

@@ -1,7 +1,7 @@
 var http = require('http');
 var url=require('url');
 var http_handler = require("./http_handler");
-
+var logger = require('./logger').logger();
 var server =null;
 
 var handle_http = {};
@@ -17,10 +17,10 @@ exports.start = function(Host,Port)
 	var request_url = url.parse(request.url,true);
 
 	var pathname = request_url.pathname;
-	console.log("Request for "+pathname+" received.");   
+	logger.log("QUERY","Request for "+pathname+" received.");   
 
 	if (typeof handle_http[pathname] === 'function'){
-		console.log(request_url.query);
+		logger.log("QUERY",request_url.query);
 		handle_http[pathname](request_url.query,function(error_code,content){
 
 			if(error_code == 0){
