@@ -11,7 +11,7 @@ var image_file_server = require("./ImageFileServer/Server");
 require("./playerList");
 var logger = require('./logger').logger();
 
-var HOST = '192.168.0.120';
+var HOST = '';
 var PORT = 9888;
 var QUERY_PORT = 9889;
 var IMAGE_FILE_PORT = 9890;

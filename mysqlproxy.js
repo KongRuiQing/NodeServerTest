@@ -64,7 +64,8 @@ exports.checkLogin = function(account,password,callback){
 			callback(false,null);
 		}else{
 
-			if(db_result.length != 3){
+			//logger.log("MYSQL",util.inspect(db_result));
+			if(db_result.length < 2){
 				console.log("err");
 				callback(true,{'result':false});
 				return;
