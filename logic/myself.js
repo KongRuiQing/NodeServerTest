@@ -28,3 +28,10 @@ exports.new_feed = function(data,player,callback){
 		callback(player,json_result,'new_feed');
 	});
 }
+
+
+
+
+exports.player_detail = function(query,player,callback){
+	callback(player,{},"player_detail");
+}

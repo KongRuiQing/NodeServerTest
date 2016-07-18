@@ -1,5 +1,6 @@
 var iconv = require('iconv-lite');
 var logger = require('./logger').logger();
+var util = require('util');
 function player(sock){
 
 	this.socket = sock;
@@ -49,7 +50,8 @@ player.prototype.recvData = function(data)
 		}
 
 	}catch(e){
-		console.log(e);
+
+		logger.error("ERROR",e);
 	}
 }
 
@@ -91,12 +93,14 @@ function callback(p,data,method)
 
 player.prototype.dispatchMessage = function(data)
 {
+	console.log(util.inspect(data));
+
 	var logicName = data['Logic'];
 	var methodName = data['Method'];
+	console.log(typeof logicName);
+	console.log('./logic/' + logicName + ".js");
+	var logic = require('./logic/' + logicName + ".js");
 
-	var logic = require('./logic/' + logicName);
-
-	
 	logic[methodName](data['DataBody'],this,callback);
 }
 

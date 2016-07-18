@@ -3,7 +3,7 @@ var util = require('util');
 var newsfeed = require('./logic/newsfeed');
 var friend = require('./logic/friend');
 var logger = require('./logger').logger();
-
+var userinfo = require("./userinfo");
 var connection = mysql.createConnection({
 	host     : '115.159.67.251',
 	user     : 'eplus-find',
@@ -13,23 +13,31 @@ var connection = mysql.createConnection({
 	dateStrings: true
 });
 
-
-
 connection.connect(function(err){
 	if(err)
 	{
 		logger.error(err);
 		return;
 	}
-
-
+	initUserInfoFromDB(userinfo.init_from_db);
 	initNewsfeedFromDB(newsfeed.init_newsfeed);
 	initFriendRelation(friend.init_friend_relation);
 	logger.log("START","sql connection success");
 });
 
+function initUserInfoFromDB(callback){
+	logger.log("MYSQL","init userinfo from db");
+	connection.query("CALL p_get_all_userinfo",function(err,result){
+		
+		var all_user_info = result[0];
+
+		callback(all_user_info);
+	});
+}
+
 
 function initNewsfeedFromDB(callback){
+	logger.log("MYSQL","init feed from DB");
 	connection.query("CALL p_get_all_newsfeed",function(err,result){
 		if(err){
 			logger.error(err);
