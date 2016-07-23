@@ -9,7 +9,7 @@ BEGIN
 	execute stmtsql; 
 	deallocate prepare stmtsql;
 	
-	SET @strsql = concat('select * from user_newsfeed_comment left join user_info on user_info.id = user_newsfeed_comment.uid');
+	SET @strsql = concat('select * from user_newsfeed_comment left join user_info on user_info.id = user_newsfeed_comment.uid order ');
 	prepare stmtsql from @strsql; 
 	execute stmtsql; 
 	deallocate prepare stmtsql;

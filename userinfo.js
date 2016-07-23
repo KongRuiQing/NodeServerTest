@@ -9,7 +9,7 @@ exports.init_from_db = function(db_result){
 		var json_value = {};
 		json_value['id'] = userinfo['id'];
 		json_value['name'] = userinfo['name'];
-		
+		json_value['head'] = userinfo['head'];
 		g_all_userinfo[userinfo['id']] = json_value;
 	}
 }

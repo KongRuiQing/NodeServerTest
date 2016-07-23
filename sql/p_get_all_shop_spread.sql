@@ -14,33 +14,33 @@ BEGIN
 
 	IF CHAR_LENGTH(_city_no) > 0 THEN
 	
-		SET _where = concat('WHERE shop.city_no = "',_city_no,'"');
+		SET _where = concat('WHERE shop.city_no = ',_city_no);
 	END IF;
 
 	IF CHAR_LENGTH(_area_code) > 0 THEN
 	
 		IF CHAR_LENGTH(_where) > 0 THEN
-			SET _where = concat(' AND shop.area_code = "',_area_code,'"');
+			SET _where = concat(' AND shop.area_code = ',_area_code);
 		ELSE
-			SET _where = concat('WHERE shop.area_code = "',_area_code,'"');
+			SET _where = concat('WHERE shop.area_code = ',_area_code);
 		END IF;
 	END IF;
 
 	IF CHAR_LENGTH(_cate_code) > 0 THEN
 	
 		IF CHAR_LENGTH(_where) > 0 THEN
-			SET _where = concat(' AND shop.category_code = "',_cate_code,'"');
+			SET _where = concat(' AND shop.category_code = ',_cate_code);
 		ELSE
-			SET _where = concat('WHERE shop.category_code = "',_cate_code,'"');
+			SET _where = concat('WHERE shop.category_code = ',_cate_code);
 		END IF;
 	END IF;
 
 	
 
 	IF CHAR_LENGTH(_where) > 0 THEN
-		SET @strsql = concat('SELECT * FROM shop_spread left join shop on shop_spread.shop_id = shop.Id ',_where,' LIMIT ', _page_size * (_page - 1),',',_page_size);
+		SET @strsql = concat('SELECT * FROM shop left join shop_spread on shop_spread.shop_id = shop.Id ',_where,' LIMIT ', _page_size * (_page - 1),',',_page_size);
 	ELSE
-		SET @strsql = concat('SELECT * FROM shop_spread left join shop on shop_spread.shop_id = shop.Id ',' LIMIT ', _page_size * (_page - 1),',',_page_size);
+		SET @strsql = concat('SELECT * FROM shop left join shop_spread on shop_spread.shop_id = shop.Id ',' LIMIT ', _page_size * (_page - 1),',',_page_size);
 	END IF;
 	
 	prepare stmtsql from @strsql; 

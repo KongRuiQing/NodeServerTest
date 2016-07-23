@@ -1,7 +1,7 @@
 var db = require('../mysqlproxy');
 var friend = require('./friend');
 var util = require('util');
-
+var userinfo = require("../userinfo");
 // newsfeed_id newsfeed
 g_feed = {};
 g_feed_comment = {};
@@ -10,9 +10,13 @@ g_feed_comment = {};
 function newsfeed_comment(json_value){
 	this.id = json_value['id'];
 	this.uid = json_value['uid'];
-	this.name = json_value['name'];
+	var user = userinfo.find_userinfo(this.uid);
+
+	this.name = user['name'];
+
 	this.reply_id = json_value['reply_id'];
-	this.reply_name = "1";
+	var reply_to = userinfo.find_userinfo(this.reply_id);
+	this.reply_name = reply_to['name'];
 	this.feed_id = json_value['newsfeed_id'];
 	this.comment = json_value['text'];
 	this.sendTime = json_value['public_time'];
@@ -42,34 +46,46 @@ function friend_newsfeed(json_value){
 
 	this.sendTime = json_value['public_time'];
 	this.like = [];
-	this.comment = [];
+	this.comments = [];
 }
 
 friend_newsfeed.prototype.add_comment = function(json_value){
-	this.comment.push(new newsfeed_comment(json_value))
+	this.comments.push(new newsfeed_comment(json_value))
 }
 friend_newsfeed.prototype.toJsonValue = function(){
 	var json_value = {};
 	json_value['id'] = this.id;
 	json_value['uid'] = this.uid;
 	json_value['content'] = this.content;
-	json_value['images'] = this.images;
+	json_value['images'] = [];
+	for(var image_index in this.images){
+		if(this.images[image_index] != null){
+			json_value['images'].push(this.images[image_index]);
+		}else{
+
+		}
+	}
 	json_value['sendTime'] = this.sendTime;
 	json_value['like'] = [];
-	json_value['comment'] = [];
+	json_value['comments'] = [];
 	for(var i in this.comment){
 		var json_comment = this.comment[i].toJsonValue();
-		json_value['comment'].push(json_comment)
+		json_value['comments'].push(json_comment)
 	}
 	return json_value;
 }
 
 exports.add_newsfeed = function(json_value){
+	
 	var uid = json_value['uid'];
-	if(g_newsfeed[uid] == null || g_newsfeed[uid] == undefined){
-		g_newsfeed[uid] = [new friend_newsfeed(json_value)];
+	
+	if(g_feed[uid] == null || g_feed[uid] == undefined){
+		
+		g_feed[uid] = {};
+		g_feed[uid]['newsfeed_list'] = [new friend_newsfeed(json_value)];
 	}else{
-		g_newsfeed[uid].push(new friend_newsfeed(json_value));
+		
+		g_feed[uid]['newsfeed_list'].push(new friend_newsfeed(json_value));
 	}
 }
 
@@ -92,7 +108,7 @@ exports.get_feed_list = function(data,player,callback){
 		for( var i in friend_list){
 			var id = friend_list[i]["id"];
 			//g_newsfeed[id]['name'] = friend_list[i]["name"];
-			if(id != undefined && g_newsfeed[id] != undefined){
+			if(id != undefined && g_feed[id] != undefined){
 				newsfeed_list = newsfeed_list.concat(g_feed[id]['newsfeed_list']);
 			}
 		}
@@ -173,11 +189,9 @@ exports.get_feed_list = function(data,player,callback){
 
 exports.init_newsfeed = function(content){
 
-
 	for(var i in content['newsfeed_list']){
 
 		var newsfeed = new friend_newsfeed(content['newsfeed_list'][i]);
-		//console.log(util.inspect(newsfeed));
 		var uid = parseInt(newsfeed['uid']);
 		if(g_feed[uid] == undefined || g_feed[uid] == null){
 			g_feed[uid] = {};
@@ -198,5 +212,6 @@ exports.init_newsfeed = function(content){
 }
 
 exports.find_myfeed = function(uid){
-	return g_feed[uid];
+
+	return g_feed[uid]['newsfeed_list'];
 }

@@ -216,9 +216,10 @@ exports.getShopAfterFilter = function(city_no,area_code,category_code,sort_code,
 	});
 }
 
-exports.getShopDetail = function(shop_id,callback){
+exports.getShopDetail = function(shop_id,uid,callback){
 	shop_id = shop_id || "";
-	connection.query("call p_get_shop_detail(?)",[shop_id],function(err,result){
+	uid = uid || 1;
+	connection.query("call p_get_shop_detail(?,?)",[shop_id,uid],function(err,result){
 		if(err){
 			console.log(err);
 			callback(false,null);
@@ -264,6 +265,10 @@ exports.getShopDetail = function(shop_id,callback){
 			json_shop_info['email'] = shop_detail['email'];
 			json_result['info'] = json_shop_info;
 
+			var shop_attention_count = result[3][0]['attention_num'];
+			json_result['attention_count'] = shop_attention_count;
+			var has_attention = result[4][0]['has_attention'];
+			json_result['has_attention'] = parseInt(has_attention);
 			callback(true,json_result);
 		}
 	});
@@ -501,9 +506,12 @@ exports.getAdImage = function(callback){
 }
 
 exports.getAllShopSpread = function(page,query,callback){
-	
 
-	connection.query("CALL p_get_all_shop_spread(?,?,?,?,?,?)",[page,10,query['area_code'],query['zone_code'],query['cate_code'],query['sort_code']],function(err,result){
+	var query_page = parseInt(page || "1");
+
+	var quyery_params = [query_page,10,query['city_no'],query['area_code'],query['cate_code'],query['sort_code']];
+	console.log(quyery_params)
+	connection.query("CALL p_get_all_shop_spread(?,?,?,?,?,?)",quyery_params,function(err,result){
 		if(err){
 			logger.error(err);
 			callback(false,null);
@@ -512,10 +520,28 @@ exports.getAllShopSpread = function(page,query,callback){
 			var json_result = [];
 			for(var i in db_set){
 				json_result.push(db_set[i]);
-				json_result.push(db_set[i]);
-				json_result.push(db_set[i]);
 			}
 			callback(true,json_result);
+		}
+	});
+}
+
+exports.AttentionShop = function(player_id,shop_id,callback){
+	var sql_query_param = [player_id,shop_id];
+	connection.query("CALL p_attention_shop(?,?)",sql_query_param,function(err,result){
+		if(err){
+			logger.error(err);
+			callback(false,null);
+		}else{
+			var db_result = result[0];
+			if(parseInt(db_result['attention_result']) > 0){
+				var json_result = {};
+				json_result['errcode'] =  0;
+				callback(true,json_result);
+			}
+			else{
+				callback(true,null);
+			}
 		}
 	});
 }

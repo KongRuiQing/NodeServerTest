@@ -24,11 +24,14 @@ exports.getShop = function(query,callback){
 
 exports.getShopDetail = function(query,callback)
 {
-	db.getShopDetail(query['shopid'],function(success,content){
+	var uid = query['uid'] || "";
+	db.getShopDetail(query['shop_id'], uid,function(success,content){
 		if(success){
 			var json_value = {};
 			json_value['show_image'] = content['show_image'];
-			json_value['attention'] = 0;
+			json_value['attention_count'] = content['attention_count'];
+			json_value['has_attention'] = content['has_attention'];
+
 			json_value['name'] = content['shop_name'];
 			json_value['shop_id'] = content['shop_id'];
 			json_value['info'] = content['info'];
@@ -68,7 +71,8 @@ exports.getShopSpread = function(query,callback){
 		'city_no':city_no,
 		'area_code':area_code,
 		'cate_code':cate_code,
-		'sort_code':sort_code},function(success,content){
+		'sort_code':sort_code},
+		function(success,content){
 		if(success){
 			var json_value = {};
 			json_value['page'] = query['page'];

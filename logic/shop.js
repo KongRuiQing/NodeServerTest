@@ -29,3 +29,20 @@ exports.getShopList = function(data,target,callback){
 	db.GetShopList(data['page'],10,data['longitude'],data['latitude'],cb);
 }
 
+exports.attentionShop = function(query,player,callback){
+	var shop_id = query['shop_id'] || 0;
+	var player_id = player.GetPlayerId();
+	db.AttentionShop(player_id,shop_id,function(success,db_result){
+		
+		var ret = {};
+		if(success){
+			ret['errcode'] = 0;
+			
+		}else{
+			ret['errcode'] = 1;
+		}
+		callback(player,ret,"attentionShop")
+		
+	});
+}
+

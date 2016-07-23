@@ -36,7 +36,7 @@ exports.start = function(Host,Port)
 	form.keepExtensions = true;
 	server = http.createServer(function (request, response) {
 		var pathname = url.parse(request.url).pathname;
-		logger.log("upload",pathname);
+		//logger.log("upload",pathname);
 
 		if(pathname == '/upload'){
 			if(request.method.toLowerCase() === 'post'){
@@ -66,11 +66,12 @@ exports.start = function(Host,Port)
 							}
 						}
 					}
+					var targetFile = path.join(fields['dir'],path.basename(filePath));
+					var targetDirFile = path.join("assets",targetFile);
 
-					var targetFile = path.join("assets",fields['dir'],path.basename(filePath));
-
-					fs.rename(filePath, targetFile, function (err) {
+					fs.rename(filePath, targetDirFile, function (err) {
 						if (err) {
+							response.writeHead(200, {'content-type': 'text/plain'});
 							logger.error(err);
 							var json_result = {
 								'result':1
@@ -99,7 +100,7 @@ exports.start = function(Host,Port)
 			
 			var ext = path.extname(realPath);
 			ext = ext ? ext.slice(1) : 'unknown';
-			logger.log("IMAGE",realPath);
+			//logger.log("IMAGE",realPath);
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
 					response.writeHead(404, {
