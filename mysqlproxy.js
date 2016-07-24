@@ -4,14 +4,30 @@ var newsfeed = require('./logic/newsfeed');
 var friend = require('./logic/friend');
 var logger = require('./logger').logger();
 var userinfo = require("./userinfo");
-var connection = mysql.createConnection({
+
+var db_config = {
 	host     : '115.159.67.251',
 	user     : 'eplus-find',
 	password : 'eplus-find',
 	port:'3306',
 	database : 'find',
 	dateStrings: true
-});
+};
+
+var connection = mysql.createConnection(db_config);
+
+connection.on("error",function(err){
+	logger.error(err);
+	if(err.code === 'PROTOCOL_CONNECTION_LOST'){
+		connection = mysql.createConnection(db_config);
+		connection.connect(function(err){
+			if(err){
+				logger.error(err);
+				return;
+			}
+		});
+	}
+})
 
 connection.connect(function(err){
 	if(err)
@@ -24,6 +40,7 @@ connection.connect(function(err){
 	initFriendRelation(friend.init_friend_relation);
 	logger.log("START","sql connection success");
 });
+
 
 function initUserInfoFromDB(callback){
 	logger.log("MYSQL","init userinfo from db");
@@ -219,18 +236,19 @@ exports.getShopAfterFilter = function(city_no,area_code,category_code,sort_code,
 exports.getShopDetail = function(shop_id,uid,callback){
 	shop_id = shop_id || "";
 	uid = uid || 1;
+	var query_param = [shop_id,uid];
+	
 	connection.query("call p_get_shop_detail(?,?)",[shop_id,uid],function(err,result){
 		if(err){
-			console.log(err);
+			logger.error(err);
 			callback(false,null);
 		}else{
-			var shopCount = result[0][0];
-			console.log(shopCount);
-			if(parseInt(shopCount['shop_num']) != 1){
-				console.log("ERROR:");
-				for(var i in shopCount){
-					console.log(i + ":" + shopCount[i]);
-				}
+			var shopCount = parseInt(result[0][0]['shop_num']);
+
+			
+			if(isNaN(shopCount) || shopCount != 1){
+				logger.error("getShopDetail.Error : shopCount != 1");
+				logger.log(util.inspect(result));
 				callback(false,null);
 				return;
 			}
@@ -265,8 +283,7 @@ exports.getShopDetail = function(shop_id,uid,callback){
 			json_shop_info['email'] = shop_detail['email'];
 			json_result['info'] = json_shop_info;
 
-			var shop_attention_count = result[3][0]['attention_num'];
-			json_result['attention_count'] = shop_attention_count;
+			json_result['attention_count'] = parseInt(result[3][0]['attention_num']);
 			var has_attention = result[4][0]['has_attention'];
 			json_result['has_attention'] = parseInt(has_attention);
 			callback(true,json_result);
@@ -526,22 +543,31 @@ exports.getAllShopSpread = function(page,query,callback){
 	});
 }
 
-exports.AttentionShop = function(player_id,shop_id,callback){
-	var sql_query_param = [player_id,shop_id];
-	connection.query("CALL p_attention_shop(?,?)",sql_query_param,function(err,result){
+exports.AttentionShop = function(player_id,shop_id,attention,callback){
+	var sql_query_param = [player_id,shop_id,attention];
+	connection.query("CALL p_attention_shop(?,?,?)",sql_query_param,function(err,result){
 		if(err){
 			logger.error(err);
 			callback(false,null);
 		}else{
-			var db_result = result[0];
-			if(parseInt(db_result['attention_result']) > 0){
-				var json_result = {};
-				json_result['errcode'] =  0;
-				callback(true,json_result);
+			var db_result = result[0][0];
+			var attention_shop_count = result[1][0]['attention_count'];
+			var count = parseInt(db_result['attention_result']);
+			
+			var json_result = {};
+			json_result['errcode'] = 2;
+
+			if(attention == 1 && count == 1){
+				json_result['errcode'] = 0;
+				
+			}else if(attention == 0 && count == 0){
+				json_result['errcode'] = 0;
 			}
-			else{
-				callback(true,null);
-			}
+
+			json_result['has_attention'] = count;
+			json_result['attention_count'] = attention_shop_count;
+			
+			callback(true,json_result);
 		}
 	});
 }

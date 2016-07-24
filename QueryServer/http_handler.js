@@ -29,7 +29,7 @@ exports.getShopDetail = function(query,callback)
 		if(success){
 			var json_value = {};
 			json_value['show_image'] = content['show_image'];
-			json_value['attention_count'] = content['attention_count'];
+			json_value['attention_count'] = parseInt(content['attention_count']);
 			json_value['has_attention'] = content['has_attention'];
 
 			json_value['name'] = content['shop_name'];

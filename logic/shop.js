@@ -31,16 +31,18 @@ exports.getShopList = function(data,target,callback){
 
 exports.attentionShop = function(query,player,callback){
 	var shop_id = query['shop_id'] || 0;
-	var player_id = player.GetPlayerId();
-	db.AttentionShop(player_id,shop_id,function(success,db_result){
-		
+	var attention = parseInt(query['attention']);
+	var player_id = player.GetUserId();
+	db.AttentionShop(player_id,shop_id,attention,function(success,db_result){
 		var ret = {};
 		if(success){
-			ret['errcode'] = 0;
+			ret['errcode'] = db_result['errcode'];
 			
 		}else{
 			ret['errcode'] = 1;
 		}
+		ret['has_attention'] = parseInt(db_result['has_attention']);
+		ret['attention_count'] = parseInt(db_result['attention_count']);
 		callback(player,ret,"attentionShop")
 		
 	});
