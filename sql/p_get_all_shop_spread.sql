@@ -38,9 +38,9 @@ BEGIN
 	
 
 	IF CHAR_LENGTH(_where) > 0 THEN
-		SET @strsql = concat('SELECT * FROM shop left join shop_spread on shop_spread.shop_id = shop.Id ',_where,' LIMIT ', _page_size * (_page - 1),',',_page_size);
+		SET @strsql = concat('SELECT * FROM shop_spread left join shop on shop_spread.shop_id = shop.Id ',_where,' LIMIT ', _page_size * (_page - 1),',',_page_size);
 	ELSE
-		SET @strsql = concat('SELECT * FROM shop left join shop_spread on shop_spread.shop_id = shop.Id ',' LIMIT ', _page_size * (_page - 1),',',_page_size);
+		SET @strsql = concat('SELECT * FROM shop_spread left join shop on shop_spread.shop_id = shop.Id ',' LIMIT ', _page_size * (_page - 1),',',_page_size);
 	END IF;
 	
 	prepare stmtsql from @strsql; 

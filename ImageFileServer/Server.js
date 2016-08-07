@@ -37,7 +37,7 @@ exports.start = function(Host,Port)
 	server = http.createServer(function (request, response) {
 		var pathname = url.parse(request.url).pathname;
 		//logger.log("upload",pathname);
-
+			
 		if(pathname == '/upload'){
 			if(request.method.toLowerCase() === 'post'){
 
@@ -50,11 +50,7 @@ exports.start = function(Host,Port)
 					if(fields['dir'] == null || fields['dir'] == undefined){
 						logger.error("UPLOAD","No Dir in upload");
 					}
-					if(fields['imageIndex'] == null || fields['imageIndex'] == undefined){
-						logger.error("UPLOAD","No Dir in upload");
-					}
-
-
+					logger.log("AAA",util.inspect(files));
 					var filePath = '';
 					if(files.tmpFile){
 						filePath = files.tmpFile.path;
@@ -74,7 +70,8 @@ exports.start = function(Host,Port)
 							response.writeHead(200, {'content-type': 'text/plain'});
 							logger.error(err);
 							var json_result = {
-								'result':1
+								'result':1,
+								'bean' : fields['bean']
 							};
 							response.end(JSON.stringify(json_result));
 						} else {
@@ -82,7 +79,7 @@ exports.start = function(Host,Port)
 							var json_result = {
 								'result':0,
 								'fileName':targetFile,
-								'imageIndex' : fields['imageIndex']
+								'bean' : fields['bean']
 							};
 							response.end(JSON.stringify(json_result));
 						}

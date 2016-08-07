@@ -8,6 +8,8 @@ var url=require('url');
 
 var query_server = require("./QueryServer/server");
 var image_file_server = require("./ImageFileServer/Server");
+var post_server = require("./PostServer/Server");
+
 require("./playerList");
 var logger = require('./logger').logger();
 
@@ -15,6 +17,7 @@ var HOST = '';
 var PORT = 9888;
 var QUERY_PORT = 9889;
 var IMAGE_FILE_PORT = 9890;
+var POST_SERVER_PORT = 9891;
 
 logger.log("log","11");
 
@@ -30,4 +33,6 @@ findServer.on('connection', function(sock) {
 
 query_server.start(HOST,QUERY_PORT);
 image_file_server.start(HOST,IMAGE_FILE_PORT);
+
+post_server.start(HOST,POST_SERVER_PORT);
 

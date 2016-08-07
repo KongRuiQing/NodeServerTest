@@ -536,6 +536,7 @@ exports.getAllShopSpread = function(page,query,callback){
 			var db_set = result[0];
 			var json_result = [];
 			for(var i in db_set){
+				db_set[i]['item_price'] = db_set[i]['item_price'] || 0;
 				json_result.push(db_set[i]);
 			}
 			callback(true,json_result);
@@ -570,4 +571,8 @@ exports.AttentionShop = function(player_id,shop_id,attention,callback){
 			callback(true,json_result);
 		}
 	});
+}
+
+exports.InsertBecomeSeller = function(json_obj,callback){
+	
 }
