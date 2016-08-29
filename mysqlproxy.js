@@ -3,7 +3,7 @@ var util = require('util');
 var newsfeed = require('./logic/newsfeed');
 var friend = require('./logic/friend');
 var logger = require('./logger').logger();
-var userinfo = require("./userinfo");
+
 
 var db_config = {
 	host     : '115.159.67.251',
@@ -35,7 +35,7 @@ connection.connect(function(err){
 		logger.error(err);
 		return;
 	}
-	initUserInfoFromDB(userinfo.init_from_db);
+	initUserInfoFromDB();
 	initNewsfeedFromDB(newsfeed.init_newsfeed);
 	initFriendRelation(friend.init_friend_relation);
 	logger.log("START","sql connection success");
@@ -47,8 +47,9 @@ function initUserInfoFromDB(callback){
 	connection.query("CALL p_get_all_userinfo",function(err,result){
 		
 		var all_user_info = result[0];
-
-		callback(all_user_info);
+		var all_login_info = result[1];
+		g_playerlist.InitFromDb(all_user_info,all_login_info);
+		
 	});
 }
 
@@ -101,8 +102,6 @@ exports.checkLogin = function(account,password,callback){
 			var db_set = db_result[0];
 			var user_id = parseInt(db_set[0].id);
 
-			
-			
 			if(user_id > 0){
 				var user_info = {};
 				user_info['id'] = user_id;
@@ -217,16 +216,30 @@ exports.getAreaMenu = function(area_code,callback){
 }
 
 exports.getShopAfterFilter = function(city_no,area_code,category_code,sort_code,page,callback){
-	connection.query("CALL p_get_shop_with_filter(?,?,?,?,?,10)",[city_no,area_code,category_code,sort_code,parseInt(page)],function(err,result){
+
+	connection.query("CALL p_get_shop_with_filter(?,?,?,?,?,10)",
+		[city_no,area_code,category_code,sort_code,parseInt(page)],
+		function(err,result){
 		if(err){
 			console.log(err);
 			callback(false,null);
 		}else{
 			var db_ret = result[0];
-			var json_result = [];
+			var json_result = {};
+			json_result['list'] = [];
 			for(var i in db_ret){
 				var row = db_ret[i];
-				json_result.push(row);
+				var json_value = {};
+				json_value['shop_id'] = row['Id'];
+				json_value['shop_name'] = row['name'];
+				json_value['image_url'] = row['image'];
+				json_value['shop_address'] = row['address'];
+				json_value['long'] = row['longitude'];
+				json_value['late'] = row['latitude'];
+				json_value['like_num'] = 0;
+				json_value['is_like'] = false;
+
+				json_result['list'].push(json_value);
 			}
 			callback(true,json_result);
 		}
@@ -245,7 +258,6 @@ exports.getShopDetail = function(shop_id,uid,callback){
 		}else{
 			var shopCount = parseInt(result[0][0]['shop_num']);
 
-			
 			if(isNaN(shopCount) || shopCount != 1){
 				logger.error("getShopDetail.Error : shopCount != 1");
 				logger.log(util.inspect(result));
@@ -575,4 +587,61 @@ exports.AttentionShop = function(player_id,shop_id,attention,callback){
 
 exports.InsertBecomeSeller = function(json_obj,callback){
 	
+}
+
+exports.getExchangeItemList = function(callback){
+	connection.query("CALL p_get_all_exchange_item",function(err,result){
+		var json_result = {};
+		if(err){
+			json_result['result'] = 1;
+			callback(false,null);
+		}else{
+			
+			json_result['result'] = 0;
+			json_result['list'] = [];
+			var db_result = result[0];
+			for(var i in db_result){
+				var obj = {};
+				obj['name'] = db_result[i]['name'];
+				obj['desc'] = db_result[i]['desc'];
+				obj['price'] = db_result[i]['price'];
+				obj['image'] = db_result[i]['image'];
+				obj['id'] = db_result[i]['id'];
+				json_result['list'].push(obj);
+			}
+			callback(true,json_result);
+		}
+	});
+}
+
+exports.getExchangeItemDetail = function(item_id,callback){
+	connection.query("CALL p_get_exchange_item_detail(?)",[item_id],function(err,result){
+		var json_result = {};
+		if(err){
+			json_result['result'] = 1;
+			callback(false,json_result);
+		}else{
+			json_result['result'] = 0;
+
+			var db_result = result[0];
+			if(db_result.length > 0){
+				var db_row = db_result[0];
+				json_result['name'] = db_row['name'];
+				json_result['desc'] = db_row['desc'];
+				json_result['price'] = db_row['price'];
+				json_result['image'] = db_row['image'];
+				json_result['notice'] = [];
+
+				json_result['notice'].push(db_row['notice1'] || "");
+				json_result['notice'].push(db_row['notice2'] || "");
+				json_result['notice'].push(db_row['notice3'] || "");
+				json_result['id'] = db_row['id'];
+				callback(true,json_result);
+			}else{
+				json_result['result'] = 2;
+				callback(true,json_result);
+			}
+			
+		}
+	});
 }

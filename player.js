@@ -1,113 +1,43 @@
 var iconv = require('iconv-lite');
 var logger = require('./logger').logger();
 var util = require('util');
+
+// 引入 events 模块
+var EventEmitter = require('events').EventEmitter;
+// 创建 eventEmitter 对象
+
 function player(sock){
 
 	this.socket = sock;
+	
 	this.account = "";
 	this.verify_code = "";
 	this.telphone = "";
-	this.userid = 0;
+	this.uid = 0;
 	this.name = "";
 	this.signature = "";
 	this.head = "";
 
 	//this.socket.setKeepAlive(true);
-	this.socket.on('data', this.recvData);
+	this.socket.on('data', recvData);
 
-	this.socket.on("close",this.closeConnection);
-	this.socket.on("end",this.closeConnection);
-	this.socket.on("error",this.errorFind);
+	this.socket.on("close",closeConnection);
+	this.socket.on("end",closeConnection);
+	this.socket.on("error",closeConnection);
 
+	this.socket["player"] = this;
+
+	this.on("send",this.sendData);
 }
 
+util.inherits(player,EventEmitter);
 
-
-player.prototype.recvData = function(data)
-{
-	try{
-		var buffer = new Buffer(data);
-
-		var packet_lenth = buffer.readInt32LE(0);
-		var packet_type = buffer.readInt16LE(4);
-		var packet_option = buffer.readInt8(6);
-		if(packet_type < 0)
-		{
-			//console.log("ping from client");
-			var  pingBuf = new Buffer(8);
-			pingBuf.writeInt32LE(4,0);
-			pingBuf.writeUInt16LE(0,4);
-			pingBuf.writeInt16LE(0,6);
-
-			this.write(pingBuf);
-		}
-		else
-		{
-			var data_length = buffer.readInt16LE(7);
-			var dataBuffer = buffer.slice(9);
-			var dataBody = iconv.decode(dataBuffer, 'GBK');
-			messageDispatch(this,JSON.parse(dataBody));
-		}
-
-	}catch(e){
-
-		logger.error("ERROR",e);
-	}
-}
-
-player.prototype.errorFind = function()
-{
-	console.log("error");
-	var p = g_playerlist.findPlayerBySock(this);
-	if(p != null){
-		g_playerlist.removePlayerbySocket(this);
-	}
-}
-
-player.prototype.closeConnection = function(data)
-{
-	console.log("close");
-	var p = g_playerlist.findPlayerBySock(this);
-	if(p != null)
-	{
-		//console.log("find player to close");
-		g_playerlist.removePlayerbySocket(this);
-	}
-}
-
-function messageDispatch(sock,data){
-
-	var player = g_playerlist.findPlayerBySock(sock);
-	player.dispatchMessage(data);
-	
-}
-
-function callback(p,data,method)
-{
+player.prototype.sendData = function(data,methodName){
 	var ret = {
-		Method:method,
-		DataBody:data
+		'Method':methodName,
+		'DataBody':data
 	};
-	p.sendMessage(ret);
-}
-
-player.prototype.dispatchMessage = function(data)
-{
-	console.log(util.inspect(data));
-
-	var logicName = data['Logic'];
-	var methodName = data['Method'];
-	console.log(typeof logicName);
-	console.log('./logic/' + logicName + ".js");
-	var logic = require('./logic/' + logicName + ".js");
-
-	logic[methodName](data['DataBody'],this,callback);
-}
-
-
-
-player.prototype.sendMessage = function(ret)
-{
+	console.log(ret);
 	var s = JSON.stringify(ret);
 	//console.log(s);
 	var b = iconv.encode(s, 'GBK');
@@ -122,8 +52,73 @@ player.prototype.sendMessage = function(ret)
 	buff.writeInt8(1,6);
 	buff.writeInt16LE(b.length,7);
 	
-	
 	this.socket.write(buff);
+}
+
+player.prototype.sendPing = function(){
+	var pingBuf = new Buffer(8);
+	pingBuf.writeInt32LE(4,0);
+	pingBuf.writeUInt16LE(0,4);
+	pingBuf.writeInt16LE(0,6);
+	this.socket.write(pingBuf);
+}
+
+function recvData(data)
+{
+	try{
+		var buffer = new Buffer(data);
+
+		var packet_lenth = buffer.readInt32LE(0);
+		var packet_type = buffer.readInt16LE(4);
+		var packet_option = buffer.readInt8(6);
+		if(packet_type < 0)
+		{
+			//console.log("ping from client");
+			if(this.player != null){
+				this.player.sendPing();
+			}
+		}
+		else
+		{
+			var data_length = buffer.readInt16LE(7);
+			var dataBuffer = buffer.slice(9);
+			var dataBody = iconv.decode(dataBuffer, 'GBK');
+			if(this.player != null){
+				this.player.messageDispatch(JSON.parse(dataBody));
+			}
+		}
+
+	}catch(e){
+
+		logger.error("ERROR",e);
+	}
+}
+
+player.prototype.close = function(){
+	player.uid = 0;
+}
+
+function closeConnection()
+{
+	if(this.player){
+		var uid = this.player.uid;
+		g_playerlist.removePlayerByAccount(uid);
+		this.player.close();
+		this.player = null;
+	}
+}
+
+player.prototype.messageDispatch = function(data){
+
+	var logicName = data['Logic'];
+	var methodName = data['Method'];
+	var logic = require('./logic/' + logicName + ".js");
+
+	if(typeof logic[methodName] === 'function'){
+
+		logic[methodName](this,data['DataBody']);
+	}
+	
 }
 
 player.prototype.setTelphone = function(telphone){
@@ -156,44 +151,36 @@ player.prototype.GetLatitude = function()
 
 player.prototype.GetUserId = function()
 {
-	return this.userid;
+	return this.uid;
 }
 
+function getUTC() {  
+    var d = new Date();  
+    return Date.UTC(d.getFullYear()  
+        , d.getMonth()  
+        , d.getDate()  
+        , d.getHours()  
+        , d.getMinutes()  
+        , d.getSeconds()  
+        , d.getMilliseconds());  
+}  
+
+
+
+
 player.prototype.SetUserLogin = function(player_info){
-	this.userid = player_info['id'];
+	this.guid = generate(10);
+
+	this.uid = player_info['id'];
 	this.name = player_info['name'];
 	this.signature = player_info['signature'];
 	this.head = player_info['head'];
 }
 
-player.prototype.SendAgreeBeFriend = function(uid){
-
-	var ret = {
-		"Method":"agree_be_friend",
-		"DataBody":{
-			"method":"accept",
-			"friend_id":uid,
-			"friend_info":{
-				"id":uid,
-				"name" : this.name,
-				"signature" : this.signature,
-				"head" : this.head
-			}
-		}
-	};
-	sendMessage(ret);
-};
-
 exports.createPlayer = function(sock)
 {
 	var p = new player(sock);
-	g_playerlist.addPlayer(p);
 	logger.log("PlAYER","create new player");
 	return p;
 } 
-
-exports.deletePlayer = function(sock)
-{
-
-}
 

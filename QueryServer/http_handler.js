@@ -1,5 +1,6 @@
 var db = require("../mysqlproxy");
 var util = require('util');
+
 exports.getAreaMenu = function(query,callback){
 
 	db.getAreaMenu(query["area_code"],function(success,content){
@@ -12,8 +13,13 @@ exports.getAreaMenu = function(query,callback){
 	});
 }
 
-exports.getShop = function(query,callback){
-	db.getShopAfterFilter(query['city_no'],query['area_code'],query['cate_code'],query['sort_key'],query['page'],function(success,content){
+exports.getShopList = function(query,callback){
+	db.getShopAfterFilter(
+		query['city_no'],
+		query['area_code'],
+		query['cate_code'],
+		query['sort_key'],
+		query['page'],function(success,content){
 		if(success){
 			callback(0,content);
 		}else{
@@ -45,11 +51,11 @@ exports.getShopDetail = function(query,callback)
 }
 
 exports.getAdImage = function(query,callback){
+	
 	db.getAdImage(function(success,content){
 		if(success){
 			var json_value = {};
 			json_value['ad_image'] = [];
-			
 			for(var i in content){
 				json_value['ad_image'].push(content[i]);
 			}
@@ -63,10 +69,11 @@ exports.getAdImage = function(query,callback){
 
 exports.getShopSpread = function(query,callback){
 
-	var city_no = query['city_no'] || "167";
+	var city_no = query['city_no'] || "";
 	var area_code = query['area_code'] || '';
 	var cate_code = query['category'] || '';
 	var sort_code = query['sortby'] || '';
+	var page = query['page'] || '';
 	db.getAllShopSpread(query['page'],{
 		'city_no':city_no,
 		'area_code':area_code,
@@ -80,6 +87,27 @@ exports.getShopSpread = function(query,callback){
 			callback(0,json_value);
 		}else{
 			callback(1,null);
+		}
+	});
+}
+
+exports.getExchangeItemList = function(query,callback){
+	var uid = query['uid'];
+	db.getExchangeItemList(function(success,content){
+		if(success){
+			callback(0,content)
+		}else{
+			callback(1,content);
+		}
+	});
+}
+exports.getExchangeItemDetail = function(query,callback){
+	var item_id = parseInt(query['item_id']);
+	db.getExchangeItemDetail(item_id,function(success,content){
+		if(success){
+			callback(0,content)
+		}else{
+			callback(1,content);
 		}
 	});
 }

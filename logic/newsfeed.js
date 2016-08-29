@@ -1,7 +1,6 @@
 var db = require('../mysqlproxy');
 var friend = require('./friend');
 var util = require('util');
-var userinfo = require("../userinfo");
 // newsfeed_id newsfeed
 g_feed = {};
 g_feed_comment = {};

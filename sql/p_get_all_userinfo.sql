@@ -7,6 +7,11 @@ BEGIN
 	prepare stmtsql from @strsql; 
 	execute stmtsql; 
 	deallocate prepare stmtsql;
+
+	SET @strsql = 'select * from userlogin';
+	prepare stmtsql from @strsql; 
+	execute stmtsql; 
+	deallocate prepare stmtsql;
 END
 //
 DELIMITER ;

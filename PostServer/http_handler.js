@@ -29,3 +29,29 @@ exports.become_seller = function(fields,files,callback){
 exports.new_feed = function(fields,files,callback){
 	
 };
+
+exports.login = function(fields,files,callback){
+	var login_account = fields['account'];
+	var login_password = fields['password'];
+	
+	var json_result = {};
+	if(g_playerlist.CheckLogin(login_account,login_password)){
+
+		if(g_playerlist.IsLogin(login_account)){
+			g_playerlist.KickPlayer(login_account);
+		}
+		var login_response = g_playerlist.Login(login_account);
+
+		json_result['uid'] = login_response['uid'];
+		json_result['guid'] = login_response['guid'];
+		json_result['head'] = login_response['head'];
+		json_result['name'] = login_response['name'];
+		json_result['success'] = true;
+	}else{
+		json_result['success'] = false;
+	}
+
+	callback(true,json_result);
+	
+
+}

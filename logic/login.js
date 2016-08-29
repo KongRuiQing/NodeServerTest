@@ -1,44 +1,33 @@
 
 var db = require('../mysqlproxy');
 var util = require('util');
-exports.login = function(data,target,callback)
+
+exports.login = function(player,data)
 {
 	db.checkLogin(data['Account'],data['Password'],function(success,content){
 		var ret = {};
 		if(success){
 			if(content['result']){
-				var findPlayer = g_playerlist.findPlayerByAccount(data['Account']);
-
-				if(findPlayer != null)
-				{
-					g_playerlist.removePlayerByAccount(data['Account']);
-				}
-				//console.log(util.inspect(content));
-
-				g_playerlist.setLogin(target,data['Account']);
-
-				target.SetUserLogin(content['user_info']);
-
+				g_playerlist.removePlayerByAccount(content['id']);
+				player.SetUserLogin(content['user_info']);
+				g_playerlist.addPlayer(player);
+				
 				ret['result'] = 0;
 				ret['user_info'] = content['user_info'];
 
 		}else{
 			ret["result"] = 2;
-
 		}
 	}else{
 		ret["result"] = 1;
-
 	}
-
-	callback(target,ret,'Login');
+	player.emit("send",ret,"login");
 });
 	
 }
 
-exports.verifytelphone = function(data,target,callback)
+exports.verifytelphone = function(player,data)
 {
-
 	var cb = function(success){
 		var ret = {
 			success : success,
@@ -46,15 +35,15 @@ exports.verifytelphone = function(data,target,callback)
 		}
 		if(success == 0)
 		{
-			target.setVerifyCode("1234");
-			target.setTelphone(data['telphone']);
+			player.setVerifyCode("1234");
+			player.setTelphone(data['telphone']);
 		}
-		callback(target,ret,"verifytelphone");
+		player.emit("send",ret,"verifytelphone");
 	}
 	db.VerifyTelphone(data['telphone'],cb);
 }
 
-exports.verifycode = function(data,target,callback){
+exports.verifycode = function(player,data){
 
 	var verify_code = data['verify_code'];
 	var ret = {
@@ -62,7 +51,7 @@ exports.verifycode = function(data,target,callback){
 		verify_code:data['verify_code']
 	};
 
-	var b = target.checkVerifyCode(data['telphone'],data['verify_code'])
+	var b = player.checkVerifyCode(data['telphone'],data['verify_code'])
 
 	if(b == true){
 		ret.success = 0;
@@ -70,11 +59,12 @@ exports.verifycode = function(data,target,callback){
 	{
 		ret.success = 1000;
 	}
-	callback(target,ret,"verifycode");
+	player.emit("send",ret,"verifycode");
+	
 
 }
 
-exports.register = function(data,target,callback){
+exports.register = function(data,player){
 
 	var cb = function(success,uid)
 	{
@@ -92,16 +82,18 @@ exports.register = function(data,target,callback){
 			ret.errcode = uid;
 			ret.uid = 0;
 		}
+		console.log("注册成功后，这里要添加到缓存里 ");
+		//g_playerlist.addPlayer(player);
 
-		callback(target,ret,"register");
+		player.emit("send",ret,"register");
 	}
-	var su = target.checkVerifyCode(data['telphone'],data['verify_code']);
+	var su = player.checkVerifyCode(data['telphone'],data['verify_code']);
 	if(su)
 	{
 		db.Register(data['telphone'],data['password'],cb);
 	}else
 	{
-		cb(2);
+		player.emit("send",ret,"register");
 	}
 	
 }

@@ -11,6 +11,7 @@ var image_file_server = require("./ImageFileServer/Server");
 var post_server = require("./PostServer/Server");
 
 require("./playerList");
+
 var logger = require('./logger').logger();
 
 var HOST = '';
@@ -21,13 +22,14 @@ var POST_SERVER_PORT = 9891;
 
 logger.log("log","11");
 
-var findServer = net.createServer();
+var chatServer = net.createServer();
 
-findServer.listen(PORT, HOST);
+chatServer.listen(PORT, HOST);
+
 logger.log('Server 监听 ' + HOST +':'+ PORT);
 
-findServer.on('connection', function(sock) {
-	logger.log('新的客户端: ' +sock.remoteAddress +':'+ sock.remotePort);
+chatServer.on('connection', function(sock) {
+	logger.log('connection','新的客户端: ' +sock.remoteAddress +':'+ sock.remotePort);
 	player.createPlayer(sock);
 });
 
@@ -35,4 +37,3 @@ query_server.start(HOST,QUERY_PORT);
 image_file_server.start(HOST,IMAGE_FILE_PORT);
 
 post_server.start(HOST,POST_SERVER_PORT);
-

@@ -12,6 +12,8 @@ var server = null;
 var form = new formidable.IncomingForm();
 var handle_http = {};
 handle_http['/become_seller'] = http_handler.become_seller;
+handle_http['/login'] = http_handler.login;
+
 exports.start = function(Host,Port)
 {
 	form.uploadDir = "assets/upload/";
