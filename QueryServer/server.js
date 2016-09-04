@@ -12,7 +12,7 @@ handle_http['/ad_image'] = http_handler.getAdImage;
 handle_http['/shop_spread'] = http_handler.getShopSpread;
 handle_http['/exchange_item_list'] = http_handler.getExchangeItemList;
 handle_http['/exchange_item_detail'] = http_handler.getExchangeItemDetail;
-
+handle_http['/activity_list'] = http_handler.getActivityList;
 var http_header = {};
 
 http_header[200] = "text/html";

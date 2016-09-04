@@ -5,7 +5,6 @@ var player = require("./player");
 var http = require('http');
 var path=require('path');
 var url=require('url');
-
 var query_server = require("./QueryServer/server");
 var image_file_server = require("./ImageFileServer/Server");
 var post_server = require("./PostServer/Server");

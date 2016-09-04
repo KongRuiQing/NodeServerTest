@@ -9,20 +9,27 @@ var http_handler = require("./http_handler");
 
 var server = null;
 
-var form = new formidable.IncomingForm();
+
 var handle_http = {};
 handle_http['/become_seller'] = http_handler.become_seller;
 handle_http['/login'] = http_handler.login;
+handle_http['/register'] = http_handler.register;
+
+
 
 exports.start = function(Host,Port)
 {
-	form.uploadDir = "assets/upload/";
-	form.maxFields = 1000;
-	form.maxFieldsSize = 2 * 1024 * 1024;
-	form.keepExtensions = true;
+	
 	server = http.createServer(function (request, response) {
 		var pathname = url.parse(request.url).pathname;
 		if(request.method.toLowerCase() === 'post'){
+			var form = new formidable.IncomingForm();
+			form.uploadDir = "assets/upload/";
+			form.maxFields = 1000;
+			form.maxFieldsSize = 2 * 1024 * 1024;
+			form.keepExtensions = true;
+
+			logger.log("POST SERVER",pathname);
 
 			form.parse(request, function(err, fields, files) {
 				if(err){
@@ -31,11 +38,16 @@ exports.start = function(Host,Port)
 					return;
 				}
 
+				
+
 				handle_http[pathname](fields,files,function(success,json_result){
 					response.writeHead(200, {'content-type': 'text/plain'});
 					response.end(JSON.stringify(json_result));
 				});
 			});
+
+			
+			
 		}
 	});
 	server.listen(Port,Host);

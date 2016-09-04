@@ -111,3 +111,12 @@ exports.getExchangeItemDetail = function(query,callback){
 		}
 	});
 }
+
+exports.getActivityList = function(query,callback){
+	
+	var page = query['page'] || 1;
+	var size = 10;
+	db.getActivityList(page,size,function(success,content){
+		callback(0,content);
+	});
+}

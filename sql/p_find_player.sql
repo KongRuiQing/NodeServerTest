@@ -1,4 +1,5 @@
 DELIMITER // 
+DROP PROCEDURE IF EXISTS p_find_player
 CREATE PROCEDURE p_find_player(IN find_name varchar(11),IN user_id int)
 BEGIN
 

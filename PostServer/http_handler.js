@@ -52,6 +52,17 @@ exports.login = function(fields,files,callback){
 	}
 
 	callback(true,json_result);
-	
 
+}
+
+exports.register = function(fields,files,callback){
+	var step = parseInt(fields['step']);
+	var telephone = fields['telephone'];
+	var guid = fields['guid'] || null;
+	var code = fields['code'] || null;
+	var password = fields['password'] || null;
+	//console.log("register start:" + util.inspect(fields));
+	var result = g_playerlist.RegisterStep(step,guid,telephone,code,password);
+	console.log("register end:" + util.inspect(result));
+	callback(true,result);
 }

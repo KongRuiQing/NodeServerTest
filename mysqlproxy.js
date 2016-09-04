@@ -645,3 +645,43 @@ exports.getExchangeItemDetail = function(item_id,callback){
 		}
 	});
 }
+
+exports.getActivityList = function(page,size,callback)
+{
+
+	connection.query("CALL p_get_activity_list(?,?)",[page,size],function(err,result){
+		
+		var json_result = {};
+		if(err){
+			json_result['result'] = 1;
+			callback(false,json_result);
+		}else{
+
+			json_result['result'] = 0;
+			json_result['page'] = page;
+			var db_result = result[0];
+			json_result['list'] = [];
+			for(var i in db_result){
+				var activity = {
+					'name' : db_result[i]['name'],
+					'image' : db_result[i]['image'],
+					'discard' : db_result[i]['discard']
+				};
+				json_result['list'].push(activity)
+			}
+
+			callback(true,json_result);
+		}
+	})
+}
+
+exports.AddNewPlayer = function(uid,telephone,password,callback){
+	connection.query("CALL p_add_new_player(?,?,?)",[uid,telephone,password],function(err,result){
+		if(err){
+			console.log(err);
+			callback(false);
+		}else{
+			callback(true);
+		}
+	});
+}
