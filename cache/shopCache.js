@@ -250,7 +250,10 @@ exports.getShopDetail = function(uid,shop_id){
 			'telephone' : shop_info['telephone'],
 			'comment_num' : comment_num,
 			'comment' : comment,
-			'shop_item' : []
+			'shop_item' : [],
+			'shop_info' : "11111111111111111111111111111",
+			'shop_email' : 'abc@123.com',
+			'distribution_info' : 'distribution_info'
 		}
 	};
 

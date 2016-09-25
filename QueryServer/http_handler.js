@@ -150,7 +150,7 @@ exports.getShopItemDetail = function(query,callback){
 exports.getMyFavoritesItems = function(query,callback){
 
 	console.log(query);
-	
+
 	var page = query['page'];
 	var guid = query['guid'];
 	//var item = g_playerlist.getMyFavoritesItems(guid,page);
@@ -160,7 +160,7 @@ exports.getMyFavoritesItems = function(query,callback){
 		'list':[
 			{
 				'add_favorites_time' : 20120000,
-				'id' : 111,
+				'id' : 110,
 				'shop_id' : 123,
 				'shop_name': '商店111',
 				'item_name': '名字111',
@@ -175,6 +175,24 @@ exports.getMyFavoritesItems = function(query,callback){
 				],
 				'price': 60,
 				'image': 'favorites/1.png'
+			},
+			{
+				'add_favorites_time' : 20120000,
+				'id' : 111,
+				'shop_id' : 123,
+				'shop_name': '商店222',
+				'item_name': '名字333',
+				'item_property':[
+					{
+						'property_name' : '属性',
+						'property_value' : '2.0'
+					},{
+					'property_name' : '大小',
+					'property_value' : '3.0'
+					},
+				],
+			'price': 20,
+			'image': 'favorites/2.png'
 			},
 			{
 				'add_favorites_time' : 20120000,
@@ -193,6 +211,42 @@ exports.getMyFavoritesItems = function(query,callback){
 				],
 			'price': 20,
 			'image': 'favorites/1.png'
+			},
+			{
+				'add_favorites_time' : 20120000,
+				'id' : 113,
+				'shop_id' : 123,
+				'shop_name': '商店222',
+				'item_name': '名字333',
+				'item_property':[
+					{
+						'property_name' : '属性',
+						'property_value' : '2.0'
+					},{
+					'property_name' : '大小',
+					'property_value' : '3.0'
+					},
+				],
+			'price': 20,
+			'image': 'favorites/2.png'
+			},
+			{
+				'add_favorites_time' : 20120000,
+				'id' : 114,
+				'shop_id' : 123,
+				'shop_name': '商店222',
+				'item_name': '名字333',
+				'item_property':[
+					{
+						'property_name' : '属性',
+						'property_value' : '2.0'
+					},{
+					'property_name' : '大小',
+					'property_value' : '3.0'
+					},
+				],
+			'price': 20,
+			'image': 'favorites/3.png'
 			}
 		],
 		'page':page
