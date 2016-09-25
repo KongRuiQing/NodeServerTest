@@ -6,9 +6,9 @@ g_playerlist = {
 	'playerCache':{},
 	'account_uid':{},
 	'reg_account' :{},
+	'guid_to_uid' : {},
 	'MaxUID' : 0
 };
-
 
 
 g_playerlist.removePlayerByUID = function(uid)
@@ -18,6 +18,13 @@ g_playerlist.removePlayerByUID = function(uid)
 	}
 }
 
+g_playerlist.getPlayerInfo = function(uid){
+	if(this.playerCache[uid]){
+		return this.playerCache[uid];
+	}
+	return null;
+}
+
 g_playerlist.InitFromDb = function(all_user_info,all_login_info){
 
 	for(var i in all_login_info){
@@ -25,7 +32,7 @@ g_playerlist.InitFromDb = function(all_user_info,all_login_info){
 		this.playerCache[uid] = {
 			"uid": uid,
 			"account":all_login_info[i]['Account'],
-			"password":all_login_info[i]['Password'],
+			"password":all_login_info[i]['Password']
 		};
 		this['account_uid'][all_login_info[i]['Account']] = all_login_info[i]['Id'];
 		
@@ -36,8 +43,15 @@ g_playerlist.InitFromDb = function(all_user_info,all_login_info){
 	for(var i in all_user_info){
 		var uid = all_user_info[i]['id'];
 		if(this.playerCache[uid] != null){
+
 			this.playerCache[uid]['head'] = all_user_info[i]['head'];
-			this.playerCache[uid]['name'] = all_user_info[i]['name'];
+			this.playerCache[uid]['nick_name'] = all_user_info[i]['name'];
+			this.playerCache[uid]['birthday_timestamp'] = all_login_info[i]['birthday_timestamp'];
+			this.playerCache[uid]['sign'] = all_login_info[i]['sign'] ;
+			this.playerCache[uid]['address'] = all_login_info[i]['address'] ;
+			this.playerCache[uid]['telephone'] = ['telephone'];
+			this.playerCache[uid]['email'] = all_login_info[i]['email'];
+			this.playerCache[uid]['real_name'] = all_login_info[i]['real_name'];
 		}
 	}
 }
@@ -99,14 +113,23 @@ function generate(count) {
 g_playerlist.Login = function(login_account){
 
 	var uid = this.account_uid[login_account];
-	var player_cache = this.playerCache[uid];
+	var player_info = this.playerCache[uid];
 	var guid = generate(10);
 	this.playerlist[uid] = guid;
 	var json_login = {};
+
 	json_login['uid'] = uid;
 	json_login['guid'] = guid;
-	json_login['head'] = player_cache['head'];
-	json_login['name'] = player_cache['name'];
+
+	json_login['head'] = player_info['head'];
+	json_login['nick_name'] = player_info['nick_name'];
+	json_login['sex'] = player_info['sex'];	
+	json_login['birthday_timestamp'] = player_info['birthday_timestamp'];	
+	json_login['sign'] = player_info['sign'];	
+	json_login['address'] = player_info['address'];	
+	json_login['telephone'] = player_info['telephone'];	
+	json_login['email'] = player_info['email'];	
+	json_login['real_name'] = player_info['real_name'];	
 
 	return json_login;
 }
@@ -238,4 +261,9 @@ g_playerlist.Register = function(telephone,password){
 		}
 	});
 	return uid;
+}
+
+g_playerlist.getMyFavoritesItems = function(uid,page){
+	var player = this.getPlayerInfo(uid);
+	return player['favorites_item'];
 }

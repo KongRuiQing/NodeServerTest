@@ -3,7 +3,7 @@ var util = require('util');
 var newsfeed = require('./logic/newsfeed');
 var friend = require('./logic/friend');
 var logger = require('./logger').logger();
-
+var ShopCache = require("./cache/shopCache");
 
 var db_config = {
 	host     : '115.159.67.251',
@@ -38,18 +38,19 @@ connection.connect(function(err){
 	initUserInfoFromDB();
 	initNewsfeedFromDB(newsfeed.init_newsfeed);
 	initFriendRelation(friend.init_friend_relation);
+	initShopCache();
 	logger.log("START","sql connection success");
 });
 
 
 function initUserInfoFromDB(callback){
-	logger.log("MYSQL","init userinfo from db");
+	
 	connection.query("CALL p_get_all_userinfo",function(err,result){
 		
 		var all_user_info = result[0];
 		var all_login_info = result[1];
 		g_playerlist.InitFromDb(all_user_info,all_login_info);
-		
+		logger.log("MYSQL","init userinfo from db");
 	});
 }
 
@@ -80,6 +81,16 @@ function initNewsfeedFromDB(callback){
 
 function initFriendRelation(callback){
 	callback("1");
+}
+
+function initShopCache() {
+	connection.query("CALL p_get_all_shop",function(error,result){
+		if(error){
+			logger.error(error);
+		}
+		ShopCache.InitFromDb(result[0],result[1],result[2],result[3],result[4]);
+		logger.log("MYSQL","init all shop from DB");
+	});
 }
 
 exports.checkLogin = function(account,password,callback){
@@ -548,7 +559,7 @@ exports.getAllShopSpread = function(page,query,callback){
 			var db_set = result[0];
 			var json_result = [];
 			for(var i in db_set){
-				db_set[i]['item_price'] = db_set[i]['item_price'] || 0;
+				
 				json_result.push(db_set[i]);
 			}
 			callback(true,json_result);

@@ -38,12 +38,14 @@ exports.start = function(Host,Port)
 					return;
 				}
 
-				
-
-				handle_http[pathname](fields,files,function(success,json_result){
-					response.writeHead(200, {'content-type': 'text/plain'});
-					response.end(JSON.stringify(json_result));
-				});
+				try{
+					handle_http[pathname](fields,files,function(success,json_result){
+						response.writeHead(200, {'content-type': 'text/plain'});
+						response.end(JSON.stringify(json_result));
+					});
+				}catch(err){
+					logger.error(err);
+				}
 			});
 
 			

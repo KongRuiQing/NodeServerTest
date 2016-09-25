@@ -41,11 +41,7 @@ exports.login = function(fields,files,callback){
 			g_playerlist.KickPlayer(login_account);
 		}
 		var login_response = g_playerlist.Login(login_account);
-
-		json_result['uid'] = login_response['uid'];
-		json_result['guid'] = login_response['guid'];
-		json_result['head'] = login_response['head'];
-		json_result['name'] = login_response['name'];
+		json_result['user_info'] = login_response;
 		json_result['success'] = true;
 	}else{
 		json_result['success'] = false;

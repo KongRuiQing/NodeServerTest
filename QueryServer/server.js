@@ -13,6 +13,9 @@ handle_http['/shop_spread'] = http_handler.getShopSpread;
 handle_http['/exchange_item_list'] = http_handler.getExchangeItemList;
 handle_http['/exchange_item_detail'] = http_handler.getExchangeItemDetail;
 handle_http['/activity_list'] = http_handler.getActivityList;
+handle_http['/near_shop'] = http_handler.getNearShopList;
+handle_http['/shop_item_detail'] = http_handler.getShopItemDetail;
+handle_http['/my_favorites_item'] = http_handler.getMyFavoritesItems;
 var http_header = {};
 
 http_header[200] = "text/html";
@@ -26,10 +29,11 @@ function handle_server(request,response){
 	var headers = request.headers;
 	
 	if (typeof handle_http[pathname] === 'function'){
-		
+		console.log(pathname);
 		handle_http[pathname](request_url.query,function(error_code,content){
 
 			if(error_code == 0){
+
 				response.writeHead(200, {
 					'Content-Type': http_header[200]
 				});
@@ -47,6 +51,7 @@ function handle_server(request,response){
 			response.end();
 		}) 
 	}else{
+		console.log("err");
 		response.writeHead(600, {
 			'Content-Type': http_header[600]
 		});
