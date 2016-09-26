@@ -253,3 +253,10 @@ exports.getMyFavoritesItems = function(query,callback){
 	};
 	callback(0,json_result);
 }
+
+exports.getApkVersion = function(query,callback){
+	var json_result = {
+		"version_name" : "1.2.0"
+	}
+	callback(0,json_result);
+}

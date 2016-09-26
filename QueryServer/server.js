@@ -16,6 +16,7 @@ handle_http['/activity_list'] = http_handler.getActivityList;
 handle_http['/near_shop'] = http_handler.getNearShopList;
 handle_http['/shop_item_detail'] = http_handler.getShopItemDetail;
 handle_http['/my_favorites_item'] = http_handler.getMyFavoritesItems;
+handle_http['/check_version'] = http_handler.getApkVersion;
 var http_header = {};
 
 http_header[200] = "text/html";
@@ -27,6 +28,7 @@ function handle_server(request,response){
 	var request_url = url.parse(request.url,true);
 	var pathname = request_url.pathname;
 	var headers = request.headers;
+	logger.log("QUERY_SERVER","pathname" + pathname);
 	
 	if (typeof handle_http[pathname] === 'function'){
 		console.log(pathname);
