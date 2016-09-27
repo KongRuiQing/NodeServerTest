@@ -102,7 +102,7 @@ function closeConnection()
 {
 	if(this.player){
 		var uid = this.player.uid;
-		g_playerlist.removePlayerByAccount(uid);
+		g_playerlist.removePlayerByUID(uid);
 		this.player.close();
 		this.player = null;
 	}
