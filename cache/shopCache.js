@@ -332,10 +332,9 @@ exports.getShopItemDetail = function(uid,shop_id,shop_item_id) {
 	if(shop_info != null){
 		
 		var shop_item_propertys = g_shop_cache['shop_item_property'][shop_item_id];
-		
+		shop_item_detail['error'] = 0;
+		shop_item_detail['item_property'] = [];
 		if(shop_item_propertys != null){
-			shop_item_detail['item_property'] = [];
-			shop_item_detail['error'] = 0;
 			for(var i in shop_item_propertys){
 				var item_property = shop_item_propertys[i];
 				shop_item_detail['item_property'].push({

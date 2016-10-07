@@ -141,7 +141,7 @@ exports.getShopItemDetail = function(headers, query,callback){
 			'item_id' : item_id,
 			'item_detail' : shop_item_detail
 		};
-		console.log(json_result);
+		
 		callback(0,json_result);
 		return;
 	}
