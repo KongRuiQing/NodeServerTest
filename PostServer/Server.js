@@ -11,12 +11,14 @@ var server = null;
 
 
 var handle_http = {};
-handle_http['/become_seller'] = http_handler.become_seller;
+handle_http['/become_seller'] = http_handler.becomeSeller;
 handle_http['/login'] = http_handler.login;
 handle_http['/register'] = http_handler.register;
-
-
-
+handle_http['/change_sex'] = http_handler.changeSex;
+handle_http['/change_nickname'] = http_handler.changeNickName;
+handle_http['/change_birthday'] = http_handler.changeBirthday;
+handle_http['/change_sign'] = http_handler.changeSign;
+handle_http['/attention_shop'] = http_handler.attentionShop;
 exports.start = function(Host,Port)
 {
 	

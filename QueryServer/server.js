@@ -5,7 +5,6 @@ var logger = require('../logger').logger();
 var server =null;
 
 var handle_http = {};
-handle_http['/area'] = http_handler.getAreaMenu;
 handle_http['/shop_list'] = http_handler.getShopList;
 handle_http['/shop_detail'] = http_handler.getShopDetail;
 handle_http['/ad_image'] = http_handler.getAdImage;
@@ -17,6 +16,9 @@ handle_http['/near_shop'] = http_handler.getNearShopList;
 handle_http['/shop_item_detail'] = http_handler.getShopItemDetail;
 handle_http['/my_favorites_item'] = http_handler.getMyFavoritesItems;
 handle_http['/check_version'] = http_handler.getApkVersion;
+handle_http['/area_menu'] = http_handler.getAreaMenu;
+handle_http['/shop_attention'] = http_handler.getMyAttention;
+handle_http['/shop_category'] = http_handler.getShopCategory;
 var http_header = {};
 
 http_header[200] = "text/html";
@@ -28,11 +30,11 @@ function handle_server(request,response){
 	var request_url = url.parse(request.url,true);
 	var pathname = request_url.pathname;
 	var headers = request.headers;
-	logger.log("QUERY_SERVER","pathname" + pathname);
+	logger.log("QUERY_SERVER","pathname:" + pathname);
 	
 	if (typeof handle_http[pathname] === 'function'){
-		console.log(pathname);
-		handle_http[pathname](request_url.query,function(error_code,content){
+		
+		handle_http[pathname](headers,request_url.query,function(error_code,content){
 
 			if(error_code == 0){
 
@@ -42,6 +44,7 @@ function handle_server(request,response){
 				response.write(JSON.stringify(content));
 			}else
 			{
+				logger.error("QUERY_SERVER","Error pathname:" + pathname + " error_code = " + error_code);
 				response.writeHead(500, {
 					'Content-Type': http_header[500]
 				});
@@ -53,7 +56,7 @@ function handle_server(request,response){
 			response.end();
 		}) 
 	}else{
-		console.log("err");
+		logger.error("QUERY_SERVER","query with pathname:" + pathname + " is not function");
 		response.writeHead(600, {
 			'Content-Type': http_header[600]
 		});

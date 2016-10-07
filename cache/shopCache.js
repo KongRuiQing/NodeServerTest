@@ -1,18 +1,27 @@
 
 var util = require('util');
 
-var g_shop_cache = {
+g_shop_cache = {
 	'dict' : {},
 	'item_property_name' : {},
 	'shop_item_property' : {},
 	'shop_items' : {},
-	'show_items' : []
+	'show_items' : [],
+	'activity_list' : []
 };
 
-exports.InitFromDb = function(shop_list,shop_comment,shop_item,shop_item_property,shop_item_property_config){
+exports.InitFromDb = function(
+	shop_list,
+	shop_comment,
+	shop_item,
+	shop_item_property,
+	shop_item_property_config,
+	shop_attention,
+	activity_list){
 	
 	g_shop_cache['dict'] = {};
-	
+	g_shop_cache['max_shop_id'] = 0;
+
 	for(var i in shop_list){
 		var shop_id = shop_list[i]['Id'];
 		
@@ -20,19 +29,28 @@ exports.InitFromDb = function(shop_list,shop_comment,shop_item,shop_item_propert
 			'name' : shop_list[i]['name'],
 			'address' : shop_list[i]['address'],
 			'city_no' : parseInt(shop_list[i]['city_no']),
+			'area_code' : parseInt(shop_list[i]['area_code']),
 			'zone': parseInt(shop_list[i]['zone']),
 			'beg' : parseInt(shop_list[i]['beg']),
 			'end' : parseInt(shop_list[i]['end']),
-			'img' : shop_list[i]['img'],
+			'image' : shop_list[i]['image'],
 			'telephone' : shop_list[i]['telephone'],
 			'longitude': parseFloat(shop_list[i]['longitude']),
 			'latitude': parseFloat(shop_list[i]['latitude']),
 			'image_in_near' : shop_list[i]['near_image'],
-			'category' : shop_list[i]['category'] || 0,
+			'category_code' : shop_list[i]['category_code'] || 0,
+			'qualification' : shop_list[i]['qualification'],
+			'qq' : shop_list[i]['qq'],
+			'wx' : shop_list[i]['wx'],
+			'email' : shop_list[i]['email'],
+			'business' : shop_list[i]['business'],
 			'attention' : [],
 			'comment' : [],
-			'shop_item_ids' : []
+			'shop_item_ids' : [],
+			'image_in_attention' : shop_list[i]['image_in_attention'],
+			'state' : shop_list[i]['state']
 		};
+		g_shop_cache['max_shop_id'] = Math.max(parseInt(shop_id),g_shop_cache['max_shop_id']);
 	}
 
 	for(var i in shop_comment){
@@ -80,6 +98,8 @@ exports.InitFromDb = function(shop_list,shop_comment,shop_item,shop_item_propert
 		if(parseInt(item['is_show']) == 1){
 			g_shop_cache['show_items'].push(item['id']);
 		}
+
+
 	}
 	
 
@@ -104,9 +124,27 @@ exports.InitFromDb = function(shop_list,shop_comment,shop_item,shop_item_propert
 			'is_show' : shop_item_property[i]['is_show']
 		});
 	}
+
+	for(var i in shop_attention){
+		var shop_id = shop_attention[i]['shop_id'];
+		if(g_shop_cache['dict'][shop_id] != null){
+			g_shop_cache['dict'][shop_id]['attention'].push(shop_attention[i]['uid']);
+		}
+		
+	}
+
+	for(var i in activity_list){
+		
+		g_shop_cache['activity_list'].push({
+			'name':activity_list[i]['name'],
+			'discard':activity_list[i]['discard'],
+			'image':activity_list[i]['image'],
+			'id':activity_list[i]['id']
+		});
+	}
 }
 
-exports.getShopList = function(city_no,zone,category,page){
+exports.getShopList = function(uid,city_no,area_code,category,page){
 	var all_list = [];
 	
 	for(var i in g_shop_cache['dict']){
@@ -114,15 +152,19 @@ exports.getShopList = function(city_no,zone,category,page){
 		var shop_info = g_shop_cache['dict'][i];
 
 		if(shop_info['city_no'] == city_no && 
-			(zone == shop_info['zone'] || zone == 0) && 
+			(area_code == shop_info['area_code'] || area_code == 0) && 
 			(category == shop_info['category'] || category == 0)){
+
+		
 			all_list.push({
 				'shop_name' : shop_info['name'],
 				'shop_address' : shop_info['address'],
-				'shop_image' : shop_info['img'],
+				'shop_image' : shop_info['image'],
 				'long' : shop_info['longitude'],
 				'late' : shop_info['latitude'],
 				'shop_attention' : shop_info['attention'],
+				'attention_num' : shop_info['attention'].length,
+				'is_attention' : uid in shop_info['attention'],
 				"id" : parseInt(i)
 			});
 	}
@@ -222,12 +264,12 @@ exports.getShopDetail = function(uid,shop_id){
 	if(comment_num > 0){
 		var last_comment = shop_info['comment'][shop_info['comment'].length -1];
 		
-		var player = g_playerlist.getPlayerInfo(last_comment['uid']);
+		var player_info = g_playerlist.getPlayerInfo(last_comment['uid']);
 		
-		if(player != null){
+		if(player_info != null){
 			comment = {
-				'head' : player['head'],
-				'name' : player['nick_name'],
+				'head' : player_info['head'],
+				'name' : player_info['name'],
 				'comment' : last_comment['comment'],
 				'datetime' : last_comment['datetime'],
 				'remark' : last_comment['remark']
@@ -245,14 +287,16 @@ exports.getShopDetail = function(uid,shop_id){
 			'beg' : shop_info['beg'],
 			'end' : shop_info['end'],
 			'attention': false,
-			'image': shop_info['img'],
+			'image': shop_info['image'],
 			'address' : shop_info['address'],
 			'telephone' : shop_info['telephone'],
 			'comment_num' : comment_num,
 			'comment' : comment,
 			'shop_item' : [],
 			'shop_info' : "11111111111111111111111111111",
-			'shop_email' : 'abc@123.com',
+			'shop_email' : shop_info['email'],
+			'qq' : shop_info['qq'],
+			'wx' : shop_info['wx'],
 			'distribution_info' : 'distribution_info'
 		}
 	};
@@ -355,14 +399,14 @@ exports.getMyFavoritesItems = function(items){
 					'shop_name' : shop['name'],
 					'item_name' : item['name'],
 					'item_property' : [
-						{
-							'property_name' : g_shop_cache['item_property_name'][item_property[itemId]['property_type']],
-							'property_value' : item_property[itemId]['property_value']
-						},
-						{
-							'property_name' : g_shop_cache['item_property_name'][item_property[itemId]['property_type']],
-							'property_value' : item_property[itemId]['property_value']
-						}
+					{
+						'property_name' : g_shop_cache['item_property_name'][item_property[itemId]['property_type']],
+						'property_value' : item_property[itemId]['property_value']
+					},
+					{
+						'property_name' : g_shop_cache['item_property_name'][item_property[itemId]['property_type']],
+						'property_value' : item_property[itemId]['property_value']
+					}
 					],
 					'price' : item['price'],
 					'image' : item['favorites_image']
@@ -372,4 +416,93 @@ exports.getMyFavoritesItems = function(items){
 	}
 
 	return item_list;
+}
+
+exports.getMyAttentionShopInfo = function(shop_id_list){
+	var list = [];
+
+	for(var i in shop_id_list){
+		var shop_id = shop_id_list[i]['shop_id'];
+		var shop_info = g_shop_cache['dict'][shop_id];
+
+		list.push({
+			'shop_id' : shop_id,
+			'category_code' : shop_info['category_code'],
+			'shop_image' : shop_info['image_in_attention'],
+			'shop_attention_num': shop_info['attention'].length,
+			'shop_name': shop_info['name'],
+			'shop_business': shop_info['business'] || ""
+		});
+		
+	}
+	return list;
+}
+
+
+exports.InsertBecomeSeller = function(uid,shop_info){
+
+	var shop_id = g_shop_cache['max_shop_id'] + 1;
+	g_shop_cache['max_shop_id'] = shop_id;
+	shop_info['id'] = shop_id;
+	g_shop_cache['dict'][shop_id] = {
+		'name' : shop_info['name'],
+		'beg' : parseInt(shop_info['beg']),
+		'end' : parseInt(shop_info['end']),
+
+		'longitude': parseFloat(shop_info['longitude']),
+		'latitude': parseFloat(shop_info['latitude']),
+		'area_code' : parseInt(shop_info['area_code']),
+		'category_code' : parseInt(shop_info['category_code']),
+		'city_no' : parseInt(shop_info['city_no']),
+		'telephone' : shop_info['telephone'],
+		'info': shop_info['info'],
+		'address' : shop_info['address'],
+		'image' : shop_info['image'],
+		'image_in_near' : shop_info['near_image'],
+		'qq' : shop_info['qq'],
+		'wx' : shop_info['wx'],
+		'image_in_attention' : shop_info['image_in_attention'],
+		'email' : '',
+		'business' : '',
+		'attention' : [],
+		'comment' : [],
+		'shop_item_ids' : [],
+		'image_in_attention' : [],
+		'manager' : {
+			'name' : shop_info['shop_manager_name'],
+			'telephone' : shop_info['shop_manager_telephone'],
+			'address' : shop_info['shop_manager_address'],
+			'card' : shop_info['shop_manager_card'],
+			'email' : shop_info['shop_manager_email'],
+		}
+	};
+	return shop_id;
+}
+
+exports.changeShopState = function(shop_id){
+	var shop_info = g_shop_cache['dict'][shop_id];
+	if(shop_info != null){
+		shop_info['state'] = 1;
+	}
+}
+
+exports.getShopActivityList = function(page,page_size){
+	var list = g_shop_cache['activity_list'].slice((page - 1) * page_size,page_size);
+
+	return {
+		'list':list,
+		'page' : page,
+		'page_size':page_size,
+		'total' : g_shop_cache['activity_list'].length
+	};
+}
+
+exports.attentionShop = function(uid,shop_id){
+
+	var shop_info = g_shop_cache['dict'][shop_id];
+	if(shop_info != null){
+		if(!(uid in shop_info['attention'])){
+			shop_info['attention'].push(uid);
+		}
+	}
 }

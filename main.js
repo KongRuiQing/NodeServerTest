@@ -21,8 +21,6 @@ var IMAGE_FILE_PORT = 9890;
 var POST_SERVER_PORT = 9891;
 var DOWN_SERVER_PORT = 9892;
 
-logger.log("log","11");
-
 var chatServer = net.createServer();
 
 chatServer.listen(PORT, HOST);

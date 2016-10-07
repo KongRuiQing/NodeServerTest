@@ -4,7 +4,7 @@ var newsfeed = require('./logic/newsfeed');
 var friend = require('./logic/friend');
 var logger = require('./logger').logger();
 var ShopCache = require("./cache/shopCache");
-
+var DbCache = require("./cache/DbCache");
 var db_config = {
 	host     : '115.159.67.251',
 	user     : 'eplus-find',
@@ -20,12 +20,15 @@ connection.on("error",function(err){
 	logger.error(err);
 	if(err.code === 'PROTOCOL_CONNECTION_LOST'){
 		connection = mysql.createConnection(db_config);
-		connection.connect(function(err){
-			if(err){
-				logger.error(err);
+		connection.connect(function(err_msg){
+			if(err_msg){
+				logger.error(err_msg);
 				return;
 			}
 		});
+	}else{
+		logger.error(util.inspect(err));
+		return;
 	}
 })
 
@@ -38,7 +41,9 @@ connection.connect(function(err){
 	initUserInfoFromDB();
 	initNewsfeedFromDB(newsfeed.init_newsfeed);
 	initFriendRelation(friend.init_friend_relation);
+	initDbCache();
 	initShopCache();
+
 	logger.log("START","sql connection success");
 });
 
@@ -49,7 +54,7 @@ function initUserInfoFromDB(callback){
 		
 		var all_user_info = result[0];
 		var all_login_info = result[1];
-		g_playerlist.InitFromDb(all_user_info,all_login_info);
+		g_playerlist.InitFromDb(all_user_info,all_login_info,result[2]);
 		logger.log("MYSQL","init userinfo from db");
 	});
 }
@@ -83,12 +88,22 @@ function initFriendRelation(callback){
 	callback("1");
 }
 
+function initDbCache(){
+	connection.query("CALL p_get_config_from_db",function(error,result){
+		if(error){
+			logger.error(error);
+		}
+		DbCache.InitFromDb(result);
+		logger.log("MYSQL","init all config from DB");
+	});
+}
+
 function initShopCache() {
 	connection.query("CALL p_get_all_shop",function(error,result){
 		if(error){
 			logger.error(error);
 		}
-		ShopCache.InitFromDb(result[0],result[1],result[2],result[3],result[4]);
+		ShopCache.InitFromDb(result[0],result[1],result[2],result[3],result[4],result[5],result[6]);
 		logger.log("MYSQL","init all shop from DB");
 	});
 }
@@ -533,7 +548,7 @@ exports.getAdImage = function(callback){
 	connection.query("CALL p_get_ad_images",function(err,result){
 		if(err){
 			logger.error(err);
-			callback(false,null);
+			callback(false,[]);
 		}else{
 			var db_set = result[0];
 			var json_result = [];
@@ -567,12 +582,13 @@ exports.getAllShopSpread = function(page,query,callback){
 	});
 }
 
-exports.AttentionShop = function(player_id,shop_id,attention,callback){
+exports.attentionShop = function(player_id,shop_id,attention){
 	var sql_query_param = [player_id,shop_id,attention];
+	logger.log("MYSQL_PROXY",util.inspect(sql_query_param));
 	connection.query("CALL p_attention_shop(?,?,?)",sql_query_param,function(err,result){
 		if(err){
 			logger.error(err);
-			callback(false,null);
+			//callback(false,null);
 		}else{
 			var db_result = result[0][0];
 			var attention_shop_count = result[1][0]['attention_count'];
@@ -590,14 +606,42 @@ exports.AttentionShop = function(player_id,shop_id,attention,callback){
 
 			json_result['has_attention'] = count;
 			json_result['attention_count'] = attention_shop_count;
-			
-			callback(true,json_result);
+			logger.log("MYSQL_PROXY",util.inspect(json_result));
+			//callback(true,json_result);
 		}
 	});
 }
 
-exports.InsertBecomeSeller = function(json_obj,callback){
-	
+exports.InsertBecomeSeller = function(uid,json_obj,callback){
+	connection.query("CALL p_insert_become_seller(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?)",[
+		uid,
+		json_obj['id'],
+		json_obj['name'],
+		json_obj['beg'],
+		json_obj['end'],
+		json_obj['image'].replace(/\\/g,"\\\\"),
+		json_obj['longitude'],
+		json_obj['latitude'],
+		json_obj['area_code'],
+		json_obj['category_code'],
+		json_obj['city_no'],
+		json_obj['telephone'],
+		json_obj['info'],
+		json_obj['address'],
+		json_obj['near_image'].replace(/\\/g,"\\\\"),
+		json_obj['qq'],
+		json_obj['wx'],
+		json_obj['image_in_attention'].replace(/\\/g,"\\\\"),
+		json_obj['shop_manager_name'],
+		json_obj['shop_manager_telephone'],
+		json_obj['shop_manager_address'],
+		json_obj['shop_manager_card'],
+		json_obj['shop_manager_email']
+		], function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY",err);
+		}
+	});
 }
 
 exports.getExchangeItemList = function(callback){
@@ -693,6 +737,56 @@ exports.AddNewPlayer = function(uid,telephone,password,callback){
 			callback(false);
 		}else{
 			callback(true);
+		}
+	});
+}
+
+exports.ChangeSex = function(uid,sex){
+	connection.query("CALL p_change_player_sex(?,?)",[uid,sex],function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","ChangeSex error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","ChangeSex success");
+		}
+	});
+}
+
+exports.ChangeNickName = function(uid,nick_name){
+	connection.query("CALL p_change_player_nick_name(?,?)",[uid,nick_name],function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","ChangeSex error:" + err);
+		}else{
+			
+		}
+	});
+}
+
+exports.ChangeBirthday = function(uid,birthday){
+	connection.query("CALL p_change_player_birthday(?,?)",[uid,birthday],function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","ChangeSex error:" + err);
+		}else{
+			
+		}
+	});
+}
+
+exports.ChangeSign = function(uid,sign){
+	connection.query("CALL p_change_player_sign(?,?)",[uid,sign],function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","ChangeSex error:" + err);
+		}else{
+			
+		}
+	});
+}
+
+exports.changeShopState = function(shop_id){
+	connection.query("CALL p_change_shop_state(?)",[shop_id],function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","changeShopState error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","[changeShopState] success!");
 		}
 	});
 }
