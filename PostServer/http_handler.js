@@ -172,3 +172,27 @@ exports.attentionShop = function(fields,files,callback){
 	}
 	callback(true,json_result);
 }
+
+exports.addToFavorites = function(fields,files,callback){
+	var guid = fields['guid'];
+
+	var shop_id = fields['shop_id'];
+	var item_id = fields['item_id'];
+	var check_has_item = ShopProxy.CheckHasItem(shop_id,item_id);
+	var json_result = {};
+	console.log(check_has_item);
+	if(check_has_item == true){
+
+		var uid = PlayerProxy.addToFavorites(guid,shop_id,item_id);
+		if(uid > 0){
+			db.addToFavorites(uid,shop_id,item_id);
+		}
+		json_result['error'] = 0;
+		json_result['shop_id'] = shop_id;
+		json_result['item_id'] = item_id;
+	}else{
+		json_result['error'] = 1;
+	}
+
+	callback(true,json_result);
+}

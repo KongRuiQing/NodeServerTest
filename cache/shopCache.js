@@ -505,3 +505,15 @@ exports.attentionShop = function(uid,shop_id){
 		}
 	}
 }
+
+exports.CheckHasItem = function(shop_id,item_id){
+	var shop_info = g_shop_cache['dict'][shop_id];	
+	if(shop_info != null){
+		for(var i in shop_info['shop_item_ids']){
+			if(item_id == shop_info['shop_item_ids'][i]){
+				return true;
+			}
+		}
+	}
+	return false;
+}

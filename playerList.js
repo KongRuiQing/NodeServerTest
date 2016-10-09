@@ -26,7 +26,11 @@ g_playerlist.getPlayerInfo = function(uid){
 	return null;
 }
 
-g_playerlist.InitFromDb = function(all_user_info,all_login_info,player_attention_shop_list){
+g_playerlist.InitFromDb = function(
+	all_user_info,
+	all_login_info,
+	player_attention_shop_list,
+	player_favorites_item){
 
 	for(var i in all_login_info){
 		var uid = parseInt(all_login_info[i]['Id']);
@@ -56,6 +60,7 @@ g_playerlist.InitFromDb = function(all_user_info,all_login_info,player_attention
 			this.playerCache[uid]['attention_shop'] = [];
 			this.playerCache[uid]['sex'] = all_user_info[i]['sex'];
 			this.playerCache[uid]['shop_id'] = all_user_info[i]['shop_id'];
+			this.playerCache[uid]['favorites'] = [];
 		}
 	}
 	logger.log("PLAYER_LIST",'Init Player Attention Shop Num : ' + player_attention_shop_list.length);
@@ -69,6 +74,21 @@ g_playerlist.InitFromDb = function(all_user_info,all_login_info,player_attention
 			this.playerCache[uid]['attention_shop'].push({
 				'shop_id' : shop_id,
 				'attention_time' : attention_time
+			});
+		}
+	}
+
+	for(var i in player_favorites_item){
+		var uid = player_favorites_item[i]['uid'];
+		var item_id = player_favorites_item[i]['item_id'];
+		var shop_id = player_favorites_item[i]['shop_id'];
+		var add_time = player_favorites_item[i]['add_time'];
+
+		if(this.playerCache[uid] != null){
+			this.playerCache[uid]['favorites'].push({
+				'shop_id' : shop_id,
+				'item_id' : item_id,
+				'add_time' : add_time
 			});
 		}
 	}
@@ -277,6 +297,17 @@ g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
 	return 0;
 }
 
+function newPlayer(uid){
+	return {
+		'head' : "player/default.png",
+		'sex' : 0,
+		'shop_id' : 0,
+		'name' : "用户" + uid,
+		'attention_shop' : [],
+		'favorites' : []
+	};
+}
+
 g_playerlist.Register = function(telephone,password){
 	var uid = this.account_uid[telephone];
 	if(uid != null){
@@ -289,10 +320,8 @@ g_playerlist.Register = function(telephone,password){
 
 	this.player_online_list[uid] = {};
 
-	this.playerCache[uid] = {};
-	this.playerCache[uid]['head'] = "player/default.png"
-	this.playerCache[uid]['name'] = "用户" + uid;
-	this.playerCache[uid]['attention_shop'] = [];
+	this.playerCache[uid] = newPlayer(uid);
+	
 	this.account_uid[telephone] = uid;
 
 	this.reg_account[telephone] = null;
@@ -492,4 +521,29 @@ exports.attentionShop = function(guid,shop_id){
 
 exports.getUid = function(guid){
 	return g_playerlist['guid_to_uid'][guid];
+}
+
+exports.addToFavorites = function(guid,shop_id,item_id){
+	var uid = g_playerlist['guid_to_uid'][guid];
+
+	if(uid != null && uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+
+		if(player_info != null){
+			for(var i in player_info['favorites']){
+				if(item_id == player_info['favorites'][i]['item_id']){
+					return 0;
+				}
+			}
+
+			player_info['favorites'].push({
+				'shop_id' : shop_id,
+				'item_id' : item_id,
+				'add_time' : Date.now()
+			});
+		}
+		
+		return uid;
+	}
+	return 0;
 }

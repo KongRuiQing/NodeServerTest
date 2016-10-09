@@ -258,7 +258,7 @@ exports.getMyFavoritesItems = function(headers, query,callback){
 
 exports.getApkVersion = function(headers, query,callback){
 	var json_result = {
-		"version_name" : "1.2.0"
+		"version_name" : "1.2.2"
 	}
 	callback(0,json_result);
 }

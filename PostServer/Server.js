@@ -19,6 +19,7 @@ handle_http['/change_nickname'] = http_handler.changeNickName;
 handle_http['/change_birthday'] = http_handler.changeBirthday;
 handle_http['/change_sign'] = http_handler.changeSign;
 handle_http['/attention_shop'] = http_handler.attentionShop;
+handle_http['/add_favorites'] = http_handler.addToFavorites;
 exports.start = function(Host,Port)
 {
 	

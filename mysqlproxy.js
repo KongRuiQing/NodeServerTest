@@ -54,7 +54,7 @@ function initUserInfoFromDB(callback){
 		
 		var all_user_info = result[0];
 		var all_login_info = result[1];
-		g_playerlist.InitFromDb(all_user_info,all_login_info,result[2]);
+		g_playerlist.InitFromDb(all_user_info,all_login_info,result[2],result[3]);
 		logger.log("MYSQL","init userinfo from db");
 	});
 }
@@ -787,6 +787,16 @@ exports.changeShopState = function(shop_id){
 			logger.error("MYSQL_PROXY","changeShopState error:" + err);
 		}else{
 			logger.log("MYSQL_PROXY","[changeShopState] success!");
+		}
+	});
+}
+
+exports.addToFavorites = function(uid,shop_id,item_id){
+	connection.query("CALL p_add_favorites_item(?,?,?)",[uid,shop_id,item_id],function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","addToFavorites error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","addToFavorites success");
 		}
 	});
 }
