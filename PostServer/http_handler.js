@@ -186,8 +186,11 @@ exports.addToFavorites = function(fields,files,callback){
 		var uid = PlayerProxy.addToFavorites(guid,shop_id,item_id);
 		if(uid > 0){
 			db.addToFavorites(uid,shop_id,item_id);
+			json_result['error'] = 0;
+		}else{
+			json_result['error'] = 3;
 		}
-		json_result['error'] = 0;
+		
 		json_result['shop_id'] = shop_id;
 		json_result['item_id'] = item_id;
 	}else{
