@@ -13,20 +13,27 @@ exports.getAreaMenu = function(headers, query,callback){
 }
 
 exports.getShopList = function(headers, query,callback){
-	var page = parseInt(query['page']) || 1;
+	var page = 1;
+	if('page' in query){
+		page = parseInt(query['page']);
+	}
+	if(page <= 0){
+		page = 1;
+	}
 	var zone = parseInt(query['area_code']) || 0;
 	var city = parseInt(query['city_no']);
 	var guid = headers['guid'];
 	var uid = PlayerCache.getUid(guid);
 	if(city == 0) city = 167;
 	var category = parseInt(query['cate_code']) || 0;
+	var page_size = 4;
 
-	var shop_list = ShopCache.getShopList(uid,city,zone,category,page);
+	var shop_list = ShopCache.getShopList(uid,city,zone,category,page,page_size);
 	var json_result = {
 		"list" : shop_list['list'],
 		'result' : 0,
 		'page':page,
-		'page_size' : 20,
+		'page_size' : page_size,
 		'count' : shop_list['count']
 	}
 	callback(0,json_result);
@@ -151,106 +158,14 @@ exports.getShopItemDetail = function(headers, query,callback){
 
 exports.getMyFavoritesItems = function(headers, query,callback){
 
-	console.log(query);
-
 	var page = query['page'];
-	var guid = query['guid'];
-	//var item = g_playerlist.getMyFavoritesItems(guid,page);
+	var guid = headers['guid'];
 
-	//var list = ShopCache.getMyFavoritesItems(item);
+	var favorites_items = PlayerCache.getMyFavoritesItems(guid,page);
+	
+	var list = ShopCache.getMyFavoritesItems(favorites_items);
 	var json_result = {
-		'list':[
-			{
-				'add_favorites_time' : 20120000,
-				'id' : 110,
-				'shop_id' : 123,
-				'shop_name': '商店111',
-				'item_name': '名字111',
-				'item_property':[
-					{
-						'property_name' : '属性',
-						'property_value' : '2.0'
-					},{
-						'property_name' : '大小',
-						'property_value' : '3.0'
-					}
-				],
-				'price': 60,
-				'image': 'favorites/1.png'
-			},
-			{
-				'add_favorites_time' : 20120000,
-				'id' : 111,
-				'shop_id' : 123,
-				'shop_name': '商店222',
-				'item_name': '名字333',
-				'item_property':[
-					{
-						'property_name' : '属性',
-						'property_value' : '2.0'
-					},{
-					'property_name' : '大小',
-					'property_value' : '3.0'
-					},
-				],
-			'price': 20,
-			'image': 'favorites/2.png'
-			},
-			{
-				'add_favorites_time' : 20120000,
-				'id' : 112,
-				'shop_id' : 123,
-				'shop_name': '商店222',
-				'item_name': '名字333',
-				'item_property':[
-					{
-						'property_name' : '属性',
-						'property_value' : '2.0'
-					},{
-					'property_name' : '大小',
-					'property_value' : '3.0'
-					},
-				],
-			'price': 20,
-			'image': 'favorites/1.png'
-			},
-			{
-				'add_favorites_time' : 20120000,
-				'id' : 113,
-				'shop_id' : 123,
-				'shop_name': '商店222',
-				'item_name': '名字333',
-				'item_property':[
-					{
-						'property_name' : '属性',
-						'property_value' : '2.0'
-					},{
-					'property_name' : '大小',
-					'property_value' : '3.0'
-					},
-				],
-			'price': 20,
-			'image': 'favorites/2.png'
-			},
-			{
-				'add_favorites_time' : 20120000,
-				'id' : 114,
-				'shop_id' : 123,
-				'shop_name': '商店222',
-				'item_name': '名字333',
-				'item_property':[
-					{
-						'property_name' : '属性',
-						'property_value' : '2.0'
-					},{
-					'property_name' : '大小',
-					'property_value' : '3.0'
-					},
-				],
-			'price': 20,
-			'image': 'favorites/3.png'
-			}
-		],
+		'list':list,
 		'page':page
 	};
 	callback(0,json_result);
@@ -258,7 +173,7 @@ exports.getMyFavoritesItems = function(headers, query,callback){
 
 exports.getApkVersion = function(headers, query,callback){
 	var json_result = {
-		"version_name" : "1.2.2"
+		"version_name" : "1.2.3"
 	}
 	callback(0,json_result);
 }

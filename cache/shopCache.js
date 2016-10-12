@@ -92,7 +92,8 @@ exports.InitFromDb = function(
 				item['image7'],
 				item['image8']
 				],
-				'is_show_main' : parseInt(item['is_show'])
+				'is_show_main' : parseInt(item['is_show']),
+				'favorites_image' : item['favorites_image'],
 			};
 		}
 		if(parseInt(item['is_show']) == 1){
@@ -144,7 +145,7 @@ exports.InitFromDb = function(
 	}
 }
 
-exports.getShopList = function(uid,city_no,area_code,category,page){
+exports.getShopList = function(uid,city_no,area_code,category,page,page_size){
 	var all_list = [];
 	
 	for(var i in g_shop_cache['dict']){
@@ -155,7 +156,7 @@ exports.getShopList = function(uid,city_no,area_code,category,page){
 			(area_code == shop_info['area_code'] || area_code == 0) && 
 			(category == shop_info['category'] || category == 0)){
 
-		
+			
 			all_list.push({
 				'shop_name' : shop_info['name'],
 				'shop_address' : shop_info['address'],
@@ -167,13 +168,20 @@ exports.getShopList = function(uid,city_no,area_code,category,page){
 				'is_attention' : uid in shop_info['attention'],
 				"id" : parseInt(i)
 			});
+		}
 	}
-}
-
-return {
-	'list':all_list.slice((page - 1) * 20, 20),
-	'count' : all_list.length
-};
+	if(page * page_size >= all_list.length){
+		return {
+			'list':all_list.slice((page - 1) * page_size, all_list.length - 1),
+			'count' : all_list.length
+		};
+	}
+	else{
+		return {
+			'list':all_list.slice((page - 1) * page_size, page * page_size - 1),
+			'count' : all_list.length
+		};
+	}
 }
 
 var EARTH_RADIUS = 6378137.0;    //单位M
@@ -382,38 +390,39 @@ exports.getShopSpread = function(){
 
 exports.getMyFavoritesItems = function(items){
 	var item_list = [];
-
+	
 	for(var i in items){
-		var itemId = items[i];
-		var item = g_shop_cache['shop_items'][itemId];
-		var item_property = g_shop_cache['shop_item_property'][itemId];
+		var item_id = items[i]['item_id'];
+		//var shop_id = items[i][shop_id]
+		var item = g_shop_cache['shop_items'][item_id];
+		var item_propertys = g_shop_cache['shop_item_property'][item_id];
+		
 		if(item != null){
 			var shop_id = item['shop_id'];
 			var shop = g_shop_cache['dict'][shop_id];
 			if(shop != null){
-				item_list.push({
-					'add_favorites_time' : items[i]['add_favorites_time'],
-					'id' : itemId,
+				var favorites_item = {
+					'add_favorites_time' : 0, //items[i]['add_time']
+					'id' : item_id,
 					'shop_id' : shop_id,
 					'shop_name' : shop['name'],
 					'item_name' : item['name'],
-					'item_property' : [
-					{
-						'property_name' : g_shop_cache['item_property_name'][item_property[itemId]['property_type']],
-						'property_value' : item_property[itemId]['property_value']
-					},
-					{
-						'property_name' : g_shop_cache['item_property_name'][item_property[itemId]['property_type']],
-						'property_value' : item_property[itemId]['property_value']
-					}
-					],
 					'price' : item['price'],
 					'image' : item['favorites_image']
-				});
+				};
 			}
+
+			if(item_id in g_shop_cache['shop_item_property']){
+				favorites_item['item_property'] = [];
+			}else{
+				favorites_item['item_property'] = [];
+			}
+
+			item_list.push(favorites_item);
+
 		}
 	}
-
+	
 	return item_list;
 }
 

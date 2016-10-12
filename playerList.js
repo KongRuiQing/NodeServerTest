@@ -334,9 +334,16 @@ g_playerlist.Register = function(telephone,password){
 	return uid;
 }
 
-g_playerlist.getMyFavoritesItems = function(uid,page){
-	var player = this.getPlayerInfo(uid);
-	return player['favorites_item'];
+exports.getMyFavoritesItems = function(guid,page){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid != null){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			return player_info['favorites'].slice((page - 1) * 15,page * 15 - 1);
+		}
+	}
+	logger.warn("PLAYER_LIST","[getMyFavoritesItems] can't find uid or player info");
+	return [];
 }
 
 exports.getMyAttention = function(guid){
