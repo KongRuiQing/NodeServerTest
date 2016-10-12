@@ -1,5 +1,7 @@
 # Logs
 logs
+down/apk
+sql
 *.log
 npm-debug.log*
 
