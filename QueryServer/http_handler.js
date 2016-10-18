@@ -26,7 +26,11 @@ exports.getShopList = function(headers, query,callback){
 	var uid = PlayerCache.getUid(guid);
 	if(city == 0) city = 167;
 	var category = parseInt(query['cate_code']) || 0;
-	var page_size = 4;
+
+	var page_size = 10;
+	if('page_size' in query){
+		page_size = parseInt(query['page_size']);
+	}
 
 	var shop_list = ShopCache.getShopList(uid,city,zone,category,page,page_size);
 	var json_result = {

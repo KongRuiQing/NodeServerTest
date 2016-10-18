@@ -199,3 +199,39 @@ exports.addToFavorites = function(fields,files,callback){
 
 	callback(true,json_result);
 }
+
+exports.changeUserInfo =function(fields,files,callback){
+	var guid = fields['guid'];
+	var uid = PlayerProxy.getUid(guid);
+	var json_result = {};
+	if(uid != null){
+		var list_result = [];
+		list_result.push(fields['nick_name']);
+		list_result.push(fields['sex']);
+		list_result.push(fields['birthday']);
+		list_result.push(fields['sign']);
+		list_result.push(fields['address']);
+		list_result.push(fields['email']);
+		list_result.push(fields['name']);
+		list_result.push(fields['telephone']);
+		list_result.push(fields['verify_code']);
+
+		PlayerProxy.changeUserInfo(uid,list_result);
+		db.changeUserInfo(uid,list_result);
+
+		json_result['error'] = 0;
+		json_result['nick_name'] = fields['nick_name'];
+		json_result['sex'] = fields['sex'];
+		json_result['birthday'] = fields['birthday'];
+		json_result['sign'] = fields['sign'];
+		json_result['address'] = fields['address'];
+		json_result['email'] = fields['email'];
+		json_result['name'] = fields['name'];
+		json_result['telephone'] = fields['telephone'];
+		
+	}else{
+		json_result['error'] = 1;
+	}
+
+	callback(true,json_result);
+}

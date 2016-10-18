@@ -554,3 +554,19 @@ exports.addToFavorites = function(guid,shop_id,item_id){
 	}
 	return 0;
 }
+
+exports.changeUserInfo = function(uid,user_info_list){
+	if(uid in g_playerlist['playerCache']){
+		var player_info = g_playerlist['playerCache'][uid];
+		player_info['nick_name'] = user_info_list[0];
+		player_info['sex'] = user_info_list[1];
+		player_info['birthday_timestamp'] = user_info_list[2];
+		player_info['sign'] = user_info_list[3];
+		player_info['address'] = user_info_list[4];
+		player_info['email'] = user_info_list[5];
+		player_info['real_name'] = user_info_list[6];
+		player_info['telephone'] = user_info_list[7];
+		player_info['verify_code'] = user_info_list[8];
+	}
+	
+}

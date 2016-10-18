@@ -800,3 +800,14 @@ exports.addToFavorites = function(uid,shop_id,item_id){
 		}
 	});
 }
+
+exports.changeUserInfo = function(uid,user_info_list){
+	var db_params = [uid].concat(user_info_list);
+	connection.query("CALL p_change_user_info(?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","changeUserInfo error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","changeUserInfo success");
+		}
+	});
+}

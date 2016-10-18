@@ -20,6 +20,7 @@ handle_http['/change_birthday'] = http_handler.changeBirthday;
 handle_http['/change_sign'] = http_handler.changeSign;
 handle_http['/attention_shop'] = http_handler.attentionShop;
 handle_http['/add_favorites'] = http_handler.addToFavorites;
+handle_http['/change_user_info'] = http_handler.changeUserInfo;
 exports.start = function(Host,Port)
 {
 	

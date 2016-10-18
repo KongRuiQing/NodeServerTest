@@ -19,6 +19,7 @@ handle_http['/check_version'] = http_handler.getApkVersion;
 handle_http['/area_menu'] = http_handler.getAreaMenu;
 handle_http['/shop_attention'] = http_handler.getMyAttention;
 handle_http['/shop_category'] = http_handler.getShopCategory;
+handle_http['/game_shop_list'] = http_handler.getShopList;
 var http_header = {};
 
 http_header[200] = "text/html";
