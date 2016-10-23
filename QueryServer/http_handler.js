@@ -177,8 +177,8 @@ exports.getMyFavoritesItems = function(headers, query,callback){
 
 exports.getApkVersion = function(headers, query,callback){
 	var json_result = {
-		"version_name" : "1.2.5",
-		"version_info" : "更新个人信息编辑"
+		"version_name" : "1.2.6",
+		"version_info" : "修改申请开店的逻辑"
 	}
 	callback(0,json_result);
 }
