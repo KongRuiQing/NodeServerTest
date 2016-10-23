@@ -613,30 +613,40 @@ exports.attentionShop = function(player_id,shop_id,attention){
 }
 
 exports.InsertBecomeSeller = function(uid,json_obj,callback){
-	connection.query("CALL p_insert_become_seller(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?)",[
+
+	connection.query("CALL p_insert_become_seller(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?)",[
 		uid,
-		json_obj['id'],
+		json_obj['Id'],
 		json_obj['name'],
 		json_obj['beg'],
 		json_obj['end'],
-		json_obj['image'].replace(/\\/g,"\\\\"),
+		json_obj['days'],
 		json_obj['longitude'],
 		json_obj['latitude'],
-		json_obj['area_code'],
-		json_obj['category_code'],
 		json_obj['city_no'],
-		json_obj['telephone'],
-		json_obj['info'],
+		json_obj['area_code'],
 		json_obj['address'],
-		json_obj['near_image'].replace(/\\/g,"\\\\"),
+		json_obj['category_code1'],
+		json_obj['category_code2'],
+		json_obj['category_code3'],
+		json_obj['info'],
+		json_obj['distribution'],
+		json_obj['telephone'],
+		json_obj['email'],
 		json_obj['qq'],
 		json_obj['wx'],
+		json_obj['image'].replace(/\\/g,"\\\\"),
+		json_obj['image1'].replace(/\\/g,"\\\\"),
+		json_obj['image2'].replace(/\\/g,"\\\\"),
+		json_obj['image3'].replace(/\\/g,"\\\\"),
+		json_obj['promotion_image'].replace(/\\/g,"\\\\"),
+		json_obj['near_image'].replace(/\\/g,"\\\\"),
+		json_obj['business'],
+		json_obj['qualification'].replace(/\\/g,"\\\\"),
 		json_obj['image_in_attention'].replace(/\\/g,"\\\\"),
-		json_obj['shop_manager_name'],
-		json_obj['shop_manager_telephone'],
-		json_obj['shop_manager_address'],
-		json_obj['shop_manager_card'],
-		json_obj['shop_manager_email']
+		json_obj['card_image_1'].replace(/\\/g,"\\\\"),
+		json_obj['card_image_2'].replace(/\\/g,"\\\\"),
+		json_obj['state']
 		], function(err,result){
 		if(err){
 			logger.error("MYSQL_PROXY",err);

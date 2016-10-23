@@ -1,5 +1,6 @@
 
 var util = require('util');
+var logger = require('../logger').logger();
 
 g_shop_cache = {
 	'dict' : {},
@@ -9,6 +10,8 @@ g_shop_cache = {
 	'show_items' : [],
 	'activity_list' : []
 };
+
+
 
 exports.InitFromDb = function(
 	shop_list,
@@ -25,31 +28,13 @@ exports.InitFromDb = function(
 	for(var i in shop_list){
 		var shop_id = shop_list[i]['Id'];
 		
-		g_shop_cache['dict'][shop_id] = {
-			'name' : shop_list[i]['name'],
-			'address' : shop_list[i]['address'],
-			'city_no' : parseInt(shop_list[i]['city_no']),
-			'area_code' : parseInt(shop_list[i]['area_code']),
-			'zone': parseInt(shop_list[i]['zone']),
-			'beg' : parseInt(shop_list[i]['beg']),
-			'end' : parseInt(shop_list[i]['end']),
-			'image' : shop_list[i]['image'],
-			'telephone' : shop_list[i]['telephone'],
-			'longitude': parseFloat(shop_list[i]['longitude']),
-			'latitude': parseFloat(shop_list[i]['latitude']),
-			'image_in_near' : shop_list[i]['near_image'],
-			'category_code' : shop_list[i]['category_code'] || 0,
-			'qualification' : shop_list[i]['qualification'],
-			'qq' : shop_list[i]['qq'],
-			'wx' : shop_list[i]['wx'],
-			'email' : shop_list[i]['email'],
-			'business' : shop_list[i]['business'],
-			'attention' : [],
-			'comment' : [],
-			'shop_item_ids' : [],
-			'image_in_attention' : shop_list[i]['image_in_attention'],
-			'state' : shop_list[i]['state']
-		};
+		g_shop_cache['dict'][shop_id] = create_default_shop(shop_id);
+
+		var db_shop_row = shop_list[i];
+		for(var key in db_shop_row){
+			g_shop_cache['dict'][shop_id][key] = db_shop_row[key];
+		}
+
 		g_shop_cache['max_shop_id'] = Math.max(parseInt(shop_id),g_shop_cache['max_shop_id']);
 	}
 
@@ -67,6 +52,7 @@ exports.InitFromDb = function(
 			})
 		}
 	}
+
 	for(var i in shop_item){
 		var item = shop_item[i];
 		var shop_id = item['shop_id'];
@@ -152,12 +138,14 @@ exports.getShopList = function(uid,city_no,area_code,category,page,page_size){
 
 		var shop_info = g_shop_cache['dict'][i];
 
-		if(shop_info['city_no'] == city_no && 
-			(area_code == shop_info['area_code'] || area_code == 0) && 
-			(category == shop_info['category'] || category == 0)){
+		if(shop_info['city_no'] == city_no 
+			&& (area_code == shop_info['area_code'] || area_code == 0) 
+			&& (category == 0 || category == shop_info['category_code1']
+				|| category == shop_info['category_code2']
+				|| category == shop_info['category_code3'] )){
 
-			
-			all_list.push({
+			all_list.push(
+			{
 				'shop_name' : shop_info['name'],
 				'shop_address' : shop_info['address'],
 				'shop_image' : shop_info['image'],
@@ -168,20 +156,20 @@ exports.getShopList = function(uid,city_no,area_code,category,page,page_size){
 				'is_attention' : uid in shop_info['attention'],
 				"id" : parseInt(i)
 			});
-		}
 	}
-	if(page * page_size >= all_list.length){
-		return {
-			'list':all_list.slice((page - 1) * page_size, all_list.length - 1),
-			'count' : all_list.length
-		};
-	}
-	else{
-		return {
-			'list':all_list.slice((page - 1) * page_size, page * page_size - 1),
-			'count' : all_list.length
-		};
-	}
+}
+if(page * page_size >= all_list.length){
+	return {
+		'list':all_list.slice((page - 1) * page_size, all_list.length - 1),
+		'count' : all_list.length
+	};
+}
+else{
+	return {
+		'list':all_list.slice((page - 1) * page_size, page * page_size - 1),
+		'count' : all_list.length
+	};
+}
 }
 
 var EARTH_RADIUS = 6378137.0;    //单位M
@@ -435,7 +423,7 @@ exports.getMyAttentionShopInfo = function(shop_id_list){
 
 		list.push({
 			'shop_id' : shop_id,
-			'category_code' : shop_info['category_code'],
+			'category_code' : shop_info['category_code1'],
 			'shop_image' : shop_info['image_in_attention'],
 			'shop_attention_num': shop_info['attention'].length,
 			'shop_name': shop_info['name'],
@@ -446,45 +434,65 @@ exports.getMyAttentionShopInfo = function(shop_id_list){
 	return list;
 }
 
+function create_default_shop(shop_id){
+	var shop_info = {
+		// from shop 
+		'Id' : shop_id,
+		'name' : '',
+		'beg' : 0,
+		'end' : 0,
+		'days' : 0,
+		'longitude': 0,
+		'latitude': 0,
+		'city_no' : 0,
+		'area_code' : 0,
+
+		'address' : '',
+		'category_code1' : 0,
+		'category_code2' : 0,
+		'category_code3' : 0,
+		'info': '',
+		'distribution' : '',
+		'telephone' : '',
+		'email' : '',
+		'qq' : '',
+		'wx' : '',
+		'image' : '',
+		'image1' : '',
+		'image2' : '',
+		'image3' : '',
+		'promotion_image' : '',
+		'near_image' : '',
+		'business' : '',
+		'qualification' : '',
+		'image_in_attention' : '',
+		'card_image_1' : '',
+		'card_image_2' : '',
+		'state' : 0,
+
+		'attention' : [],
+		'comment' : [],
+		'shop_item_ids' : [],
+	};
+
+	return shop_info;
+}
+
+
 
 exports.InsertBecomeSeller = function(uid,shop_info){
 
 	var shop_id = g_shop_cache['max_shop_id'] + 1;
 	g_shop_cache['max_shop_id'] = shop_id;
-	shop_info['id'] = shop_id;
-	g_shop_cache['dict'][shop_id] = {
-		'name' : shop_info['name'],
-		'beg' : parseInt(shop_info['beg']),
-		'end' : parseInt(shop_info['end']),
+	shop_info['Id'] = shop_id;
 
-		'longitude': parseFloat(shop_info['longitude']),
-		'latitude': parseFloat(shop_info['latitude']),
-		'area_code' : parseInt(shop_info['area_code']),
-		'category_code' : parseInt(shop_info['category_code']),
-		'city_no' : parseInt(shop_info['city_no']),
-		'telephone' : shop_info['telephone'],
-		'info': shop_info['info'],
-		'address' : shop_info['address'],
-		'image' : shop_info['image'],
-		'image_in_near' : shop_info['near_image'],
-		'qq' : shop_info['qq'],
-		'wx' : shop_info['wx'],
-		'image_in_attention' : shop_info['image_in_attention'],
-		'email' : '',
-		'business' : '',
-		'attention' : [],
-		'comment' : [],
-		'shop_item_ids' : [],
-		'image_in_attention' : [],
-		'manager' : {
-			'name' : shop_info['shop_manager_name'],
-			'telephone' : shop_info['shop_manager_telephone'],
-			'address' : shop_info['shop_manager_address'],
-			'card' : shop_info['shop_manager_card'],
-			'email' : shop_info['shop_manager_email'],
-		}
-	};
-	return shop_id;
+	g_shop_cache['dict'][shop_id] = create_default_shop(shop_id);
+	
+	for(var key in shop_info){
+		g_shop_cache['dict'][shop_id][key] = shop_info[key];
+	}
+	
+	return g_shop_cache['dict'][shop_id];
 }
 
 exports.changeShopState = function(shop_id){

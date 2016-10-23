@@ -213,3 +213,10 @@ exports.getShopCategoryClass = function(headers,query,callback){
 	var json_result = DbCache.getShopCategoryClass();
 	callback(0,{'list':json_result});
 }
+
+exports.getShopArea = function(headers,query,callback){
+	logger.log("HTTP_HANDER","start getShopArea");
+	var json_result = DbCache.getShopArea();
+	callback(0,json_result);
+
+}

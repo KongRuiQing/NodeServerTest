@@ -75,62 +75,118 @@ exports.becomeSeller = function(fields,files,callback){
 
 	var guid = fields['guid'];
 
-	var shopInfo = {};
 	var uploadFile = {
-		"shop_image":"shop/image/",
-		"ad_image":"shop/ad/"
+		"qualification" : "shop/qualification/",
+		"card_image_1" : "shop/card/",
+		"card_image_2" : "shop/card/"
 	};
-	var uploadFileName = {
-		'shop_image' : "image",
-		'ad_image' : "ad_image"
-	}
+	logger.log("HTTP_HANDLER",util.inspect(fields));
 
-	for(var file_key in files){
-		var File = files[file_key];
-		var virtual_file_name = path.join(uploadFile[file_key],path.basename(File.path));
+	var fieldNameToDbColName = {
+		'beg' : {
+			'name' : 'beg',
+			'type' : 'int'
+		},
+		'end' : {
+			'name' : 'end',
+			'type' : 'int'
+		},
+		'days' : {
+			'name' : 'days',
+			'type' : 'int'
+		},
+		'telephone': {
+			'name': 'telephone',
+			'type' : 'string'
+		},
+		'area_code': {
+			'name' : 'area_code',
+			'type' : 'int'
+		},
+		'distribution':{
+			'name' : 'distribution',
+			'type' : 'string'
+		},
+		'category_code1' : {
+			'name' : 'category_code1',
+			'type' : 'int'
+		},
+		'category_code2' : {
+			'name' : 'category_code2',
+			'type' : 'int'
+		},
+		'category_code3' : {
+			'name' : 'category_code3',
+			'type' : 'int'
+		},
+		'qq' : {
+			'name' : 'qq',
+			'type' : 'string'
+		},
+		'wx' : {
+			'name' : 'wx',
+			'type' : 'string'
+		},
+		'email' : {
+			'name' : 'email',
+			'type' : 'string'
+		},
+		'longitude':{
+			'name' : 'longitude',
+			'type' : 'float'
+		},
+		'latitude':{
+			'name' : 'latitude',
+			'type' : 'float'
+		},
+		'city_no' : {
+			'name' : 'city_no',
+			'type' : 'int'
+		}
+	}
+	var shopInfo = {};
+	for(var file_key in uploadFile){
+		var upload_file = files[file_key];
+		var virtual_file_name = path.join(uploadFile[file_key],path.basename(upload_file.path));
 		var newPath = path.join("assets",virtual_file_name);
-		fs.renameSync(File.path, newPath);
-		shopInfo[uploadFileName[file_key]] = path.join(virtual_file_name);
+		fs.renameSync(upload_file.path, newPath);
+		shopInfo[file_key] = path.join(virtual_file_name);
+		logger.log("HTTP_HANDLER",file_key + ":" + virtual_file_name);
+	} 
+
+	for(var key in fieldNameToDbColName){
+		if(key in fields){
+			var key_info = fieldNameToDbColName[key];
+			if(key_info['type'] == "int"){
+
+				shopInfo[key_info['name']] = parseInt(fields[key]);
+				logger.log("HTTP_HANDLER","key = " + key + ", value = " + fields[key]);
+			}else if(key_info['type'] == 'string'){
+				shopInfo[key_info['name']] = fields[key];
+			}else if(key_info['type'] == 'float'){
+				shopInfo[key_info['name']] = parseFloat(fields[key]);
+			}
+		}
+		
 	}
-
-	shopInfo['name'] = fields['name'];
-	shopInfo['beg'] = parseInt(fields['open_time']);
-	shopInfo['end'] = parseInt(fields['close_time']);
-	//shopInfo['img'] = "";
-	shopInfo['longitude'] = parseFloat(fields['longitude']);
-	shopInfo['latitude'] = parseFloat(fields['latitude']);
-	shopInfo['area_code'] = parseInt(fields['area_code']);
-	shopInfo['category_code'] = parseInt(fields['category_code']);
-	shopInfo['city_no'] = parseInt(fields['city_no']);
-	
-	shopInfo['telephone'] = fields['telephone'];
-	shopInfo['info'] = fields['desc'];
-	
-	shopInfo['address'] = "";
-	shopInfo['near_image'] = "";
-	shopInfo['qq'] = "";
-	shopInfo['wx'] = "";
-	shopInfo['image_in_attention'] = "";
-
-	shopInfo['shop_manager_name'] = fields['shop_manager_name'];
-	shopInfo['shop_manager_telephone'] = fields['shop_manager_telephone'];
-	shopInfo['shop_manager_address'] = fields['shop_manager_address'];
-	shopInfo['shop_manager_card'] = fields['shop_manager_card'];
-	shopInfo['shop_manager_email'] = fields['shop_manager_email'];
 
 	var json_result = {
 		'error' : 0
 	};
-
+	logger.log("HTTP_HANDLER",util.inspect(shopInfo));
 	var find_uid = PlayerProxy.CheckSeller(guid);
+	
 	if(find_uid > 0){
-		var shopId = ShopProxy.InsertBecomeSeller(find_uid,shopInfo);
-		PlayerProxy.SetUserShopId(guid,shopId);
-		if(shopId > 0){
-			db.InsertBecomeSeller(find_uid,shopInfo);
-			json_result['shop_id'] = shopId;
-		}else{
-			json_result['error'] = 2;
+		var shop_info = ShopProxy.InsertBecomeSeller(find_uid,shopInfo);
+		if(shop_info != null){
+			PlayerProxy.SetUserShopId(guid,shop_info['Id']);
+			if(shop_info['Id'] > 0){
+				logger.log("HTTP_HANDLER",util.inspect(shopInfo));
+				db.InsertBecomeSeller(find_uid,shop_info);
+				json_result['shop_id'] = shop_info['Id'];
+			}else{
+				json_result['error'] = 2;
+			}
 		}
 	}else{
 		json_result['error'] = 1;

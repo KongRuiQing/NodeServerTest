@@ -112,3 +112,7 @@ exports.getShopCategoryClass = function(){
 	}
 	return list;
 }
+
+exports.getShopArea = function(){
+	
+}
