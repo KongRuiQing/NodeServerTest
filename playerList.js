@@ -1,7 +1,7 @@
 var db_proxy = require("./mysqlproxy");
 var util = require('util');
 var logger = require('./logger').logger();
-
+var ShopProxy = require('./cache/shopCache');
 g_playerlist = {
 	'player_online_list':{},
 	'playerCache':{},
@@ -167,7 +167,15 @@ g_playerlist.Login = function(login_account){
 	json_login['telephone'] = player_info['telephone'];	
 	json_login['email'] = player_info['email'];	
 	json_login['real_name'] = player_info['real_name'];	
-	json_login['shop_id'] = player_info['shop_id'];
+	json_login['shop_id'] = parseInt(player_info['shop_id']);
+	json_login['shop_state'] = 0;
+	if(player_info['shop_id'] > 0){
+		shop_info = ShopProxy.FindShopInfo(player_info['shop_id']);
+		if(shop_info && 'state' in shop_info && shop_info['state'] != 0){
+			json_login['shop_state'] = shop_info['state'];
+		}
+	}
+	
 	return json_login;
 }
 

@@ -103,7 +103,7 @@ function initShopCache() {
 		if(error){
 			logger.error(error);
 		}
-		ShopCache.InitFromDb(result[0],result[1],result[2],result[3],result[4],result[5],result[6]);
+		ShopCache.InitFromDb(result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7]);
 		logger.log("MYSQL","init all shop from DB");
 	});
 }
