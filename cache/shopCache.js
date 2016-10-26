@@ -272,7 +272,6 @@ exports.GetNearShopList = function(type,long,late,page,size){
 
 exports.getShopDetail = function(uid,shop_id){
 	
-
 	var shop_info = g_shop_cache['dict'][shop_id];
 	var comment_num = shop_info['comment'].length;
 	
@@ -409,10 +408,10 @@ exports.getShopSpread = function(){
 
 exports.getMyFavoritesItems = function(items){
 	var item_list = [];
-	
+	logger.log("SHOP_CACHE",util.inspect(items));
 	for(var i in items){
 		var item_id = items[i]['item_id'];
-		//var shop_id = items[i][shop_id]
+		
 		var item = g_shop_cache['shop_items'][item_id];
 		var item_propertys = g_shop_cache['shop_item_property'][item_id];
 		
@@ -451,16 +450,16 @@ exports.getMyAttentionShopInfo = function(shop_id_list){
 	for(var i in shop_id_list){
 		var shop_id = shop_id_list[i]['shop_id'];
 		var shop_info = g_shop_cache['dict'][shop_id];
-
-		list.push({
-			'shop_id' : shop_id,
-			'category_code' : shop_info['category_code1'],
-			'shop_image' : shop_info['image_in_attention'],
-			'shop_attention_num': shop_info['attention'].length,
-			'shop_name': shop_info['name'],
-			'shop_business': shop_info['business'] || ""
-		});
-		
+		if(shop_info != null){
+			list.push({
+				'shop_id' : shop_id,
+				'category_code' : shop_info['category_code1'],
+				'shop_image' : shop_info['image_in_attention'],
+				'shop_attention_num': shop_info['attention'].length,
+				'shop_name': shop_info['name'],
+				'shop_business': shop_info['business'] || ""
+			});
+		}
 	}
 	return list;
 }

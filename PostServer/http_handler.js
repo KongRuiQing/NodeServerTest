@@ -236,7 +236,7 @@ exports.addToFavorites = function(fields,files,callback){
 	var item_id = fields['item_id'];
 	var check_has_item = ShopProxy.CheckHasItem(shop_id,item_id);
 	var json_result = {};
-	console.log(check_has_item);
+	
 	if(check_has_item == true){
 
 		var uid = PlayerProxy.addToFavorites(guid,shop_id,item_id);
