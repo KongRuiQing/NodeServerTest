@@ -83,7 +83,8 @@ exports.getShopSpread = function(headers, query,callback){
 	var cate_code = query['category'] || '';
 	var sort_code = query['sortby'] || '';
 	var page = query['page'] || '';
-	var query_result = ShopCache.getShopSpread();
+
+	var query_result = ShopCache.getShopSpread(city_no,area_code,cate_code);
 	var json_value = {
 		'spread_list' : query_result
 	};
