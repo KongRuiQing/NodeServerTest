@@ -147,11 +147,15 @@ exports.becomeSeller = function(fields,files,callback){
 	var shopInfo = {};
 	for(var file_key in uploadFile){
 		var upload_file = files[file_key];
-		var virtual_file_name = path.join(uploadFile[file_key],path.basename(upload_file.path));
-		var newPath = path.join("assets",virtual_file_name);
-		fs.renameSync(upload_file.path, newPath);
-		shopInfo[file_key] = path.join(virtual_file_name);
-		logger.log("HTTP_HANDLER",file_key + ":" + virtual_file_name);
+		logger.log("HTTP_HANDLER",file_key + "=" + util.inspect(files[file_key]));
+		if(upload_file != null) {
+			var virtual_file_name = path.join(uploadFile[file_key],path.basename(upload_file.path));
+			var newPath = path.join("assets",virtual_file_name);
+			fs.renameSync(upload_file.path, newPath);
+			shopInfo[file_key] = path.join(virtual_file_name);
+			logger.log("HTTP_HANDLER",file_key + ":" + virtual_file_name);
+		}
+		
 	} 
 
 	for(var key in fieldNameToDbColName){
