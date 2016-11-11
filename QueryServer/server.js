@@ -20,6 +20,12 @@ handle_http['/area_menu'] = http_handler.getAreaMenu;
 handle_http['/shop_attention'] = http_handler.getMyAttention;
 handle_http['/shop_category'] = http_handler.getShopCategory;
 handle_http['/game_shop_list'] = http_handler.getShopList;
+handle_http['/get_my_shop_item_list'] = http_handler.getMyShopItemList;
+handle_http['/get_my_shop_info'] = http_handler.getMyShopInfo;
+handle_http['/my_activity'] = http_handler.getMyActivity;
+
+//console.log(http_handler.getApkVersion("","",function(){}));
+
 var http_header = {};
 
 http_header[200] = "text/html";
@@ -50,7 +56,7 @@ function handle_server(request,response){
 					'Content-Type': http_header[500]
 				});
 				var json_content = {};
-				json_content['error_code'] = error_code;
+				json_content['error'] = error_code;
 				response.write(JSON.stringify(json_content));
 				
 			}

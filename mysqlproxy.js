@@ -246,30 +246,30 @@ exports.getShopAfterFilter = function(city_no,area_code,category_code,sort_code,
 	connection.query("CALL p_get_shop_with_filter(?,?,?,?,?,10)",
 		[city_no,area_code,category_code,sort_code,parseInt(page)],
 		function(err,result){
-		if(err){
-			console.log(err);
-			callback(false,null);
-		}else{
-			var db_ret = result[0];
-			var json_result = {};
-			json_result['list'] = [];
-			for(var i in db_ret){
-				var row = db_ret[i];
-				var json_value = {};
-				json_value['shop_id'] = row['Id'];
-				json_value['shop_name'] = row['name'];
-				json_value['image_url'] = row['image'];
-				json_value['shop_address'] = row['address'];
-				json_value['long'] = row['longitude'];
-				json_value['late'] = row['latitude'];
-				json_value['like_num'] = 0;
-				json_value['is_like'] = false;
+			if(err){
+				console.log(err);
+				callback(false,null);
+			}else{
+				var db_ret = result[0];
+				var json_result = {};
+				json_result['list'] = [];
+				for(var i in db_ret){
+					var row = db_ret[i];
+					var json_value = {};
+					json_value['shop_id'] = row['Id'];
+					json_value['shop_name'] = row['name'];
+					json_value['image_url'] = row['image'];
+					json_value['shop_address'] = row['address'];
+					json_value['long'] = row['longitude'];
+					json_value['late'] = row['latitude'];
+					json_value['like_num'] = 0;
+					json_value['is_like'] = false;
 
-				json_result['list'].push(json_value);
+					json_result['list'].push(json_value);
+				}
+				callback(true,json_result);
 			}
-			callback(true,json_result);
-		}
-	});
+		});
 }
 
 exports.getShopDetail = function(shop_id,uid,callback){
@@ -648,10 +648,10 @@ exports.InsertBecomeSeller = function(uid,json_obj,callback){
 		json_obj['card_image_2'].replace(/\\/g,"\\\\"),
 		json_obj['state']
 		], function(err,result){
-		if(err){
-			logger.error("MYSQL_PROXY",err);
-		}
-	});
+			if(err){
+				logger.error("MYSQL_PROXY",err);
+			}
+		});
 }
 
 exports.getExchangeItemList = function(callback){
@@ -818,6 +818,67 @@ exports.changeUserInfo = function(uid,user_info_list){
 			logger.error("MYSQL_PROXY","changeUserInfo error:" + err);
 		}else{
 			logger.log("MYSQL_PROXY","changeUserInfo success");
+		}
+	});
+}
+
+exports.addShopItem = function(shop_id,item_id,images,name,price,show_price){
+	
+	var db_params = [shop_id,item_id].concat(images).concat([name,price,show_price]);
+	logger.log("MYSQL_PROXY",util.inspect(db_params));
+	connection.query("CALL p_add_shop_item(?,?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","addShopItem error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","addShopItem success");
+		}
+	});
+}
+
+exports.saveShopBasicInfo = function(json_value){
+	var db_params = [json_value['id'],json_value['image'],json_value['address'],json_value['telephone']];
+	logger.log("MYSQL_PROXY",util.inspect(db_params));
+	connection.query("CALL p_save_my_shop_basic_info(?,?,?,?)",db_params,function(err,result){
+		if(err){
+			logger.error("MYSQL_PROXY","p_save_my_shop_basic_info error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","p_save_my_shop_basic_info success");
+		}
+	});
+}
+
+exports.addShopSpreadItem = function(json_value){
+	var db_params = [json_value['id'],json_value['image'],json_value['expire_time']];
+	logger.log("MYSQL_PROXY",util.inspect(db_params));
+	connection.query("CALL p_add_shop_spread_item(?,?,?)",db_params,function(err,result){
+		if(err){
+			logger.log("MYSQL_PROXY","p_add_shop_spread_item success");
+		}else{
+			logger.log("MYSQL_PROXY","p_add_shop_spread_item success");
+		}
+	});
+}
+
+exports.removeFavoritesItem = function(json_value){
+	var db_params = [json_value['uid'],json_value['item_id']];
+	logger.log("MYSQL_PROXY","p_remove_favorites_item params : " + util.inspect(db_params));
+	connection.query("CALL p_remove_favorites_item(?,?)",db_params,function(err,result){
+		if(err){
+			logger.log("MYSQL_PROXY","p_remove_favorites_item success");
+		}else{
+			logger.log("MYSQL_PROXY","p_remove_favorites_item success");
+		}
+	});
+}
+
+exports.renewalActivity = function(json_value){
+	var db_params = [json_value['id'],json_value['name'],json_value['discard'],json_value['image'],json_value['expire_time'],json_value['shop_id'],json_value['uid']];
+	logger.log("MYSQL_PROXY","p_renewal_activity params : " + util.inspect(db_params));
+	connection.query("CALL p_renewal_activity(?,?,?,?,?,?,?)",db_params,function(err,result){
+		if(err){
+			logger.log("MYSQL_PROXY","p_renewal_activity error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","p_remove_favorites_item success");
 		}
 	});
 }

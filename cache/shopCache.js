@@ -1,6 +1,13 @@
 
 var util = require('util');
 var logger = require('../logger').logger();
+var PlayerProxy = require("../playerList");
+var ShopItem = require("../bean/ShopItem");
+var ShopBean = require("../bean/ShopBean");
+var FindUtil = require("../FindUtil.js");
+var ActivityBean = require("../bean/ActivityBean");
+
+var ShopComment = require("../bean/ShopComment.js");
 
 g_shop_cache = {
 	'dict' : {},
@@ -8,34 +15,17 @@ g_shop_cache = {
 	'shop_item_property' : {},
 	'shop_items' : {},
 	'show_items' : [],
-	'activity_list' : []
+	'activity_list' : {},
+	'max_shop_item_id' : 0,
+	'max_shop_id' : 0,
+	'max_activity_id' : 0
 };
 
+//create shop  return this;
+// this.getShopBasicinfo;
+// this.getShopDetailInfo;
 
-function create_default_shop_item(){
-	var json_item = {
-		'id' : 0,
-		'shop_id' : 0,
-		'image': '',
-		'image1': '',
-		'image2': '',
-		'image3': '',
-		'image4': '',
-		'image5': '',
-		'image6': '',
-		'image7': '',
-		'image8': '',
-		'name' : '',
-		'price' : 0,
-		'show_price' : 0,
-		'is_show' : 0,
-		'favorites_image' : '',
 
-		'attentions' : []
-	};
-
-	return json_item;
-}
 
 exports.InitFromDb = function(
 	shop_list,
@@ -51,31 +41,24 @@ exports.InitFromDb = function(
 	g_shop_cache['max_shop_id'] = 0;
 
 	for(var i in shop_list){
-		var shop_id = shop_list[i]['Id'];
+		var shop_id = parseInt(shop_list[i]['Id']);
 		
-		g_shop_cache['dict'][shop_id] = create_default_shop(shop_id);
+		g_shop_cache['dict'][shop_id] = new ShopBean();
 
-		var db_shop_row = shop_list[i];
-		for(var key in db_shop_row){
-			g_shop_cache['dict'][shop_id][key] = db_shop_row[key];
-		}
-
+		g_shop_cache['dict'][shop_id].initFromDbRow(shop_list[i]);
+		
 		g_shop_cache['max_shop_id'] = Math.max(parseInt(shop_id),g_shop_cache['max_shop_id']);
 	}
 
 	for(var i in shop_comment){
 		var shop_id = shop_comment[i]['shop_id'];
 		var shop_info = g_shop_cache['dict'][shop_id];
-		var comment = shop_comment[i];
-		
 		if(shop_info != null){
-			shop_info['comment'].push({
-				'uid' : comment['uid'],
-				'comment':comment['comment'],
-				'datetime' : comment['datetime'],
-				'remark' : comment['remark']
-			})
+			var comment = new ShopComment();
+			comment.initFromDbRow(shop_comment[i]);
+			shop_info.addComment(comment);
 		}
+		
 	}
 
 	for(var i in shop_item){
@@ -87,23 +70,28 @@ exports.InitFromDb = function(
 		
 		if(shop_info != null){
 
-			shop_info['shop_item_ids'].push(item['id']);
-			g_shop_cache['shop_items'][item['id']] = create_default_shop_item();
-			for(var key in item){
-				g_shop_cache['shop_items'][item['id']][key] = item[key];
-			}
+			var item_id = Number(item['id']);
+			shop_info.addItemToShop(item_id);
 			
-			if(parseInt(item['is_show']) == 1){
+			g_shop_cache['shop_items'][item_id] = new ShopItem();
+
+			g_shop_cache['shop_items'][item_id].initFromDb(shop_item[i]);
+
+			if(g_shop_cache['shop_items'][item_id].isSpreadItem()){
 				g_shop_cache['show_items'].push(item['id']);
 			}
+			
+			g_shop_cache['max_shop_item_id'] = Math.max(g_shop_cache['max_shop_item_id'],parseInt(item['id']));
 		}
 
 	}
 
+	logger.log("SHOP_CACHE","max_shop_item_id:" + g_shop_cache['max_shop_item_id']);
+
 	for(var i in shop_item_attention){
 		var item_id = shop_item_attention[i]['item_id'];
 		var uid = shop_item_attention[i]['uid'];
-		g_shop_cache['shop_items'][item_id]['attentions'].push(uid);
+		g_shop_cache['shop_items'][item_id].addAttention(uid);
 	}
 
 	
@@ -118,37 +106,31 @@ exports.InitFromDb = function(
 
 	for(var i in shop_item_property){
 
-		if(g_shop_cache['shop_item_property'][shop_item_property[i]['item_id']] == null){
-			g_shop_cache['shop_item_property'][shop_item_property[i]['item_id']] = [];
+		var item_id = Number(shop_item_property[i]['item_id']);
+		if(item_id in g_shop_cache['shop_items']){
+			g_shop_cache['shop_items'][item_id].addItemProperty(shop_item_property[i]);
 		}
+		
 
-		g_shop_cache['shop_item_property'][shop_item_property[i]['item_id']].push({
-			'id' : shop_item_property[i]['id'],
-			'property_type' : shop_item_property[i]['property_type'],
-			'property_value' : shop_item_property[i]['property_value'],
-			'is_show' : shop_item_property[i]['is_show']
-		});
 	}
 
 	for(var i in shop_attention){
 		var shop_id = shop_attention[i]['shop_id'];
 		if(g_shop_cache['dict'][shop_id] != null){
-			g_shop_cache['dict'][shop_id]['attention'].push(shop_attention[i]['uid']);
+			g_shop_cache['dict'][shop_id].addAttention(shop_attention[i]['uid']);
 		}
 		
 	}
 
 	for(var i in activity_list){
-		
-		g_shop_cache['activity_list'].push({
-			'name':activity_list[i]['name'],
-			'discard':activity_list[i]['discard'],
-			'image':activity_list[i]['image'],
-			'id':activity_list[i]['id']
-		});
+		var activity_bean = new ActivityBean();
+		activity_bean.initFromDb(activity_list[i]);
+
+		g_shop_cache['activity_list'][activity_bean.getShopId()] = activity_bean;
+		g_shop_cache['max_activity_id'] = Math.max(g_shop_cache['max_activity_id'],activity_bean.getId());
+		//logger.log("SHOP_CACHE",util.inspect(g_shop_cache['activity_list']));
 	}
 
-	
 }
 
 exports.getShopList = function(uid,city_no,area_code,category,page,page_size){
@@ -158,227 +140,76 @@ exports.getShopList = function(uid,city_no,area_code,category,page,page_size){
 
 		var shop_info = g_shop_cache['dict'][i];
 
-		if(shop_info['city_no'] == city_no 
-			&& (area_code == shop_info['area_code'] || area_code == 0) 
-			&& (category == 0 || category == shop_info['category_code1']
-				|| category == shop_info['category_code2']
-				|| category == shop_info['category_code3'] )){
-
-			all_list.push(
-			{
-				'shop_name' : shop_info['name'],
-				'shop_address' : shop_info['address'],
-				'shop_image' : shop_info['image'],
-				'long' : shop_info['longitude'],
-				'late' : shop_info['latitude'],
-				'shop_attention' : shop_info['attention'],
-				'attention_num' : shop_info['attention'].length,
-				'is_attention' : uid in shop_info['attention'],
-				"id" : parseInt(i)
-			});
+		if(shop_info && shop_info.matchFilter(city_no,area_code,category)){
+			all_list.push(shop_info.getShopBasicInfo(uid));
+		}
+	}
+	
+	if(page * page_size >= all_list.length){
+		return {
+			'list':all_list.slice((page - 1) * page_size),
+			'count' : all_list.length
+		};
+	}else{
+		return {
+			'list':all_list.slice((page - 1) * page_size, page * page_size),
+			'count' : all_list.length
+		};
 	}
 }
-if(page * page_size >= all_list.length){
-	return {
-		'list':all_list.slice((page - 1) * page_size),
-		'count' : all_list.length
-	};
-}
-else{
-	return {
-		'list':all_list.slice((page - 1) * page_size, page * page_size),
-		'count' : all_list.length
-	};
-}
-}
-
-var EARTH_RADIUS = 6378137.0;    //单位M
-var PI = Math.PI;
-
-function getRad(d){
-	return d*PI/180.0;
-}
 
 
-function getFlatternDistance(lat1,lng1,lat2,lng2){
-	var f = getRad((lat1 + lat2)/2);
-	var g = getRad((lat1 - lat2)/2);
-	var l = getRad((lng1 - lng2)/2);
-
-	var sg = Math.sin(g);
-	var sl = Math.sin(l);
-	var sf = Math.sin(f);
-
-	var s,c,w,r,d,h1,h2;
-	var a = EARTH_RADIUS;
-	var fl = 1/298.257;
-
-	sg = sg*sg;
-	sl = sl*sl;
-	sf = sf*sf;
-
-	s = sg*(1-sl) + (1-sf)*sl;
-	c = (1-sg)*(1-sl) + sf*sl;
-
-	w = Math.atan(Math.sqrt(s/c));
-	r = Math.sqrt(s*c)/w;
-	d = 2*w*a;
-	h1 = (3*r -1)/2/c;
-	h2 = (3*r +1)/2/s;
-
-	return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg));
-}
 
 
 exports.GetNearShopList = function(type,long,late,page,size){
 
-	var int_type = parseInt(type);
-	var inRange = [];
-	if(int_type > 0){
-		if(int_type % 1000 == 0){
-			inRange = [int_type,int_type + 999];
-		}else{
-			inRange = [int_type,int_type];
-		}
-	}else{
-		inRange = [0,100000000];
-	}
-	
-	var all_list = [];
-	for(var i in g_shop_cache['dict']){
-		var shop_info = g_shop_cache['dict'][i];
-
-		if(shop_info['category'] <= inRange[1] && shop_info['category'] >= inRange[0]){
-			
-			all_list.push({
-				'shop_name' : shop_info['name'],
-				'shop_address' : shop_info['address'],
-				'shop_image' : shop_info['image_in_near'],
-				'long' : shop_info['longitude'],
-				'late' : shop_info['latitude'],
-				'distance' : getFlatternDistance(shop_info['latitude'],shop_info['longitude'],late,long)
-			});
-		}
-		
-	}
-
-	all_list.sort(function(a,b){
-		return a['distance'] < b['distance'];
-	});
-
-	return all_list.slice(0,size);
+	return [];
 
 }
 
 exports.getShopDetail = function(uid,shop_id){
 	
 	var shop_info = g_shop_cache['dict'][shop_id];
-	var comment_num = shop_info['comment'].length;
-	
-	var comment = {};
-	if(comment_num > 0){
-		var last_comment = shop_info['comment'][shop_info['comment'].length -1];
-		
-		var player_info = g_playerlist.getPlayerInfo(last_comment['uid']);
-		
-		if(player_info != null){
-			comment = {
-				'head' : player_info['head'],
-				'name' : player_info['name'],
-				'comment' : last_comment['comment'],
-				'datetime' : last_comment['datetime'],
-				'remark' : last_comment['remark']
-			};
-		}
-		
+	if(shop_info == null){
+		return null;
 	}
 
-
-	var shop_item_list = shop_info['shop_item_ids'].slice(0,10);
+	var shop_item_list = shop_info.getItems();
 
 	var json_result = {
 		"shop_id" : shop_id,
-		"shop_info" : {
-			'id' : shop_id,
-			'name':shop_info['name'],
-			'beg' : shop_info['beg'],
-			'end' : shop_info['end'],
-			'attention': false,
-			'image': shop_info['image'],
-			'address' : shop_info['address'],
-			'telephone' : shop_info['telephone'],
-			'comment_num' : comment_num,
-			'comment' : comment,
-			'shop_item' : [],
-			'shop_info' : shop_info['info'],
-			'qq' : shop_info['qq'],
-			'wx' : shop_info['wx'],
-			'shop_email' : shop_info['email'],
-			'distribution_info' : shop_info['distribution'],
-			'qualification' : shop_info['qualification']
-		}
+		"shop_info" : shop_info.getShopDetailInfo(uid)
 	};
-
-	for(var i in shop_item_list){
-		var shop_item_id = shop_item_list[i];
-		var shop_item = g_shop_cache['shop_items'][shop_item_id];
-		json_result['shop_info']['shop_item'].push({
-			'image': shop_item['image'],
-			'item_name':shop_item['name'],
-			'item_price':shop_item['price'],
-			'item_show_price' : shop_item['show_price'],
-			'item_attention':0,
-			'item_id' : shop_item['id'],
-			'shop_id' : shop_item['shop_id']
-		});
+	if(shop_item_list != null){
+		for(var i in shop_item_list){
+			var shop_item_id = shop_item_list[i];
+			var shop_item = g_shop_cache['shop_items'][shop_item_id];
+			if(shop_item.isSpreadItem()){
+				json_result['shop_info']['shop_item'].push(shop_item.getItemBasicInfo());
+			}
+		}
 	}
+
 	
 
-	if(shop_info == null){
-		json_result['result'] = 1;
-	}else{
-		json_result['result'] = 0;
-	}
 	return json_result;
 }
 
 exports.getShopItemDetail = function(uid,shop_id,shop_item_id) {
 	var shop_item_detail = {};
 	shop_item_detail['error'] = 2;
+
 	var shop_info = g_shop_cache['dict'][shop_id];
 	
 	if(shop_info != null){
+		var shop_item = g_shop_cache['shop_items'][shop_item_id];
 		
-		var shop_item_propertys = g_shop_cache['shop_item_property'][shop_item_id];
-		shop_item_detail['error'] = 0;
-		shop_item_detail['item_property'] = [];
-		if(shop_item_propertys != null){
-			for(var i in shop_item_propertys){
-				var item_property = shop_item_propertys[i];
-				shop_item_detail['item_property'].push({
-					'property_name' : g_shop_cache['item_property_name'][item_property['property_type']]['name'],
-					'property_value' : item_property['property_value'],
-					'property_type' : item_property['property_type']
-				});
-			}
-		}
-		var shop_item_info = g_shop_cache['shop_items'][shop_item_id];
-		
-		if(shop_item_info != null){
-			shop_item_detail['name'] = shop_item_info['name'];
-			shop_item_detail['price'] = shop_item_info['price'];
-			shop_item_detail['show_price'] = shop_item_info['show_price'];
-			shop_item_detail['images'] = [];
+		if(shop_item != null){
+			shop_item_detail = shop_item.getDetailJsonItem();
+			shop_item_detail['error'] = 0;
 
-			var shop_image = ['image1','image2','image3','image4'];
-			for(var key in shop_image){
-				if(shop_image[key] != ""){
-					shop_item_detail['images'].push(shop_item_info[shop_image[key]]);
-				}
-				
-			}
+			return shop_item_detail;
 		}
-
 	}
 	
 	return shop_item_detail;
@@ -391,84 +222,48 @@ exports.getShopSpread = function(city_no,area_code,category_code){
 	for(var i in shop_spread_list){
 		var item_id = shop_spread_list[i];
 
-		var item_info = g_shop_cache['shop_items'][item_id];
+		var shop_item = g_shop_cache['shop_items'][item_id];
 		
-		if(item_info != null){
-			var shop_id = item_info['shop_id'];
+		if(shop_item != null){
+			var shop_id = shop_item['shop_id'];
 			var shop_info = g_shop_cache['dict'][shop_id];
 
-			if(shop_info != null){
+			if(shop_info != null && shop_info.matchFilter(city_no,area_code,category_code)){
 
-				if(city_no == shop_info['city_no']){
-					
-					var filter_item = true;
-					if(area_code > 0){
-						if(area_code != shop_info['area_code']){
-							filter_item = false;
-						}
-					}
-					if(category_code > 0){
-						if(category_code != shop_info['category_code1'] 
-							&& category_code != shop_info['category_code2']
-							&& category_code != shop_info['category_code3']){
-							filter_item = false;
-					}
-				}
-				if(filter_item){
-					json_result.push({
-						'image' : item_info['image'],
-						'item_name' : item_info['name'],
-						'item_price' : item_info['price'],
-						'item_show_price' : item_info['show_price'],
-						'item_id' : item_info['id'],
-						'shop_id' : item_info['shop_id'],
-						'item_attention' : item_info['attentions'].length,
-					});
+				if(shop_item.isSpreadItem()){
+					json_result.push(shop_item.getSpreadJsonItem());
 				}
 			}
-			
 		}
-
 	}
+	return json_result;
 }
 
-return json_result;
-}
 
 exports.getMyFavoritesItems = function(items){
 	var item_list = [];
-	logger.log("SHOP_CACHE",util.inspect(items));
+	//logger.log("SHOP_CACHE",util.inspect(items));
 	for(var i in items){
 		var item_id = items[i]['item_id'];
 		
-		var item = g_shop_cache['shop_items'][item_id];
-		var item_propertys = g_shop_cache['shop_item_property'][item_id];
-		
-		if(item != null){
-			var shop_id = item['shop_id'];
+		var shop_item = g_shop_cache['shop_items'][item_id];
+		logger.log("SHOP_CACHE",util.inspect(shop_item));
+		if(shop_item != null){
+			var shop_id = shop_item['shop_id'];
 			var shop = g_shop_cache['dict'][shop_id];
+
 			if(shop != null){
-				var favorites_item = {
-					'add_favorites_time' : 0, //items[i]['add_time']
-					'id' : item_id,
-					'shop_id' : shop_id,
-					'shop_name' : shop['name'],
-					'item_name' : item['name'],
-					'price' : item['price'],
-					'image' : item['favorites_image']
-				};
+				var shop_basic_info = shop.getShopBasicInfo(0);
+				var favorites_item = shop_item.getFavoritesItemJsonValue();
+				favorites_item['add_favorites_time'] = items[i]['add_time'];
+				favorites_item['id'] = item_id;
+				favorites_item['shop_id'] = shop_id;
+				favorites_item['shop_name'] = shop_basic_info['shop_name'];
+				item_list.push(favorites_item);
 			}
-
-			if(item_id in g_shop_cache['shop_item_property']){
-				favorites_item['item_property'] = [];
-			}else{
-				favorites_item['item_property'] = [];
-			}
-
-			item_list.push(favorites_item);
-
 		}
 	}
+	logger.log("SHOP_CACHE",util.inspect(item_list));
 	
 	return item_list;
 }
@@ -480,62 +275,13 @@ exports.getMyAttentionShopInfo = function(shop_id_list){
 		var shop_id = shop_id_list[i]['shop_id'];
 		var shop_info = g_shop_cache['dict'][shop_id];
 		if(shop_info != null){
-			list.push({
-				'shop_id' : shop_id,
-				'category_code' : shop_info['category_code1'],
-				'shop_image' : shop_info['image_in_attention'],
-				'shop_attention_num': shop_info['attention'].length,
-				'shop_name': shop_info['name'],
-				'shop_business': shop_info['business'] || ""
-			});
+			list.push(shop_info.getShopBasicInfo(0));
 		}
 	}
 	return list;
 }
 
-function create_default_shop(shop_id){
-	var shop_info = {
-		// from shop 
-		'Id' : shop_id,
-		'name' : '',
-		'beg' : 0,
-		'end' : 0,
-		'days' : 0,
-		'longitude': 0,
-		'latitude': 0,
-		'city_no' : 0,
-		'area_code' : 0,
 
-		'address' : '',
-		'category_code1' : 0,
-		'category_code2' : 0,
-		'category_code3' : 0,
-		'info': '',
-		'distribution' : '',
-		'telephone' : '',
-		'email' : '',
-		'qq' : '',
-		'wx' : '',
-		'image' : '',
-		'image1' : '',
-		'image2' : '',
-		'image3' : '',
-		'promotion_image' : '',
-		'near_image' : '',
-		'business' : '',
-		'qualification' : '',
-		'image_in_attention' : '',
-		'card_image_1' : '',
-		'card_image_2' : '',
-		'state' : 0,
-
-		'attention' : [],
-		'comment' : [],
-		'shop_item_ids' : [],
-	};
-
-	return shop_info;
-}
 
 
 
@@ -554,21 +300,21 @@ exports.InsertBecomeSeller = function(uid,shop_info){
 	return g_shop_cache['dict'][shop_id];
 }
 
-exports.changeShopState = function(shop_id){
-	var shop_info = g_shop_cache['dict'][shop_id];
-	if(shop_info != null){
-		shop_info['state'] = 1;
-	}
-}
 
 exports.getShopActivityList = function(page,page_size){
-	var list = g_shop_cache['activity_list'].slice((page - 1) * page_size,page_size);
 
+	var list = [];
+
+	for(var key in g_shop_cache['activity_list']){
+		list.push(g_shop_cache['activity_list'][key].getJsonValue());
+	}
+
+	
+	
 	return {
-		'list':list,
 		'page' : page,
-		'page_size':page_size,
-		'total' : g_shop_cache['activity_list'].length
+		'total':list.length,
+		'list' : list.slice((page - 1) * page_size,page * page_size)
 	};
 }
 
@@ -584,19 +330,167 @@ exports.attentionShop = function(uid,shop_id){
 
 exports.CheckHasItem = function(shop_id,item_id){
 	var shop_info = g_shop_cache['dict'][shop_id];	
-	if(shop_info != null){
-		for(var i in shop_info['shop_item_ids']){
-			if(item_id == shop_info['shop_item_ids'][i]){
-				return true;
-			}
-		}
+	if(shop_info != null && shop_info.hasItem(item_id)){
+		return true;
 	}
 	return false;
 }
 
 exports.FindShopInfo = function(shop_id){
 	if(shop_id in g_shop_cache['dict']){
-		return g_shop_cache['dict'][shop_id];
+		return{
+			'state' : g_shop_cache['dict'][shop_id].getShopState()
+		}
+		
 	}
 	return null;
+}
+
+exports.addShopItem = function(shop_id,name,price,show_price,image,image1,image2,image3,image4){
+
+	
+	if(!shop_id in g_shop_cache['dict']){
+		logger.error("SHOP_CACHE","can't find shop in g_shop_cache['dict'] shop_id:" + shop_id);
+		return 0;
+	}
+
+	var shop_item = new ShopItem();
+	var item_id = g_shop_cache['max_shop_item_id'] + 1;
+	g_shop_cache['max_shop_item_id'] = g_shop_cache['max_shop_item_id'] + 1;
+
+	shop_item.newShopItem(item_id,shop_id,[image1,image2,image3,image4],name,price,show_price);
+
+	g_shop_cache['shop_items'][item_id] = shop_item;
+
+	g_shop_cache['dict'][shop_id].addItemToShop(item_id);
+	return item_id;
+}
+
+
+exports.getMyShopInfo = function(guid){
+
+	var shop_id = PlayerProxy.getShopId(guid);
+	
+	if(shop_id > 0){
+		var shop_info = g_shop_cache['dict'][shop_id];
+		
+		var json_result = shop_info.getMyShopInfo();
+
+		var shop_item_list = shop_info.getItems();
+
+		for(var i in shop_item_list){
+			var shop_item_id = shop_item_list[i];
+			var shop_item = g_shop_cache['shop_items'][shop_item_id];
+			if(shop_item.isSpreadItem()){
+				json_result['shop_item'].push(shop_item.getSpreadJsonItem());
+			}
+		}
+		logger.log("SHOP_CACHE",util.inspect(json_result));
+		return json_result;
+	}
+	return {};
+}
+
+exports.getMyShopItemList = function(guid){
+	var shop_id = PlayerProxy.getShopId(guid);
+	var json_result = {
+		'list':[]
+	};
+	logger.log("SHOP_CACHE","[getMyShopItemList] shop_id : " + shop_id);
+	if(shop_id > 0){
+		var shop_info = g_shop_cache['dict'][shop_id];
+		if(shop_info != null){
+			var shop_items = shop_info.getItems();
+
+			if(shop_items != null){
+				for(var shop_item_key in shop_items){
+
+					var shop_item_id = shop_items[shop_item_key];
+
+					if(shop_item_id in g_shop_cache['shop_items']){
+						var shop_item_info = g_shop_cache['shop_items'][shop_item_id];
+						if(shop_item_info != null){
+							json_result['list'].push(shop_item_info.getItemBasicInfo());
+						}else{
+							logger.error("SHOP_CACHE","Find shop item error with itemid = "+ shop_item_id);
+						}
+
+					}
+				}
+				//logger.log("SHOP_CACHE",util.inspect(json_result['list']));
+			}
+		}
+		
+	}
+
+	return json_result;
+}
+
+exports.saveShopBasicInfo = function(guid,image,address,telephone){
+	var shop_id = PlayerProxy.getShopId(guid);
+	if(shop_id > 0){
+		var shop_info = g_shop_cache['dict'][shop_id];
+		if(shop_info != null){
+			shop_info.changeShopBasicInfo(image,address,telephone);
+
+			return shop_info.getMyShopBasicInfo();
+		}
+	}
+	return null;
+}
+
+exports.addShopSpreadItem = function(guid,item,image,months){
+	var shop_id = PlayerProxy.getShopId(guid);
+	if(shop_id > 0){
+		var shop_info = g_shop_cache['dict'][shop_id];
+		if(shop_info != null){
+			var json_result = shop_info.addShopSpreadItem(item,image,months);
+
+			return json_result;
+		}
+	}
+	return null;
+}
+
+exports.addShopActivity = function(guid,name,discard,image){
+	var shop_id = PlayerProxy.getShopId(guid);
+	if(shop_id > 0){
+		var shop_info = g_shop_cache['dict'][shop_id];
+		var activity_bean = g_shop_cache['activity_list'][shop_id];
+		if(shop_info != null && activity_bean != null){
+
+			activity_bean.setActivityInfo(name,discard,image);
+			
+			return activity_bean.getJsonValue();
+		}
+	}
+
+	return {};
+}
+
+exports.getMyActivity = function(json_value){
+	
+	var activity_bean = g_shop_cache['activity_list'][json_value['shop_id']];
+	if(activity_bean != null && !activity_bean.isExpireTime()){
+		return activity_bean.getJsonValue();
+	}
+
+	return {};
+}
+
+exports.renewalActivity = function(json_value){
+	var activity_bean = g_shop_cache['activity_list'][json_value['shop_id']];
+	if(activity_bean == null){
+		activity_bean = new ActivityBean();
+		g_shop_cache['max_activity_id'] = g_shop_cache['max_activity_id'] + 1;
+		activity_bean.newActivityBean(g_shop_cache['max_activity_id'],json_value['shop_id'],json_value['uid']);
+		activity_bean.setExpireTime(json_value['num']);
+		g_shop_cache['activity_list'][json_value['shop_id']] = activity_bean;
+	}else if(activity_bean.isExpireTime()){
+		activity_bean.setExpireTime(json_value['num']);
+	} else{
+		activity_bean.addExpireTime(json_value['num']);
+	}
+
+	return activity_bean.getJsonValue();
 }

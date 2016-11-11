@@ -181,7 +181,7 @@ exports.becomeSeller = function(fields,files,callback){
 		if(shop_info != null){
 			PlayerProxy.SetUserShopId(guid,shop_info['Id']);
 			if(shop_info['Id'] > 0){
-				logger.log("HTTP_HANDLER",util.inspect(shopInfo));
+				
 				db.InsertBecomeSeller(find_uid,shop_info);
 				json_result['shop_id'] = shop_info['Id'];
 			}else{
@@ -287,6 +287,200 @@ exports.changeUserInfo =function(fields,files,callback){
 		
 	}else{
 		json_result['error'] = 1;
+	}
+
+	callback(true,json_result);
+}
+
+exports.addShopItem = function(fields,files,callback){
+	var guid = fields['guid'];
+	var json_result = {};
+	var shop_id = PlayerProxy.getShopId(guid);
+
+	if(shop_id != null && shop_id > 0){
+		
+		var uploadFileKey = {
+			"image" : "shop/item/",
+			"image1" : "shop/item/",
+			"image2" : "shop/item/",
+			"image3" : "shop/item/",
+			"image4" : "shop/item/"
+			
+		};
+		var image = {};
+		logger.log("HTTP_HANDLER",util.inspect(files));
+		for(var file_key in uploadFileKey){
+			if(file_key in files){
+				var upload_file = files[file_key];
+				logger.log("HTTP_HANDLER",util.inspect(upload_file));
+				var virtual_file_name = path.join(uploadFileKey[file_key],path.basename(upload_file.path));
+				var newPath = path.join("assets",virtual_file_name);
+				fs.renameSync(upload_file.path, newPath);
+				image[file_key] = path.join(virtual_file_name);
+			}else{
+				image[file_key] = '';
+			}
+		} 
+		logger.log("HTTP_HANDLER",util.inspect(fields));
+		var price = Number(fields['price']);
+		var show_price = Number(fields['show_price']);
+
+		var item_id = ShopProxy.addShopItem(shop_id,fields['name'],price,show_price,image['image'],image['image1'],image['image2'],image['image3'],image['image4']);
+		
+		logger.log("HTTP_HANDLER", "ShopProxy.addShopItem return:" + item_id);
+
+		if(item_id > 0){
+			var shop_image = image['image'].replace(/\\/g,"\\\\");
+			var shop_image1 = image['image1'].replace(/\\/g,"\\\\");
+			var shop_image2 = image['image2'].replace(/\\/g,"\\\\");
+			var shop_image3 = image['image3'].replace(/\\/g,"\\\\");
+			var shop_image4 = image['image4'].replace(/\\/g,"\\\\");
+
+			db.addShopItem(shop_id,item_id,[shop_image,shop_image1,shop_image2,shop_image3,shop_image4],fields['name'],parseFloat(fields['price']),parseFloat(fields['show_price']));
+			json_result['error'] = 0;
+			json_result['item_id'] = item_id;
+			json_result['item_name'] = fields['name'];
+			json_result['item_price'] = price;
+			json_result['item_show_price'] = show_price;
+			json_result['shop_id'] = shop_id;
+			json_result['item_attention'] = 0;
+			json_result['image'] = shop_image;
+			json_result['error'] = 0;
+		}else{
+			json_result['error'] = 2;
+		}
+		
+
+	}else{
+		json_result['error'] = 1;
+	}
+	logger.log("HTTP_HANDLER",util.inspect(json_result));
+	callback(true,json_result);
+}
+
+exports.saveShopBasicInfo = function(fields,files,callback){
+	var json_result = {};
+	var uploadFileKey = {
+		"image" : "shop/image/",
+	};
+	var image = {};
+	for(var file_key in uploadFileKey){
+		if(file_key in files){
+			var upload_file = files[file_key];
+
+			var virtual_file_name = path.join(uploadFileKey[file_key],path.basename(upload_file.path));
+			var newPath = path.join("assets",virtual_file_name);
+			fs.renameSync(upload_file.path, newPath);
+			image[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
+		}else{
+			image[file_key] = '';
+		}
+	} 
+
+
+	var json_result = ShopProxy.saveShopBasicInfo(fields['guid'],image['image'],fields['address'],fields['telephone']);
+	if(json_result != null){
+		db.saveShopBasicInfo(json_result);
+		callback(true,json_result);
+		return;
+	}
+	callback(true,{});
+}
+
+exports.addShopSpreadItem = function(fields,files,callback){
+	var json_result = {};
+	var uploadFileKey = {
+		"image" : "shop/image/",
+	};
+	var image = {};
+	for(var file_key in uploadFileKey){
+		if(file_key in files){
+			var upload_file = files[file_key];
+
+			var virtual_file_name = path.join(uploadFileKey[file_key],path.basename(upload_file.path));
+			var newPath = path.join("assets",virtual_file_name);
+			fs.renameSync(upload_file.path, newPath);
+			image[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
+		}else{
+			image[file_key] = '';
+		}
+	}
+
+	var json_result = ShopProxy.addShopSpreadItem(fields['item_id'],fields['item_id'],image['image'],fields['month']);
+	
+	if(json_result != null){
+		db.addShopSpreadItem(json_result);
+	}
+
+	callback(true,json_result);
+}
+
+exports.addShopActivity = function(fields,files,callback){
+
+	var json_result = {};
+	var uploadFileKey = {
+		"image" : "shop/activity/",
+	};
+	var image = {};
+	for(var file_key in uploadFileKey){
+		if(file_key in files){
+			var upload_file = files[file_key];
+
+			var virtual_file_name = path.join(uploadFileKey[file_key],path.basename(upload_file.path));
+			var newPath = path.join("assets",virtual_file_name);
+			fs.renameSync(upload_file.path, newPath);
+			image[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
+		}else{
+			image[file_key] = '';
+		}
+	}
+
+	var json_result = ShopProxy.addShopActivity(fields['guid'],fields['name'],fields['discard'],image['image']);
+	if(json_result != null){
+		db.addShopActivity(json_result);
+	}
+	callback(true,json_result);
+}
+
+exports.removeFavoritesItem = function(fields,files,callback){
+	if('guid' in fields && 'id' in fields){
+		var json_result = PlayerProxy.removeFavoritesItem(fields['guid'],Number(fields['id']));
+		if(json_result != null){
+			json_result['error'] = 0;
+			db.removeFavoritesItem(json_result);
+			callback(true,json_result);
+			return;
+		}
+	}
+
+	var json_result = {
+		'error' : 1
+	};
+	callback(true,json_result);
+
+	return;
+}
+
+exports.renewal = function(fields,files,callback){
+	var json_result = {
+		'error' : 10002
+	};
+
+	if('guid' in fields){
+		var type = Number(fields['renewal_type']);
+		if(type == 1){
+			var num = Number(fields['num']);
+			var check_result = PlayerProxy.checkRenewalActivity(fields['guid'],num);
+			if(check_result['error'] == 0){
+				check_result['num'] = num;
+				json_result = ShopProxy.renewalActivity(check_result);
+				if(json_result != null){
+					db.renewalActivity(json_result);
+				}
+				json_result['error'] = 0;
+			}
+			
+		}
 	}
 
 	callback(true,json_result);

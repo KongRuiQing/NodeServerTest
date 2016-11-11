@@ -2,6 +2,8 @@ var db_proxy = require("./mysqlproxy");
 var util = require('util');
 var logger = require('./logger').logger();
 var ShopProxy = require('./cache/shopCache');
+var moment = require('moment');
+
 g_playerlist = {
 	'player_online_list':{},
 	'playerCache':{},
@@ -59,7 +61,7 @@ g_playerlist.InitFromDb = function(
 			this.playerCache[uid]['real_name'] = all_user_info[i]['real_name'];
 			this.playerCache[uid]['attention_shop'] = [];
 			this.playerCache[uid]['sex'] = all_user_info[i]['sex'];
-			this.playerCache[uid]['shop_id'] = all_user_info[i]['shop_id'];
+			this.playerCache[uid]['shop_id'] = parseInt(all_user_info[i]['shop_id']);
 			this.playerCache[uid]['favorites'] = [];
 		}
 	}
@@ -83,7 +85,7 @@ g_playerlist.InitFromDb = function(
 		var item_id = player_favorites_item[i]['item_id'];
 		var shop_id = player_favorites_item[i]['shop_id'];
 		var add_time = player_favorites_item[i]['add_time'];
-
+		logger.log("PLAYER_LIST",add_time);
 		if(this.playerCache[uid] != null){
 			this.playerCache[uid]['favorites'].push({
 				'shop_id' : shop_id,
@@ -538,6 +540,7 @@ exports.getUid = function(guid){
 	return g_playerlist['guid_to_uid'][guid];
 }
 
+
 exports.addToFavorites = function(guid,shop_id,item_id){
 	var uid = g_playerlist['guid_to_uid'][guid];
 
@@ -550,12 +553,13 @@ exports.addToFavorites = function(guid,shop_id,item_id){
 					return 0;
 				}
 			}
-
+			
 			player_info['favorites'].push({
 				'shop_id' : shop_id,
 				'item_id' : item_id,
-				'add_time' : Date.now()
+				'add_time' : moment(Date.now()).format('YYYY-MM-DD HH:mm:ss')
 			});
+			//logger.log("PLAYER_LIST",moment(now).format('YYYY-MM-DD HH:mm:ss'));
 		}
 		
 		return uid;
@@ -576,5 +580,78 @@ exports.changeUserInfo = function(uid,user_info_list){
 		player_info['telephone'] = user_info_list[7];
 		player_info['verify_code'] = user_info_list[8];
 	}
+	
+}
+
+exports.getShopId = function(guid){
+	if(guid in g_playerlist['guid_to_uid']){
+		var uid = g_playerlist['guid_to_uid'][guid];
+		if(uid in g_playerlist['playerCache']){
+			return g_playerlist['playerCache'][uid]['shop_id'];
+		}
+	}
+
+	return 0;
+}
+
+exports.removeFavoritesItem = function(guid,favorites_id){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		var my_favorites_items = player_info['favorites'];
+		for(var key in my_favorites_items){
+			if(my_favorites_items[key]['item_id'] == favorites_id){
+
+				my_favorites_items[key] = null;
+				my_favorites_items.splice(key,1);
+
+				return {
+					'item_id' : favorites_id,
+					'uid' : uid
+				};
+			}
+		}
+	}
+
+	return null;
+}
+
+exports.checkMyActivity = function(guid){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			var shop_id = player_info['shop_id'];
+			if(shop_id > 0){
+				return {
+					"uid" : uid,
+					"shop_id" : shop_id
+				};
+			}
+		}
+	}
+
+	return null;
+}
+
+exports.checkRenewalActivity = function(guid){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			var shop_id = player_info['shop_id'];
+			if(shop_id > 0){
+				return {
+					'error' : 0,
+					'shop_id' : shop_id,
+					'uid' : uid
+				};
+			}
+		}
+	}
+
+	return {
+		'error' : 1
+	};
 	
 }

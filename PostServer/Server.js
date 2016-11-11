@@ -21,11 +21,18 @@ handle_http['/change_sign'] = http_handler.changeSign;
 handle_http['/attention_shop'] = http_handler.attentionShop;
 handle_http['/add_favorites'] = http_handler.addToFavorites;
 handle_http['/change_user_info'] = http_handler.changeUserInfo;
+handle_http['/add_shop_item'] = http_handler.addShopItem;
+handle_http['/save_shop_basic_info'] = http_handler.saveShopBasicInfo;
+handle_http['/remove_favorites_item'] = http_handler.removeFavoritesItem;
+handle_http['/renewal'] = http_handler.renewal;
+handle_http['/add_shop_activity'] = http_handler.addShopActivity;
+
 exports.start = function(Host,Port)
 {
 	
 	server = http.createServer(function (request, response) {
 		var pathname = url.parse(request.url).pathname;
+		
 		if(request.method.toLowerCase() === 'post'){
 			var form = new formidable.IncomingForm();
 			form.uploadDir = "assets/upload/";

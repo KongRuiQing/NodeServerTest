@@ -4,6 +4,44 @@ var ShopCache = require("../cache/shopCache");
 var PlayerCache = require("../playerList.js");
 var DbCache = require("../cache/DbCache.js");
 var logger = require("../logger").logger();
+var fs = require('fs');
+const path = require('path');
+
+var down_file_name = "";
+var down_file_version = "";
+
+function watchApkVersion(root_path){
+
+	var files = fs.readdirSync(root_path);
+	var max_apk_num = 0;
+	var down_file_version = "";
+	files.forEach(function(file){
+
+		var pathname = root_path+'/'+file;
+		var parse_result = path.parse(pathname);
+		
+		if(parse_result['ext'] == ".apk"){
+
+			var arr = parse_result['name'].split('.');
+			var apk_version_num = 0;
+
+			arr.forEach(function(num){
+				apk_version_num = apk_version_num * 10 + Number(num);
+			});
+			//console.log(apk_version_num);
+			if(max_apk_num < apk_version_num){
+				max_apk_num = apk_version_num;
+				down_file_version = parse_result['name'];
+			}
+
+		}
+	});
+
+	return {
+		"version_name" : down_file_version,
+		"version_info" : ""
+	}
+}
 
 exports.getAreaMenu = function(headers, query,callback){
 	
@@ -46,16 +84,26 @@ exports.getShopList = function(headers, query,callback){
 exports.getShopDetail = function(headers, query,callback)
 {
 	var uid = query['uid'] || "";
-	var shop_id = query['shop_id'] || "";
+	var shop_id = Number(query['shop_id']);
 	var json_result = null;
-	if(shop_id != ""){
+	if(shop_id > 0){
 		json_result = ShopCache.getShopDetail(uid,shop_id);
-	}else{
-		json_result = {
-			'result' : 2
+		if(json_result != null){
+			json_result['error'] = 0;
+			callback(0,json_result);
+			return;
+		}else{
+			callback(0,{
+				'error' : 1
+			});
 		}
+	}else{
+		callback(0,{
+			'error' : 1
+		});
 	}
-	callback(0,json_result);
+
+	
 	
 }
 
@@ -177,10 +225,9 @@ exports.getMyFavoritesItems = function(headers, query,callback){
 }
 
 exports.getApkVersion = function(headers, query,callback){
-	var json_result = {
-		"version_name" : "1.2.7",
-		"version_info" : ""
-	}
+
+	var json_result = watchApkVersion("./down/apk/");
+	//return json_result;
 	callback(0,json_result);
 }
 
@@ -220,4 +267,50 @@ exports.getShopArea = function(headers,query,callback){
 	var json_result = DbCache.getShopArea();
 	callback(0,json_result);
 
+}
+exports.getMyShopItemList = function(headers,query,callback){
+	logger.log("HTTP_HANDER","start getMyShopItemList");
+	if('guid' in headers){
+		var json_result = ShopCache.getMyShopItemList(headers['guid']);
+		callback(0,json_result);
+		return;
+	}else{
+		callback(1,"");
+	}	
+}
+exports.getMyShopInfo = function(headers,query,callback){
+	logger.log("HTTP_HANDER","start getMyShopInfo");
+	if('guid' in headers){
+		
+		var json_result = ShopCache.getMyShopInfo(headers['guid']);
+		callback(0,json_result);
+		return;
+	}else{
+		callback(1,"");
+	}	
+}
+
+exports.getMyActivity = function(headers,query,callback){
+	logger.log("HTTP_HANDER","start getMyActivity");
+	if('guid' in headers){
+		var user_info = PlayerCache.checkMyActivity(headers['guid']);
+		if(user_info != null){
+			var json_result = ShopCache.getMyActivity(user_info);
+			json_result['error'] = 0;
+			json_result['price'] = 1;
+			callback(0,json_result);
+			return;
+		}else{
+			callback(0,{
+				'error' : 2
+			});
+			return;
+		}
+
+	}
+	
+	callback(0,{
+		'error' : 1
+	});
+	return;
 }
