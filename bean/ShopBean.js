@@ -121,7 +121,6 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	this.email = "";
 	this.qq = shop_info["qq"];
 	this.wx = shop_info["wx"];
-	this.image = shop_info["image"];
 	
 	this.business = "";
 	this.card_image = [shop_info["card_image_1"],shop_info["card_image_2"]];
