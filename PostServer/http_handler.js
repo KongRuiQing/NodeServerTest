@@ -80,6 +80,15 @@ exports.becomeSeller = function(fields,files,callback){
 		"card_image_1" : "shop/card/",
 		"card_image_2" : "shop/card/"
 	};
+
+	for(var key in uploadFile){
+		var dir_name = path.join("assets",uploadFile[key]);
+		if(!fs.existsSync(dir_name)){
+			fs.mkdirSync(dir_name);
+			logger.log("HTTP_HANDLER","create dir:" + dir_name);
+		}
+	}
+
 	logger.log("HTTP_HANDLER",util.inspect(fields));
 
 	var fieldNameToDbColName = {
@@ -183,11 +192,11 @@ exports.becomeSeller = function(fields,files,callback){
 	if(find_uid > 0){
 		var shop_info = ShopProxy.InsertBecomeSeller(find_uid,shopInfo);
 		if(shop_info != null){
-			PlayerProxy.SetUserShopId(guid,shop_info['Id']);
-			if(shop_info['Id'] > 0){
+			PlayerProxy.SetUserShopId(guid,shop_info['id']);
+			if(shop_info['id'] > 0){
 				
 				db.InsertBecomeSeller(find_uid,shop_info);
-				json_result['shop_id'] = shop_info['Id'];
+				json_result['shop_id'] = shop_info['id'];
 			}else{
 				json_result['error'] = 2;
 			}

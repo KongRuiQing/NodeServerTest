@@ -99,7 +99,33 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.state = Number(db_row['state']);
 }
 
-ShopBean.prototype.newShopBean = function(){
+ShopBean.prototype.newShopBean = function(shop_info){
+
+	this.id = Number(shop_info['id']);
+	this.name = shop_info["name"];
+	this.beg = Number(shop_info['beg']);
+	this.end = Number(shop_info['end']);
+	this.days = Number(shop_info['days']);
+	this.longitude = parseFloat(shop_info['longitude']);
+	this.latitude = parseFloat(shop_info['latitude']);
+	this.city_no = Number(shop_info['city_no']);
+	this.area_code = Number(shop_info['area_code']);
+	this.address = shop_info["address"];
+	this.address_brief = shop_info["address"];
+	this.category_code1 = Number(shop_info['category_code1']);
+	this.category_code2 = Number(shop_info['category_code2']);
+	this.category_code3 = Number(shop_info['category_code3']);
+	this.info = "";
+	this.distribution = shop_info["distribution"];
+	this.telephone = "";
+	this.email = "";
+	this.qq = shop_info["qq"];
+	this.wx = shop_info["wx"];
+	this.image = shop_info["image"];
+	
+	this.business = "";
+	this.card_image = [shop_info["card_image_1"],shop_info["card_image_2"]];
+	this.state = 0;
 
 }
 

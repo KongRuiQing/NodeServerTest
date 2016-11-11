@@ -289,15 +289,14 @@ exports.InsertBecomeSeller = function(uid,shop_info){
 
 	var shop_id = g_shop_cache['max_shop_id'] + 1;
 	g_shop_cache['max_shop_id'] = shop_id;
-	shop_info['Id'] = shop_id;
+	
+	shop_info['id'] = shop_id;
 
-	g_shop_cache['dict'][shop_id] = create_default_shop(shop_id);
+	g_shop_cache['dict'][shop_id] = new ShopBean();
+
+	g_shop_cache['dict'][shop_id].newShopBean(shop_info);
 	
-	for(var key in shop_info){
-		g_shop_cache['dict'][shop_id][key] = shop_info[key];
-	}
-	
-	return g_shop_cache['dict'][shop_id];
+	return g_shop_cache['dict'][shop_id].getMyShopInfo();
 }
 
 
