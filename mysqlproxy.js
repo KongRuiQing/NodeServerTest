@@ -887,6 +887,7 @@ exports.addShopActivity = function(json_value){
 	var db_params = [json_value['id'],json_value['name'],json_value['discard'],json_value['image']];
 	connection.query("CALL p_add_activity(?,?,?,?)",db_params,function(err,result){
 		if(err){
+			logger.log("MYSQL_PROXY",util.inspect(db_params));
 			logger.log("MYSQL_PROXY","p_add_activity error:" + err);
 		}else{
 			logger.log("MYSQL_PROXY","p_add_activity success");
