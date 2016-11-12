@@ -295,6 +295,7 @@ exports.InsertBecomeSeller = function(uid,shop_info){
 	g_shop_cache['dict'][shop_id] = new ShopBean();
 
 	g_shop_cache['dict'][shop_id].newShopBean(shop_info);
+	logger.log('SHOP_CACHE','new Shop bean:' + util.inspect(g_shop_cache['dict'][shop_id]));
 	
 	return g_shop_cache['dict'][shop_id].getMyShopInfo();
 }

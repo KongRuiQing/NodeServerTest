@@ -613,7 +613,7 @@ exports.attentionShop = function(player_id,shop_id,attention){
 }
 
 exports.InsertBecomeSeller = function(uid,json_obj,callback){
-
+	logger.log("MYSQL_PROXY",'db params:' + util.inspect(json_obj));
 	connection.query("CALL p_insert_become_seller(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?)",[
 		uid,
 		json_obj['id'],

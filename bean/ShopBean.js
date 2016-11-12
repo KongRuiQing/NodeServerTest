@@ -103,7 +103,9 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 ShopBean.prototype.newShopBean = function(shop_info){
 
 	this.id = Number(shop_info['id']);
-	this.name = shop_info["name"];
+	if('name' in shop_info['name']){
+		this.name = shop_info["name"];
+	}
 	this.beg = Number(shop_info['beg']);
 	this.end = Number(shop_info['end']);
 	this.days = Number(shop_info['days']);
@@ -111,22 +113,37 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	this.latitude = parseFloat(shop_info['latitude']);
 	this.city_no = Number(shop_info['city_no']);
 	this.area_code = Number(shop_info['area_code']);
-	this.address = shop_info["address"];
-	this.address_brief = shop_info["address"];
-	this.category_code1 = Number(shop_info['category_code1']);
-	this.category_code2 = Number(shop_info['category_code2']);
-	this.category_code3 = Number(shop_info['category_code3']);
-	this.info = "";
+	if('address' in shop_info){
+		this.address = shop_info["address"];
+	}
+	//
+	if('category_code1' in shop_info){
+		this.category_code1 = Number(shop_info['category_code1']);
+	}
+	if('category_code2' in shop_info){
+		this.category_code2 = Number(shop_info['category_code2']);
+	}
+	if('category_code3' in shop_info){
+		this.category_code3 = Number(shop_info['category_code3']);
+	}
+	//this.address_brief = shop_info["address"];
+	
+	//this.info = "";
 	this.distribution = shop_info["distribution"];
-	this.telephone = "";
-	this.email = "";
-	this.qq = shop_info["qq"];
-	this.wx = shop_info["wx"];
+	this.telephone = shop_info['telephone'];
+	if('email' in shop_info){
+		this.email = shop_info['email'];
+	}
+	if('qq' in shop_info){
+		this.qq = shop_info["qq"];
+	}
+	if('wx' in shop_info){
+		this.wx = shop_info["wx"];
+	}
 	
 	this.business = "";
 	this.card_image = [shop_info["card_image_1"],shop_info["card_image_2"]];
 	this.state = 0;
-
 }
 
 
