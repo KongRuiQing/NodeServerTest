@@ -103,7 +103,7 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 ShopBean.prototype.newShopBean = function(shop_info){
 
 	this.id = Number(shop_info['id']);
-	if('name' in shop_info['name']){
+	if('name' in shop_info){
 		this.name = shop_info["name"];
 	}
 	this.beg = Number(shop_info['beg']);
