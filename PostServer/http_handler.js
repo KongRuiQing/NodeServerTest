@@ -10,6 +10,16 @@ exports.new_feed = function(fields,files,callback){
 	
 };
 
+function check_dir(dirs){
+	for(var key in dirs){
+		var dir_name = path.join("assets",dirs[key]);
+		if(!fs.existsSync(dir_name)){
+			fs.mkdirSync(dir_name);
+			logger.log("HTTP_HANDLER","create dir:" + dir_name);
+		}
+	}
+}
+
 exports.login = function(fields,files,callback){
 	var login_account = fields['account'];
 	var login_password = fields['password'];
@@ -81,13 +91,7 @@ exports.becomeSeller = function(fields,files,callback){
 		"card_image_2" : "shop/card/"
 	};
 
-	for(var key in uploadFile){
-		var dir_name = path.join("assets",uploadFile[key]);
-		if(!fs.existsSync(dir_name)){
-			fs.mkdirSync(dir_name);
-			logger.log("HTTP_HANDLER","create dir:" + dir_name);
-		}
-	}
+	check_dir(uploadFile);
 
 	logger.log("HTTP_HANDLER",util.inspect(fields));
 
@@ -320,6 +324,7 @@ exports.addShopItem = function(fields,files,callback){
 			"image4" : "shop/item/"
 			
 		};
+		check_dir(uploadFileKey);
 		var image = {};
 		logger.log("HTTP_HANDLER",util.inspect(files));
 		for(var file_key in uploadFileKey){
@@ -376,6 +381,7 @@ exports.saveShopBasicInfo = function(fields,files,callback){
 	var uploadFileKey = {
 		"image" : "shop/image/",
 	};
+	check_dir(uploadFileKey);
 	var image = {};
 	for(var file_key in uploadFileKey){
 		if(file_key in files){
@@ -405,6 +411,7 @@ exports.addShopSpreadItem = function(fields,files,callback){
 	var uploadFileKey = {
 		"image" : "shop/image/",
 	};
+	check_dir(uploadFileKey);
 	var image = {};
 	for(var file_key in uploadFileKey){
 		if(file_key in files){
@@ -434,6 +441,7 @@ exports.addShopActivity = function(fields,files,callback){
 	var uploadFileKey = {
 		"image" : "shop/activity/",
 	};
+	check_dir(uploadFileKey);
 	var image = {};
 	for(var file_key in uploadFileKey){
 		if(file_key in files){

@@ -27,6 +27,8 @@ handle_http['/remove_favorites_item'] = http_handler.removeFavoritesItem;
 handle_http['/renewal'] = http_handler.renewal;
 handle_http['/add_shop_activity'] = http_handler.addShopActivity;
 
+
+
 exports.start = function(Host,Port)
 {
 	
