@@ -248,7 +248,9 @@ ShopBean.prototype.getMyShopInfo = function(){
 		'qq' : this.qq,
 		'wx' : this.wx,
 		'shop_email' : this.email,
+		'email' : this.email,
 		'distribution_info' : this.distribution,
+		'distribution' : this.distribution,
 		'qualification' : this.qualification,
 		'area_code' : this.area_code,
 		'category_code1' : this.category_code1,
@@ -259,6 +261,15 @@ ShopBean.prototype.getMyShopInfo = function(){
 		'attention' : false,
 		'comment_num' : 0,
 		'shop_item' : [],
+		'state' : this.state,
+		'image1' : '',
+		'image2' : '',
+		'image3' : '',
+		'promotion_image' : '',
+		'near_image' : '',
+		'business' : '',
+		'image_in_attention' : '',
+
 	};
 }
 
