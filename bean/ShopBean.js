@@ -26,6 +26,7 @@ var ShopBean = function(){
 	this.ad_images = [];
 	this.business = "";
 	this.card_image = [];
+	this.qualification = "";
 	this.state = 0;
 
 	this.items = [];
@@ -256,8 +257,8 @@ ShopBean.prototype.getMyShopInfo = function(){
 		'category_code1' : this.category_code1,
 		'category_code2' : this.category_code2,
 		'category_code3' : this.category_code3,
-		'card_image_1' : this.card_image[0],
-		'card_image_2' : this.card_image[1],
+		'card_image_1' : this.card_image.length >= 1 ? this.card_image[0] : '',
+		'card_image_2' : this.card_image.length >= 2 ? this.card_image[1] : '',
 		'attention' : false,
 		'comment_num' : 0,
 		'shop_item' : [],
