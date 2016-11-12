@@ -456,7 +456,7 @@ exports.addShopActivity = function(fields,files,callback){
 		}
 	}
 
-	var json_result = ShopProxy.addShopActivity(fields['guid'],fields['name'],fields['discard'],image['image']);
+	var json_result = ShopProxy.addShopActivity(fields['guid'],fields['title'],fields['discard'],image['image']);
 	if(json_result != null){
 		db.addShopActivity(json_result);
 	}
