@@ -215,7 +215,7 @@ exports.getShopItemDetail = function(uid,shop_id,shop_item_id) {
 	return shop_item_detail;
 }
 
-exports.getShopSpread = function(city_no,area_code,category_code){
+exports.getShopSpread = function(city_no,area_code,category_code,keyword){
 	var json_result = [];
 	var shop_spread_list = g_shop_cache['show_items'];
 
@@ -230,8 +230,11 @@ exports.getShopSpread = function(city_no,area_code,category_code){
 
 			if(shop_info != null && shop_info.matchFilter(city_no,area_code,category_code)){
 
-				if(shop_item.isSpreadItem()){
-					json_result.push(shop_item.getSpreadJsonItem());
+				if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
+					json_result.push(shop_item.getItemBasicInfo());
+					json_result.push(shop_item.getItemBasicInfo());
+					json_result.push(shop_item.getItemBasicInfo());
+					json_result.push(shop_item.getItemBasicInfo());
 				}
 			}
 		}
@@ -322,8 +325,8 @@ exports.attentionShop = function(uid,shop_id){
 
 	var shop_info = g_shop_cache['dict'][shop_id];
 	if(shop_info != null){
-		if(!(uid in shop_info['attention'])){
-			shop_info['attention'].push(uid);
+		if(shop_info.ownAttention(uid)){
+			shop_info.addAttention(uid);
 		}
 	}
 }

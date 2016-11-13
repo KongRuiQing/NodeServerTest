@@ -158,7 +158,7 @@ ShopBean.prototype.getShopBasicInfo = function(uid){
 		'late' : this.latitude,
 		'shop_attention' : "",
 		'attention_num' : this.attentions.length,
-		'is_attention' : this.isAttention(uid),
+		'is_attention' : this.ownAttention(uid),
 	};
 }
 
@@ -170,7 +170,7 @@ ShopBean.prototype.getShopDetailInfo = function(uid){
 		'name':this.name,
 		'beg' : this.beg,
 		'end' : this.end,
-		'attention': this.isAttention(uid),
+		'attention': this.ownAttention(uid),
 		'image': this.image,
 		'address' : this.address,
 		'telephone' : this.telephone,
@@ -213,7 +213,11 @@ ShopBean.prototype.addAttention = function(uid){
 	this.attentions.push(uid);
 }
 
-ShopBean.prototype.isAttention = function(uid){
+ShopBean.prototype.ownAttention = function(uid){
+
+	if(this.attentions == null){
+		return false;
+	}
 
 	var num_uid = Number(uid);
 	if(num_uid <= 0) {
@@ -368,7 +372,6 @@ ShopBean.prototype.addShopActivity = function(){
 	}
 	return {};
 }
-
 
 
 module.exports = ShopBean;

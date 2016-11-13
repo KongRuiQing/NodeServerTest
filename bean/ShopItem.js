@@ -133,6 +133,19 @@ ShopItem.prototype.getFavoritesItemJsonValue = function(){
 	
 }
 
+ShopItem.prototype.matchFilter = function(keyword){
+	if(this.name == null){
+		return false;
+	}
+	if(keyword == null){
+		return true;
+	}
+	if(keyword.length == 0){
+		return true;
+	}
+	return this.name.indexOf(keyword) > 0
+}
+
 
 
 module.exports = ShopItem;

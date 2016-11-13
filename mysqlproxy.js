@@ -584,9 +584,10 @@ exports.getAllShopSpread = function(page,query,callback){
 
 exports.attentionShop = function(player_id,shop_id,attention){
 	var sql_query_param = [player_id,shop_id,attention];
-	logger.log("MYSQL_PROXY",util.inspect(sql_query_param));
+	
 	connection.query("CALL p_attention_shop(?,?,?)",sql_query_param,function(err,result){
 		if(err){
+			logger.log("MYSQL_PROXY","p_attention_shop params:" + util.inspect(sql_query_param));
 			logger.error(err);
 			//callback(false,null);
 		}else{
@@ -606,7 +607,6 @@ exports.attentionShop = function(player_id,shop_id,attention){
 
 			json_result['has_attention'] = count;
 			json_result['attention_count'] = attention_shop_count;
-			logger.log("MYSQL_PROXY",util.inspect(json_result));
 			//callback(true,json_result);
 		}
 	});

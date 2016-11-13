@@ -131,8 +131,14 @@ exports.getShopSpread = function(headers, query,callback){
 	var cate_code = query['category'] || '';
 	var sort_code = query['sortby'] || '';
 	var page = query['page'] || '';
+	var keyword = "";
+	if('keyword' in query){
+		keyword = query['keyword'];
+	}
+	
 
-	var query_result = ShopCache.getShopSpread(city_no,area_code,cate_code);
+
+	var query_result = ShopCache.getShopSpread(city_no,area_code,cate_code,keyword);
 	var json_value = {
 		'spread_list' : query_result
 	};

@@ -53,6 +53,7 @@ g_playerlist.InitFromDb = function(
 		if(this.playerCache[uid] != null){
 			this.playerCache[uid]['head'] = all_user_info[i]['head'];
 			this.playerCache[uid]['name'] = all_user_info[i]['name'];
+
 			this.playerCache[uid]['birthday_timestamp'] = all_user_info[i]['birthday_timestamp'];
 			this.playerCache[uid]['sign'] = all_user_info[i]['sign'] ;
 			this.playerCache[uid]['address'] = all_user_info[i]['address'] ;
@@ -96,25 +97,25 @@ g_playerlist.InitFromDb = function(
 	}
 }
 
-g_playerlist.CheckLogin = function(login_account,login_password){
-	var uid = this['account_uid'][login_account];
+exports.CheckLogin = function(login_account,login_password){
+	var uid = g_playerlist['account_uid'][login_account];
 	logger.log("PLAYER_LIST",'CheckLogin:uid:' + uid);
-	if(this.playerCache[uid] == null){
+	if(g_playerlist['playerCache'][uid] == null){
 		console.log("false1");
 		return false;
 	}
-	if(this.playerCache[uid]['password'] === login_password){
-		console.log("true");
+	if(g_playerlist['playerCache'][uid]['password'] === login_password){
+		//console.log("true");
 		return true;
 	}
 
 	return false;
 }
 
-g_playerlist.IsLogin = function(login_account){
-	var uid = this.account_uid[login_account];
+exports.IsLogin = function(login_account){
+	var uid = g_playerlist['account_uid'][login_account];
 	
-	if(this.player_online_list[uid] != null){
+	if(g_playerlist['player_online_list'][uid] != null){
 		return true;
 	}
 	return false;
@@ -195,8 +196,11 @@ exports.Login = function(login_account){
 
 	json_login['head'] = player_info['head'];
 	json_login['nick_name'] = player_info['name'];
-	json_login['sex'] = player_info['sex'];	
-	json_login['birthday_timestamp'] = player_info['birthday_timestamp'];	
+	json_login['sex'] = player_info['sex'];
+	if(player_info['birthday_timestamp']){
+		json_login['birthday_timestamp'] = player_info['birthday_timestamp'];
+	}	
+		
 	json_login['sign'] = player_info['sign'];	
 	json_login['address'] = player_info['address'];	
 	json_login['telephone'] = player_info['telephone'];	

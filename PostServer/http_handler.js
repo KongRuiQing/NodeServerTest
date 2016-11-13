@@ -25,9 +25,9 @@ exports.login = function(fields,files,callback){
 	var login_password = fields['password'];
 	
 	var json_result = {};
-	if(g_playerlist.CheckLogin(login_account,login_password)){
+	if(PlayerProxy.CheckLogin(login_account,login_password)){
 
-		if(g_playerlist.IsLogin(login_account)){
+		if(PlayerProxy.IsLogin(login_account)){
 			g_playerlist.KickPlayer(login_account);
 		}
 		var login_response = PlayerProxy.Login(login_account);
@@ -36,6 +36,7 @@ exports.login = function(fields,files,callback){
 	}else{
 		json_result['success'] = false;
 	}
+	//logger.log("HTTP_HANDLER",util.inspect(json_result));
 
 	callback(true,json_result);
 
@@ -438,17 +439,20 @@ exports.addShopSpreadItem = function(fields,files,callback){
 exports.addShopActivity = function(fields,files,callback){
 
 	var json_result = {};
+
 	var uploadFileKey = {
 		"image" : "shop/activity/",
 	};
+	
 	check_dir(uploadFileKey);
+
 	var image = {};
 	for(var file_key in uploadFileKey){
 		if(file_key in files){
 			var upload_file = files[file_key];
-
 			var virtual_file_name = path.join(uploadFileKey[file_key],path.basename(upload_file.path));
 			var newPath = path.join("assets",virtual_file_name);
+
 			fs.renameSync(upload_file.path, newPath);
 			image[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
 		}else{
