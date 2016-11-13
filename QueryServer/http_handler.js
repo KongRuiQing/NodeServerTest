@@ -130,7 +130,10 @@ exports.getShopSpread = function(headers, query,callback){
 	var area_code = query['area_code'] || '';
 	var cate_code = query['category'] || '';
 	var sort_code = query['sortby'] || '';
-	var page = query['page'] || '';
+	var page = Number(query['page']);
+	if(page <= 0){
+		page = 1;
+	}
 	var keyword = "";
 	if('keyword' in query){
 		keyword = query['keyword'];
@@ -138,7 +141,7 @@ exports.getShopSpread = function(headers, query,callback){
 	
 
 
-	var query_result = ShopCache.getShopSpread(city_no,area_code,cate_code,keyword);
+	var query_result = ShopCache.getShopSpread(city_no,area_code,cate_code,keyword,page);
 	var json_value = {
 		'spread_list' : query_result
 	};

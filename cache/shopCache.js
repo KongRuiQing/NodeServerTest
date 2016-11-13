@@ -215,8 +215,8 @@ exports.getShopItemDetail = function(uid,shop_id,shop_item_id) {
 	return shop_item_detail;
 }
 
-exports.getShopSpread = function(city_no,area_code,category_code,keyword){
-	var json_result = [];
+exports.getShopSpread = function(city_no,area_code,category_code,keyword,page){
+	var arr_result = [];
 	var shop_spread_list = g_shop_cache['show_items'];
 
 	for(var i in shop_spread_list){
@@ -231,15 +231,24 @@ exports.getShopSpread = function(city_no,area_code,category_code,keyword){
 			if(shop_info != null && shop_info.matchFilter(city_no,area_code,category_code)){
 
 				if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
-					json_result.push(shop_item.getItemBasicInfo());
-					json_result.push(shop_item.getItemBasicInfo());
-					json_result.push(shop_item.getItemBasicInfo());
-					json_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
+					arr_result.push(shop_item.getItemBasicInfo());
 				}
 			}
 		}
 	}
-	return json_result;
+
+	var page_size = 10;
+	
+	return arr_result.slice((page - 1 ) * page_size ,page * page_size);
 }
 
 
