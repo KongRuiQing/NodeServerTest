@@ -162,6 +162,26 @@ ShopBean.prototype.getShopBasicInfo = function(uid){
 	};
 }
 
+ShopBean.prototype.getShopDbDetailInfo = function(){
+	return {
+		'id' : this.id,
+		'area_code' : this.area_code,
+		'category_code1' : this.category_code1,
+		'category_code2' : this.category_code2,
+		'category_code3' : this.category_code3,
+		'beg' : this.beg,
+		'end' : this.end,
+		'days' : this.days,
+		'address' : this.address,
+		'distribution' : this.distribution,
+		'qq' : this.qq,
+		'wx' : this.wx,
+		'email' : this.email,
+		'card_image_1' : this.card_image[0],
+		'card_image_2' : this.card_image[1]
+	};
+}
+
 
 
 ShopBean.prototype.getShopDetailInfo = function(uid){
@@ -170,6 +190,7 @@ ShopBean.prototype.getShopDetailInfo = function(uid){
 		'name':this.name,
 		'beg' : this.beg,
 		'end' : this.end,
+		'days' : this.days,
 		'attention': this.ownAttention(uid),
 		'image': this.image,
 		'address' : this.address,
@@ -327,7 +348,10 @@ ShopBean.prototype.getShopState = function(){
 }
 
 ShopBean.prototype.changeShopBasicInfo = function(image,address,telephone){
-	this.image = image;
+	if(image.length > 0){
+		this.image = image;
+	}
+	
 	this.address = address;
 	this.telephone = telephone;
 }
@@ -373,5 +397,110 @@ ShopBean.prototype.addShopActivity = function(){
 	return {};
 }
 
+ShopBean.prototype.saveShopDetail = function(json_value){
+	
+	if(this.id = json_value['id']){
+		
+		if('area_code' in json_value){
+			this.area_code = json_value['area_code'];
+		}
+		if('category_code1' in json_value){
+			this.category_code1 = json_value['category_code1'];
+		}
+		if('category_code2' in json_value){
+			this.category_code2 = json_value['category_code2'];
+		}
+		if('category_code3' in json_value){
+			this.category_code3 = json_value['category_code3'];
+		}
+		if('beg' in json_value){
+			this.beg = json_value['beg'];
+		}
+		if('beg' in json_value){
+			this.beg = json_value['beg'];
+		}
+		if('end' in json_value){
+			this.end = json_value['end'];
+		}
+		if('days' in json_value){
+			this.days = json_value['days'];
+		}
+		if('address' in json_value){
+			this.address = json_value['address'];
+		}
+		if('distribution' in json_value){
+			this.distribution = json_value['distribution'];
+		}
+		
+		if('qq' in json_value){
+			this.qq = json_value['qq'];
+		}
+		if('wx' in json_value){
+			this.wx = json_value['wx'];
+		}
+		if('email' in json_value){
+			this.email = json_value['email'];
+		}
+		if('card_image_1' in json_value && json_value['card_image_1'].length > 0){
+			if(this.card_image.length == 0){
+				this.card_image.push(json_value['card_image_1']);
+			}else{
+				this.card_image[0] = json_value['card_image_1'];
+			}
+		}
+		if('card_image_2' in json_value && json_value['card_image_2'].length > 0){
+			if(this.card_image.length == 1){
+				this.card_image.push(json_value['card_image_2']);
+			}else if(this.card_image.length >= 2){
+				this.card_image[1] = json_value['card_image_2'];
+			}else{
+				this.card_image.push("");
+				this.card_image.push("");
+				this.card_image[1] = json_value['card_image_2'];
+			}
+		}
+
+		return {
+			'id' : this.id,
+			'info' : this.info,
+			'area_code' : this.area_code,
+			'category_code1' : this.category_code1,
+			'category_code2' : this.category_code2,
+			'category_code3' : this.category_code3,
+			'beg' : this.beg,
+			'end' : this.end,
+			'days' : this.days,
+			'address' : this.address,
+			'distribution' : this.distribution,
+			'qq' : this.qq,
+			'wx' : this.wx,
+			'email' : this.email,
+			'card_image_1' : this.card_image[0],
+			'card_image_2' : this.card_image[1],
+			'qualification' : this.qualification
+		};
+	}
+
+	return null;
+}
+
+ShopBean.prototype.containsItem = function(item_id){
+	for(var key in this.items){
+		if(this.items[key] == item_id){
+			return true;
+		}
+	}
+	return false;
+}
+
+ShopBean.prototype.getShopAttentionInfo = function(){
+	return {
+		'category_code' : this.category_code1,
+		'shop_image' : this.image,
+		'shop_attention_num' : this.attentions.length,
+		'shop_name' : this.name,
+		'shop_business' : this.business
+	};
+}
 
 module.exports = ShopBean;

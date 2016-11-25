@@ -25,6 +25,10 @@ var moment = require('moment');
 //console.log(moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
 //console.log(moment("2012-02-01 01:00:01").add(1,'day').format('YYYY-MM-DD HH:mm:ss'));
 
+var arr = []
+arr[2] = 0;
+
+console.log(arr);
 
 var HOST = '';
 var PORT = 9888;

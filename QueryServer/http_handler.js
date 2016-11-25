@@ -139,8 +139,6 @@ exports.getShopSpread = function(headers, query,callback){
 		keyword = query['keyword'];
 	}
 	
-
-
 	var query_result = ShopCache.getShopSpread(city_no,area_code,cate_code,keyword,page);
 	var json_value = {
 		'spread_list' : query_result
@@ -248,8 +246,8 @@ exports.getMyAttention = function(headers, query,callback){
 	var guid = headers['guid'];
 	
 	var list = PlayerCache.getMyAttention(guid);
-	var page = parseInt(query['page']);
-	var result_list = list.slice((page - 1) *15,15);
+	var page = Number(query['page']);
+	var result_list = list.slice((page - 1) *15,page * 15);
 
 	var json_result = {
 		'page' : query['page'],
@@ -278,7 +276,7 @@ exports.getShopArea = function(headers,query,callback){
 
 }
 exports.getMyShopItemList = function(headers,query,callback){
-	logger.log("HTTP_HANDER","start getMyShopItemList");
+	//logger.log("HTTP_HANDER","start getMyShopItemList");
 	if('guid' in headers){
 		var json_result = ShopCache.getMyShopItemList(headers['guid']);
 		callback(0,json_result);

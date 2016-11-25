@@ -6,7 +6,7 @@ var logger = require('./logger').logger();
 var ShopCache = require("./cache/shopCache");
 var DbCache = require("./cache/DbCache");
 var db_config = {
-	host     : '115.159.67.251',
+	host     : '139.224.227.82',
 	user     : 'eplus-find',
 	password : 'eplus-find',
 	port:'3306',
@@ -39,7 +39,7 @@ connection.connect(function(err){
 		return;
 	}
 	initUserInfoFromDB();
-	initNewsfeedFromDB(newsfeed.init_newsfeed);
+	//initNewsfeedFromDB(newsfeed.init_newsfeed);
 	initFriendRelation(friend.init_friend_relation);
 	initDbCache();
 	initShopCache();
@@ -893,5 +893,89 @@ exports.addShopActivity = function(json_value){
 			logger.log("MYSQL_PROXY","p_add_activity success");
 		}
 	});
+}
 
+exports.saveShopDetail = function(json_value){
+	var params_hash= [
+	'id'
+	,'area_code'
+	,'category_code1'
+	,'category_code2'
+	,'category_code3'
+	,'beg'
+	,'end'
+	,'days'
+	,'address'
+	,'distribution'
+	,'qq'
+	,'wx'
+	,'email'
+	,'card_image_1'
+	,'card_image_2'];
+
+	var db_params = [];
+	params_hash.forEach(function(key){
+		db_params.push(json_value[key])
+	});
+	
+
+	connection.query(
+		"CALL p_save_shop_detail(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+		,db_params
+		,function(err,result){
+			if(err){
+				logger.log("MYSQL_PROXY",util.inspect(db_params));
+				logger.log("MYSQL_PROXY","p_save_shop_detail error:" + err);
+			}else{
+				logger.log("MYSQL_PROXY","p_save_shop_detail success");
+			}
+		});
+}
+
+exports.saveShopItem = function(json_value){
+
+	var db_params = [
+	json_value['id']
+	,json_value['image1']
+	,json_value['image2']
+	,json_value['image3']
+	,json_value['image4']
+	,json_value['image5']
+	,json_value['image6']
+	,json_value['image7']
+	,json_value['image8']
+	,json_value['name']
+	,json_value['price']
+	,json_value['show_price']
+	];
+	logger.log("MYSQL_PROXY","[saveShopItem][db][params]:" + util.inspect(json_value));
+	connection.query("CALL p_save_shop_item(?,?,?,?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
+		if(err){
+			
+			logger.log("MYSQL_PROXY","p_save_shop_item error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","p_save_shop_item success");
+		}
+	});
+
+	for(var key in json_value['item_propertys']){
+
+		db_params = [
+			 json_value['item_propertys'][key]['id']
+			,json_value['id']
+			,json_value['item_propertys'][key]['property_type']
+			,json_value['item_propertys'][key]['property_value']
+		];
+		
+		connection.query("CALL p_save_shop_item_property(?,?,?,?)",db_params,function(err,result){
+			if(err){
+				logger.log("MYSQL_PROXY",util.inspect(db_params));
+				logger.log("MYSQL_PROXY","p_save_shop_item_property error:" + err);
+			}else{
+				logger.log("MYSQL_PROXY","p_save_shop_item_property success");
+			}
+		});
+	}
+
+	
 }

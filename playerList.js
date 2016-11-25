@@ -39,13 +39,13 @@ g_playerlist.InitFromDb = function(
 		this.playerCache[uid] = {
 			"uid": uid,
 			"account":all_login_info[i]['Account'],
-			"password":all_login_info[i]['Password']
+			"password":all_login_info[i]['Password'],
+			'state' : Number(all_login_info[i]['state'])
 		};
 		this['account_uid'][all_login_info[i]['Account']] = all_login_info[i]['Id'];
 		
 		this.MaxUID = Math.max(this.MaxUID,uid);
 	}
-	
 
 	for(var i in all_user_info){
 		var uid = all_user_info[i]['id'];
@@ -102,14 +102,20 @@ exports.CheckLogin = function(login_account,login_password){
 	logger.log("PLAYER_LIST",'CheckLogin:uid:' + uid);
 	if(g_playerlist['playerCache'][uid] == null){
 		console.log("false1");
-		return false;
+		return 3;
+	}
+	var player_info = g_playerlist['playerCache'][uid];
+
+	if(player_info['state'] == 1){
+
+		return 2;
 	}
 	if(g_playerlist['playerCache'][uid]['password'] === login_password){
 		//console.log("true");
-		return true;
+		return 0;
 	}
 
-	return false;
+	return 1;
 }
 
 exports.IsLogin = function(login_account){
@@ -371,6 +377,7 @@ exports.getMyAttention = function(guid){
 	}
 	var player = g_playerlist['playerCache'][uid];
 	if(player != null){
+		//logger.log("PLAYER_LIST","[get][attention]: attention_shop list:" + util.inspect(player['attention_shop']));
 		return player['attention_shop'];
 	}
 	return [];

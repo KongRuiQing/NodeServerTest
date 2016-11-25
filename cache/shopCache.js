@@ -74,7 +74,7 @@ exports.InitFromDb = function(
 			shop_info.addItemToShop(item_id);
 			
 			g_shop_cache['shop_items'][item_id] = new ShopItem();
-
+			//logger.log("SHOP_CACHE","[init][shopitem]:" + util.inspect(shop_item[i]))
 			g_shop_cache['shop_items'][item_id].initFromDb(shop_item[i]);
 
 			if(g_shop_cache['shop_items'][item_id].isSpreadItem()){
@@ -86,7 +86,7 @@ exports.InitFromDb = function(
 
 	}
 
-	logger.log("SHOP_CACHE","max_shop_item_id:" + g_shop_cache['max_shop_item_id']);
+	//logger.log("SHOP_CACHE","max_shop_item_id:" + g_shop_cache['max_shop_item_id']);
 
 	for(var i in shop_item_attention){
 		var item_id = shop_item_attention[i]['item_id'];
@@ -110,8 +110,6 @@ exports.InitFromDb = function(
 		if(item_id in g_shop_cache['shop_items']){
 			g_shop_cache['shop_items'][item_id].addItemProperty(shop_item_property[i]);
 		}
-		
-
 	}
 
 	for(var i in shop_attention){
@@ -259,7 +257,7 @@ exports.getMyFavoritesItems = function(items){
 		var item_id = items[i]['item_id'];
 		
 		var shop_item = g_shop_cache['shop_items'][item_id];
-		logger.log("SHOP_CACHE",util.inspect(shop_item));
+		//logger.log("SHOP_CACHE",util.inspect(shop_item));
 		if(shop_item != null){
 			var shop_id = shop_item['shop_id'];
 			var shop = g_shop_cache['dict'][shop_id];
@@ -275,7 +273,7 @@ exports.getMyFavoritesItems = function(items){
 			}
 		}
 	}
-	logger.log("SHOP_CACHE",util.inspect(item_list));
+	//logger.log("SHOP_CACHE",util.inspect(item_list));
 	
 	return item_list;
 }
@@ -287,9 +285,10 @@ exports.getMyAttentionShopInfo = function(shop_id_list){
 		var shop_id = shop_id_list[i]['shop_id'];
 		var shop_info = g_shop_cache['dict'][shop_id];
 		if(shop_info != null){
-			list.push(shop_info.getShopBasicInfo(0));
+			list.push(shop_info.getShopAttentionInfo());
 		}
 	}
+	//logger.log("SHOP_CACHE",util.inspect(list));
 	return list;
 }
 
@@ -375,7 +374,7 @@ exports.addShopItem = function(shop_id,name,price,show_price,image,image1,image2
 	g_shop_cache['shop_items'][item_id] = shop_item;
 
 	g_shop_cache['dict'][shop_id].addItemToShop(item_id);
-	return item_id;
+	return g_shop_cache['shop_items'][item_id].getMyShopItemInfo();
 }
 
 
@@ -397,7 +396,7 @@ exports.getMyShopInfo = function(guid){
 				json_result['shop_item'].push(shop_item.getSpreadJsonItem());
 			}
 		}
-		logger.log("SHOP_CACHE",util.inspect(json_result));
+		//logger.log("SHOP_CACHE",util.inspect(json_result));
 		return json_result;
 	}
 	return {};
@@ -408,7 +407,7 @@ exports.getMyShopItemList = function(guid){
 	var json_result = {
 		'list':[]
 	};
-	logger.log("SHOP_CACHE","[getMyShopItemList] shop_id : " + shop_id);
+	//logger.log("SHOP_CACHE","[getMyShopItemList] shop_id : " + shop_id);
 	if(shop_id > 0){
 		var shop_info = g_shop_cache['dict'][shop_id];
 		if(shop_info != null){
@@ -422,7 +421,9 @@ exports.getMyShopItemList = function(guid){
 					if(shop_item_id in g_shop_cache['shop_items']){
 						var shop_item_info = g_shop_cache['shop_items'][shop_item_id];
 						if(shop_item_info != null){
-							json_result['list'].push(shop_item_info.getItemBasicInfo());
+							var my_shop_item_info = shop_item_info.getMyShopItemInfo();
+							//logger.log("SHOP_CACHE","my_shop_item_info:" + util.inspect(my_shop_item_info));
+							json_result['list'].push(my_shop_item_info);
 						}else{
 							logger.error("SHOP_CACHE","Find shop item error with itemid = "+ shop_item_id);
 						}
@@ -505,4 +506,52 @@ exports.renewalActivity = function(json_value){
 	}
 
 	return activity_bean.getJsonValue();
+}
+
+exports.saveShopDetail = function(json_value){
+	//logger.log("SHOP_CACHE","json_value:" + util.inspect(json_value));
+
+	var shop_info = g_shop_cache['dict'][json_value['id']];
+	if(shop_info != null){
+		return shop_info.saveShopDetail(json_value);
+	}
+	return null;
+}
+
+exports.saveShopItem = function(json_value){
+	//logger.log("SHOP_CACHE","[saveShopItem][param]:" + util.inspect(json_value));
+
+	var shop_info = g_shop_cache['dict'][json_value['shop_id']];
+
+	if(shop_info == null){
+		logger.log("SHOP_CACHE","[saveShopItem][error]:" + "no find shop");
+		return null;
+	}
+
+	if(!shop_info.containsItem(json_value['id'])){
+		logger.log("SHOP_CACHE","[saveShopItem][error]:" + "no find item id in shop id:" + json_value['id']);
+		return null;
+	}
+
+	var shop_item_info = g_shop_cache['shop_items'][json_value['id']];
+
+	if(shop_item_info != null){
+		var result = shop_item_info.saveShopItem(json_value);
+
+		if(result === true){
+			return shop_item_info.getMyShopItemInfo();
+		}
+	}
+
+	return null;
+}
+
+exports.getMyShopItemDbParams = function(item_id){
+	var shop_item_info = g_shop_cache['shop_items'][item_id];
+
+	if(shop_item_info != null){
+		//logger.log("SHOP_CACHE", "[getMyShopItemDbParams]:" + util.inspect(shop_item_info.getDbParams()));
+		return shop_item_info.getDbParams();
+	}
+	return null;
 }
