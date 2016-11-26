@@ -583,6 +583,7 @@ exports.getAllShopSpread = function(page,query,callback){
 }
 
 exports.attentionShop = function(player_id,shop_id,attention,attention_time){
+	
 	var sql_query_param = [player_id,shop_id,attention,attention_time];
 	
 	connection.query("CALL p_attention_shop(?,?,?,?)",sql_query_param,function(err,result){

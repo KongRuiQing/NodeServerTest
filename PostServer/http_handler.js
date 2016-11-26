@@ -794,7 +794,7 @@ exports.cancelAttentionShop = function(fields,files,callback){
 	var player_info = PlayerProxy.cancelAttentionShop(fields['guid'],fields['shop_id']);
 	if(player_info != null && 'uid' in player_info && player_info['uid'] > 0){
 		ShopProxy.cancelAttentionShop(player_info['uid'],fields['shop_id']);
-		db.attentionShop(player_info['uid'],fields['shop_id'],0,"");
+		db.attentionShop(player_info['uid'],fields['shop_id'],0,moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
 
 		callback(true,{
 			'error' : 0,
