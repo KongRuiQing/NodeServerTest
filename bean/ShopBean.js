@@ -506,7 +506,8 @@ ShopBean.prototype.getShopAttentionInfo = function(){
 		'shop_image' : this.image,
 		'shop_attention_num' : this.attentions.length,
 		'shop_name' : this.name,
-		'shop_business' : this.business
+		'shop_business' : this.business,
+		'shop_id' : this.id
 	};
 }
 
