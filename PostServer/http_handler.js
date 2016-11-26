@@ -98,7 +98,7 @@ exports.becomeSeller = function(fields,files,callback){
 
 	check_dir(uploadFile);
 
-	//logger.log("HTTP_HANDLER",util.inspect(fields));
+	logger.log("HTTP_HANDLER","[becomeSeller][params] fields:" + util.inspect(fields));
 
 	var fieldNameToDbColName = {
 		'beg' : {
@@ -169,13 +169,13 @@ exports.becomeSeller = function(fields,files,callback){
 	var shopInfo = {};
 	for(var file_key in uploadFile){
 		var upload_file = files[file_key];
-		logger.log("HTTP_HANDLER",file_key + "=" + util.inspect(files[file_key]));
+		//logger.log("HTTP_HANDLER",file_key + "=" + util.inspect(files[file_key]));
 		if(upload_file != null) {
 			var virtual_file_name = path.join(uploadFile[file_key],path.basename(upload_file.path));
 			var newPath = path.join("assets",virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
 			shopInfo[file_key] = path.join(virtual_file_name);
-			logger.log("HTTP_HANDLER",file_key + ":" + virtual_file_name);
+			//logger.log("HTTP_HANDLER",file_key + ":" + virtual_file_name);
 		}
 		
 	} 
@@ -207,7 +207,7 @@ exports.becomeSeller = function(fields,files,callback){
 	var json_result = {
 		'error' : 0
 	};
-	//logger.log("HTTP_HANDLER",util.inspect(shopInfo));
+	logger.log("HTTP_HANDLER","[becomeSeller][params] shopInfo: " + util.inspect(shopInfo));
 	
 	var find_uid = PlayerProxy.CheckSeller(guid);
 	
@@ -226,7 +226,7 @@ exports.becomeSeller = function(fields,files,callback){
 	}else{
 		json_result['error'] = 1;
 	}
-	logger.log("HTTP_HANDLER","[becomeSeller]" + util.inspect(json_result));
+	logger.log("HTTP_HANDLER","[becomeSeller][params] json_result: " + util.inspect(json_result));
 
 	callback(true,json_result);
 }
