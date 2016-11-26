@@ -229,15 +229,13 @@ g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
 	
 	if(step == 1){
 		var uid = this.account_uid[telephone];
-		if( !uid){
+		if( uid == null ){
 			var guid = generate(10);
-
 			this.reg_account[guid] = {
 				"guid" : guid,
 				'telephone':telephone,
 				'code' : '1234',
 			};
-
 			return {
 				"guid" : guid,
 				'telephone':telephone,
@@ -284,7 +282,7 @@ g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
 		var uid = this.account_uid[telephone];
 		
 		if(!uid && client_guid){
-			console.log("reg_account = " + util.inspect(this.reg_account));
+			//console.log("reg_account = " + util.inspect(this.reg_account));
 			var reg = this.reg_account[client_guid];
 			if(!reg){
 				return {

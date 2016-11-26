@@ -54,7 +54,7 @@ exports.register = function(fields,files,callback){
 	var password = fields['password'] || null;
 	//console.log("register start:" + util.inspect(fields));
 	var result = g_playerlist.RegisterStep(step,guid,telephone,code,password);
-	console.log("register end:" + util.inspect(result));
+	//console.log("register end:" + util.inspect(result));
 	callback(true,result);
 }
 
@@ -98,7 +98,7 @@ exports.becomeSeller = function(fields,files,callback){
 
 	check_dir(uploadFile);
 
-	logger.log("HTTP_HANDLER",util.inspect(fields));
+	//logger.log("HTTP_HANDLER",util.inspect(fields));
 
 	var fieldNameToDbColName = {
 		'beg' : {
@@ -112,6 +112,10 @@ exports.becomeSeller = function(fields,files,callback){
 		'days' : {
 			'name' : 'days',
 			'type' : 'int'
+		},
+		'address' : {
+			'name' : 'address',
+			'type' : 'string'
 		},
 		'telephone': {
 			'name': 'telephone',
@@ -177,16 +181,24 @@ exports.becomeSeller = function(fields,files,callback){
 	} 
 
 	for(var key in fieldNameToDbColName){
+		var key_info = fieldNameToDbColName[key];
 		if(key in fields){
-			var key_info = fieldNameToDbColName[key];
 			if(key_info['type'] == "int"){
-
 				shopInfo[key_info['name']] = parseInt(fields[key]);
-				logger.log("HTTP_HANDLER","key = " + key + ", value = " + fields[key]);
+				//logger.log("HTTP_HANDLER","key = " + key + ", value = " + fields[key]);
 			}else if(key_info['type'] == 'string'){
 				shopInfo[key_info['name']] = fields[key];
 			}else if(key_info['type'] == 'float'){
 				shopInfo[key_info['name']] = parseFloat(fields[key]);
+			}
+		}else{
+			if(key_info['type'] == "int"){
+				shopInfo[key_info['name']] = 0;
+				//logger.log("HTTP_HANDLER","key = " + key + ", value = " + fields[key]);
+			}else if(key_info['type'] == 'string'){
+				shopInfo[key_info['name']] = "未填写";
+			}else if(key_info['type'] == 'float'){
+				shopInfo[key_info['name']] = 0.0;
 			}
 		}
 		
@@ -195,7 +207,8 @@ exports.becomeSeller = function(fields,files,callback){
 	var json_result = {
 		'error' : 0
 	};
-	logger.log("HTTP_HANDLER",util.inspect(shopInfo));
+	//logger.log("HTTP_HANDLER",util.inspect(shopInfo));
+	
 	var find_uid = PlayerProxy.CheckSeller(guid);
 	
 	if(find_uid > 0){

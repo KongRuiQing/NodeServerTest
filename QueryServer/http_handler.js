@@ -246,12 +246,11 @@ exports.getMyAttention = function(headers, query,callback){
 	var guid = headers['guid'];
 	
 	var list = PlayerCache.getMyAttention(guid);
-	var page = Number(query['page']);
-	var result_list = list.slice((page - 1) *15,page * 15);
+	
 
 	var json_result = {
 		'page' : query['page'],
-		'list' : ShopCache.getMyAttentionShopInfo(result_list)
+		'list' : ShopCache.getMyAttentionShopInfo(list)
 	};
 
 	callback(0,json_result);
@@ -288,7 +287,6 @@ exports.getMyShopItemList = function(headers,query,callback){
 exports.getMyShopInfo = function(headers,query,callback){
 	logger.log("HTTP_HANDER","start getMyShopInfo");
 	if('guid' in headers){
-		
 		var json_result = ShopCache.getMyShopInfo(headers['guid']);
 		callback(0,json_result);
 		return;

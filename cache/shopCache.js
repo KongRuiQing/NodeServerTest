@@ -393,7 +393,7 @@ exports.getMyShopInfo = function(guid){
 			var shop_item_id = shop_item_list[i];
 			var shop_item = g_shop_cache['shop_items'][shop_item_id];
 			if(shop_item.isSpreadItem()){
-				json_result['shop_item'].push(shop_item.getSpreadJsonItem());
+				json_result['shop_item'].push(shop_item.getItemBasicInfo());
 			}
 		}
 		//logger.log("SHOP_CACHE",util.inspect(json_result));
