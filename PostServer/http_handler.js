@@ -778,6 +778,7 @@ exports.cancelAttentionShop = function(fields,files,callback){
 		var json_result = {
 			'error' : 2
 		}
+
 		callback(true,json_result);
 		return;
 	}
@@ -802,9 +803,19 @@ exports.cancelAttentionShop = function(fields,files,callback){
 
 		return;
 	}
-
+	if(player_info!=null && 'error' in player_info){
+		callback(true,{
+			'error' : player_info['error']
+		});
+		return;
+	}
 	callback(true,{
-		'error' : 1
-	})
+		'error' : 1003
+	});
+	return;
+
+
+
+	
 
 }

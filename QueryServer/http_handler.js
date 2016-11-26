@@ -83,7 +83,8 @@ exports.getShopList = function(headers, query,callback){
 
 exports.getShopDetail = function(headers, query,callback)
 {
-	var uid = query['uid'] || "";
+	var uid = query['uid'] || 0;
+	
 	var shop_id = Number(query['shop_id']);
 	var json_result = null;
 	if(shop_id > 0){
