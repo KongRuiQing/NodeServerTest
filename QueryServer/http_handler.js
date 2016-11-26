@@ -240,7 +240,7 @@ exports.getApkVersion = function(headers, query,callback){
 
 exports.getMyAttention = function(headers, query,callback){
 
-	logger.log("HTTP_HANDER","start getMyAttention ");
+	//logger.log("HTTP_HANDER","start getMyAttention ");
 	//logger.log("HTTP_HANDER","headers :" + util.inspect(headers));
 
 	var guid = headers['guid'];

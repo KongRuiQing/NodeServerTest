@@ -300,13 +300,10 @@ exports.InsertBecomeSeller = function(uid,shop_info){
 
 	var shop_id = g_shop_cache['max_shop_id'] + 1;
 	g_shop_cache['max_shop_id'] = shop_id;
-	
 	shop_info['id'] = shop_id;
-
 	g_shop_cache['dict'][shop_id] = new ShopBean();
-
 	g_shop_cache['dict'][shop_id].newShopBean(shop_info);
-	logger.log('SHOP_CACHE','new Shop bean:' + util.inspect(g_shop_cache['dict'][shop_id]));
+	//logger.log('SHOP_CACHE','new Shop bean:' + util.inspect(g_shop_cache['dict'][shop_id]));
 	
 	return g_shop_cache['dict'][shop_id].getMyShopInfo();
 }
@@ -336,7 +333,10 @@ exports.attentionShop = function(uid,shop_id){
 		if(shop_info.ownAttention(uid)){
 			shop_info.addAttention(uid);
 		}
+		return true;
 	}
+
+	return false;
 }
 
 exports.CheckHasItem = function(shop_id,item_id){
@@ -392,9 +392,7 @@ exports.getMyShopInfo = function(guid){
 		for(var i in shop_item_list){
 			var shop_item_id = shop_item_list[i];
 			var shop_item = g_shop_cache['shop_items'][shop_item_id];
-			if(shop_item.isSpreadItem()){
-				json_result['shop_item'].push(shop_item.getItemBasicInfo());
-			}
+			json_result['shop_item'].push(shop_item.getItemBasicInfo());
 		}
 		//logger.log("SHOP_CACHE",util.inspect(json_result));
 		return json_result;

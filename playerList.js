@@ -66,7 +66,7 @@ g_playerlist.InitFromDb = function(
 			this.playerCache[uid]['favorites'] = [];
 		}
 	}
-	logger.log("PLAYER_LIST",'Init Player Attention Shop Num : ' + player_attention_shop_list.length);
+	//logger.log("PLAYER_LIST",'Init Player Attention Shop Num : ' + player_attention_shop_list.length);
 	for(var i in player_attention_shop_list){
 
 		var uid = player_attention_shop_list[i]['uid'];
@@ -367,15 +367,18 @@ exports.getMyFavoritesItems = function(guid,page){
 exports.getMyAttention = function(guid){
 
 	var uid = g_playerlist['guid_to_uid'][guid];
+
 	if(uid == null){
 		logger.warn("PLAYER_LIST","getMyAttention:uid = 1,guid:" + guid);
 		logger.log("PLAYER_LIST","All guid is:");
 		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
-		uid = 1;
+		return [];
 	}
+	logger.log("PLAYER_LIST","[getMyAttention] uid: " + uid);
+
 	var player = g_playerlist['playerCache'][uid];
+
 	if(player != null){
-		//logger.log("PLAYER_LIST","[get][attention]: attention_shop list:" + util.inspect(player['attention_shop']));
 		return player['attention_shop'];
 	}
 	return [];
@@ -479,12 +482,13 @@ exports.CheckSeller = function(guid){
 			'error' : 1
 		};
 	}
-	logger.log("PLAYER_LIST","uid = " + uid);
+
+	//logger.log("PLAYER_LIST","uid = " + uid);
 	var player_info = g_playerlist['playerCache'][uid];
 	if(player_info != null && player_info['shop_id'] == 0){
 		return uid;
 	}
-	logger.log("PLAYER_LIST",util.inspect(g_playerlist['playerCache']));
+	//logger.log("PLAYER_LIST",util.inspect(g_playerlist['playerCache']));
 
 	return 0;
 }
@@ -524,25 +528,39 @@ exports.changeShopState = function(guid){
 exports.attentionShop = function(guid,shop_id){
 	var uid = g_playerlist['guid_to_uid'][guid];
 	if(uid == null || uid == 0){
-		logger.error("PLAYER_LIST","[attentionShop]No guid find in guid:" + guid);
-		return 0;
+		logger.error("PLAYER_LIST","[attentionShop] No guid find in guid: " + guid);
+		return null;
 	}
 	var player_info = g_playerlist['playerCache'][uid];
 	if(player_info == null){
-		logger.error("PLAYER_LIST","[attentionShop]No player info find uid:" + uid);
-		return 0;
+		logger.error("PLAYER_LIST","[attentionShop] No player info find uid: " + uid);
+		return null;
 	}
-	
-	if(!(shop_id in player_info['attention_shop'])){
+	var find_attention_shop = false;
+	for(var i in player_info['attention_shop']){
+		if(player_info['attention_shop'][i]['shop_id'] == shop_id){
+			find_attention_shop = true;
+			break;
+		}
+	}
+
+	if(!find_attention_shop){
+		var now_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 		player_info['attention_shop'].push({
 			'shop_id' : shop_id,
-			'attention_time' : Date.now()
+			'attention_time' : now_time
 		});
-		return uid;
+
+		return {
+			'error' : 0,
+			'uid' : uid,
+			'attention_time' : now_time
+		};
+		
 	}else{
-		return -1;
+
+		return {'error' : 1};
 	}
-	return 0;
 }
 
 exports.getUid = function(guid){

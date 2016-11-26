@@ -207,7 +207,7 @@ exports.becomeSeller = function(fields,files,callback){
 	var json_result = {
 		'error' : 0
 	};
-	logger.log("HTTP_HANDLER","[becomeSeller][params] shopInfo: " + util.inspect(shopInfo));
+	//logger.log("HTTP_HANDLER","[becomeSeller][params] shopInfo: " + util.inspect(shopInfo));
 	
 	var find_uid = PlayerProxy.CheckSeller(guid);
 	
@@ -247,19 +247,26 @@ exports.changeShopState = function(fields,files,callback){
 
 exports.attentionShop = function(fields,files,callback){
 	var guid = fields['guid'];
-	var shop_id = parseInt(fields['shop_id']);
-	var uid = PlayerProxy.attentionShop(guid,shop_id);
+	var shop_id = Number(fields['shop_id']);
+
+	var player_attention_shop_info = PlayerProxy.attentionShop(guid,shop_id);
+
 	var json_result = {
-		'error' : 0
+		
 	};
-	if(uid > 0){
-		ShopProxy.attentionShop(uid,shop_id);
-		db.attentionShop(uid,shop_id,1);
-		json_result['shop_id'] = shop_id;
-	}else if(uid == 0){
-		json_result['error'] = 1;
+	if(player_attention_shop_info != null && player_attention_shop_info['error'] == 0){
+		var result = ShopProxy.attentionShop(player_attention_shop_info['uid'],shop_id);
+		if(result){
+			db.attentionShop(player_attention_shop_info['uid'],shop_id,1,player_attention_shop_info['attention_time']);
+			json_result['shop_id'] = shop_id;
+			json_result['error'] = 0;
+		}else{
+			json_result['error'] = 5;
+		}
+	}else if(player_attention_shop_info == null){
+		json_result['error'] = 4;
 	}else{
-		json_result['error'] = 2;
+		json_result['error'] = player_attention_shop_info['error'];
 	}
 	callback(true,json_result);
 }
