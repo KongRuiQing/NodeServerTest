@@ -794,5 +794,17 @@ exports.cancelAttentionShop = function(fields,files,callback){
 	if(player_info != null && 'uid' in player_info && player_info['uid'] > 0){
 		ShopProxy.cancelAttentionShop(player_info['uid'],fields['shop_id']);
 		db.attentionShop(player_info['uid'],fields['shop_id'],0,"");
+
+		callback(true,{
+			'error' : 0,
+			'shop_id' : fields['shop_id']
+		});
+
+		return;
 	}
+
+	callback(true,{
+		'error' : 1
+	})
+
 }
