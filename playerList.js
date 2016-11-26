@@ -694,7 +694,7 @@ exports.cancelAttentionShop = function(guid,shop_id){
 			for(var i = 0; i < player_info['attention_shop'].length; ++i){
 				if(player_info['attention_shop'][i]['shop_id'] == shop_id){
 					find = true;
-					player_info['attention_shop'][i].splice(i,1);
+					player_info['attention_shop'].splice(i,1);
 					break;
 				}
 			}
