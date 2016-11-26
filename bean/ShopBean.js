@@ -234,6 +234,13 @@ ShopBean.prototype.addAttention = function(uid){
 	this.attentions.push(uid);
 }
 
+ShopBean.prototype.cancelAttention = function(uid){
+	var index = this.attentions.indexOf(uid);
+	if(index >= 0){
+		this.attentions.splice(index,1);
+	}
+}
+
 ShopBean.prototype.ownAttention = function(uid){
 
 	if(this.attentions == null){

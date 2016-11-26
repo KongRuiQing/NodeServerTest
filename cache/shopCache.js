@@ -339,6 +339,15 @@ exports.attentionShop = function(uid,shop_id){
 	return false;
 }
 
+exports.cancelAttentionShop = function(uid,shop_id){
+	var shop_info = g_shop_cache['dict'][shop_id];
+	if(shop_info != null){
+		if(shop_info.ownAttention(uid)){
+			shop_info.cancelAttention(uid);
+		}
+	}
+}
+
 exports.CheckHasItem = function(shop_id,item_id){
 	var shop_info = g_shop_cache['dict'][shop_id];	
 	if(shop_info != null && shop_info.hasItem(item_id)){

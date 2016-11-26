@@ -770,3 +770,29 @@ exports.saveShopItem = function(fields,files,callback){
 	return;
 
 }
+
+exports.cancelAttentionShop = function(fields,files,callback){
+	logger.log("HTTP_HANDLER","[cancelAttentionShop] start ");
+
+	if(!'guid' in fields){
+		var json_result = {
+			'error' : 2
+		}
+		callback(true,json_result);
+		return;
+	}
+
+	if(!'shop_id' in fields){
+		var json_result = {
+			'error' : 3
+		}
+		callback(true,json_result);
+		return;
+	}
+
+	var player_info = PlayerProxy.cancelAttentionShop(fields['guid'],fields['shop_id']);
+	if(player_info != null && 'uid' in player_info && player_info['uid'] > 0){
+		ShopProxy.cancelAttentionShop(player_info['uid'],fields['shop_id']);
+		db.attentionShop(player_info['uid'],fields['shop_id'],0,"");
+	}
+}

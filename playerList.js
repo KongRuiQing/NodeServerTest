@@ -679,6 +679,30 @@ exports.checkRenewalActivity = function(guid){
 
 	return {
 		'error' : 1
-	};
-	
+	};	
+}
+
+exports.cancelAttentionShop = function(guid,shop_id){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null && 'attention_shop' in player_info){
+			var find = false;
+			for(var i in player_info['attention_shop']){
+				if(player_info['attention_shop'][i]['shop_id'] == shop_id){
+					find = true;
+					player_info['attention_shop'][i].splice(i,1);
+					break;
+				}
+			}
+			if(find){
+				return {
+					'uid' : uid,
+				};
+			}
+
+		}
+	}
+
+	return null;
 }

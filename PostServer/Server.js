@@ -28,7 +28,7 @@ handle_http['/renewal'] = http_handler.renewal;
 handle_http['/add_shop_activity'] = http_handler.addShopActivity;
 handle_http['/save_shop_detail'] = http_handler.saveShopDetail;
 handle_http['/save_shop_item'] = http_handler.saveShopItem;
-
+handle_http['/cancel_attention_shop'] = http_handler.cancelAttentionShop;
 exports.start = function(Host,Port)
 {
 	
