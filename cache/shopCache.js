@@ -569,7 +569,7 @@ exports.getGameShopList = function(uid,city,area_code,category_code,page_size)
 		var shop_info =g_shop_cache['dict'][key];
 		if(shop_info != null){
 			if(shop_info.matchFilter(city,area_code,category_code)){
-				list.push(shop_info.getShopBasicinfo());
+				list.push(shop_info.getShopBasicInfo(uid));
 			}
 		}
 	}
