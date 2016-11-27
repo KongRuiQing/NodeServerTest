@@ -259,7 +259,7 @@ exports.attentionShop = function(fields,files,callback){
 	var player_attention_shop_info = PlayerProxy.attentionShop(guid,shop_id);
 
 	var json_result = {};
-	
+
 	if(player_attention_shop_info != null && player_attention_shop_info['error'] == 0){
 		var result = ShopProxy.attentionShop(player_attention_shop_info['uid'],shop_id);
 		if(result != null){
@@ -320,9 +320,11 @@ exports.changeUserInfo =function(fields,files,callback){
 			break;
 		}
 	}
-
+	logger.log("HTTP_HANDLER","[changeUserInfo] birthday:" + moment(fields['birthday']).format('YYYY-MM-DD HH:mm:ss'));
+	logger.log("HTTP_HANDLER","[changeUserInfo] now:" + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
+	
 	if(moment(fields['birthday']).isAfter(moment(Date.now()))){
-		json_result['error'] = 3;
+		json_result['error'] = 1007;
 	}
 
 
