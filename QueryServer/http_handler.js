@@ -324,7 +324,7 @@ exports.getMyActivity = function(headers,query,callback){
 	return;
 }
 
-exports.getGameShopList = function(){
+exports.getGameShopList = function(headers,query,callback){
 
 	var zone = Number(query['area_code'] || 0);
 	var city = Number(query['city_no'] || 0);
