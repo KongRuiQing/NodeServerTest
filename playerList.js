@@ -150,51 +150,23 @@ function generate(count) {
 	for(var i = 0; i < count; i++) {
 		str += _sym[parseInt(Math.random() * (_sym.length))];
 	}
-	str += getUTC();
 
+	str += getUTC();
 
 	return str;
 }
 
-g_playerlist.Login = function(login_account){
-	var uid = g_playerlist['account_uid'][login_account];
-	var player_info = g_playerlist['playerCache'][uid];
-	var guid = generate(10);
-	g_playerlist['player_online_list'][uid] = guid;
-	g_playerlist['guid_to_uid'][guid] = uid;
-	var json_login = {};
 
-	json_login['uid'] = uid;
-	json_login['guid'] = guid;
-
-	json_login['head'] = player_info['head'];
-	json_login['nick_name'] = player_info['name'];
-	json_login['sex'] = player_info['sex'];	
-	json_login['birthday_timestamp'] = player_info['birthday_timestamp'];	
-	json_login['sign'] = player_info['sign'];	
-	json_login['address'] = player_info['address'];	
-	json_login['telephone'] = player_info['telephone'];	
-	json_login['email'] = player_info['email'];	
-	json_login['real_name'] = player_info['real_name'];	
-	json_login['shop_id'] = parseInt(player_info['shop_id']);
-	json_login['shop_state'] = 0;
-	if(player_info['shop_id'] > 0){
-		shop_info = ShopProxy.FindShopInfo(player_info['shop_id']);
-		if(shop_info && 'state' in shop_info && shop_info['state'] != 0){
-			json_login['shop_state'] = shop_info['state'];
-		}
-	}
-	
-	return json_login;
-}
 
 exports.Login = function(login_account){
 
 	var uid = g_playerlist['account_uid'][login_account];
 	var player_info = g_playerlist['playerCache'][uid];
+
 	var guid = generate(10);
 	g_playerlist['player_online_list'][uid] = guid;
 	g_playerlist['guid_to_uid'][guid] = uid;
+
 	var json_login = {};
 
 	json_login['uid'] = uid;
@@ -203,6 +175,7 @@ exports.Login = function(login_account){
 	json_login['head'] = player_info['head'];
 	json_login['nick_name'] = player_info['name'];
 	json_login['sex'] = player_info['sex'];
+
 	if(player_info['birthday_timestamp']){
 		json_login['birthday_timestamp'] = player_info['birthday_timestamp'];
 	}	
@@ -597,7 +570,7 @@ exports.addToFavorites = function(guid,shop_id,item_id){
 exports.changeUserInfo = function(uid,user_info_list){
 	if(uid in g_playerlist['playerCache']){
 		var player_info = g_playerlist['playerCache'][uid];
-		player_info['nick_name'] = user_info_list[0];
+		player_info['name'] = user_info_list[0];
 		player_info['sex'] = user_info_list[1];
 		player_info['birthday_timestamp'] = user_info_list[2];
 		player_info['sign'] = user_info_list[3];
