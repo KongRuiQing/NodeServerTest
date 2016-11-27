@@ -178,6 +178,7 @@ exports.getShopDetail = function(uid,shop_id){
 		"shop_id" : shop_id,
 		"shop_info" : shop_info.getShopDetailInfo(uid)
 	};
+
 	if(shop_item_list != null){
 		for(var i in shop_item_list){
 			var shop_item_id = shop_item_list[i];
@@ -187,8 +188,6 @@ exports.getShopDetail = function(uid,shop_id){
 			}
 		}
 	}
-
-	
 
 	return json_result;
 }
@@ -330,7 +329,7 @@ exports.attentionShop = function(uid,shop_id){
 
 	var shop_info = g_shop_cache['dict'][shop_id];
 	if(shop_info != null){
-		if(shop_info.ownAttention(uid)){
+		if(!shop_info.ownAttention(uid)){
 			shop_info.addAttention(uid);
 		}
 		return shop_info.getShopAttentionInfo();

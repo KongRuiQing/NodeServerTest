@@ -258,9 +258,8 @@ exports.attentionShop = function(fields,files,callback){
 
 	var player_attention_shop_info = PlayerProxy.attentionShop(guid,shop_id);
 
-	var json_result = {
-		
-	};
+	var json_result = {};
+	
 	if(player_attention_shop_info != null && player_attention_shop_info['error'] == 0){
 		var result = ShopProxy.attentionShop(player_attention_shop_info['uid'],shop_id);
 		if(result != null){

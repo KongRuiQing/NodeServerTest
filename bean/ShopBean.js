@@ -230,7 +230,9 @@ ShopBean.prototype.getShopNearInfo = function(longitude,latitude){
 }
 
 ShopBean.prototype.addAttention = function(uid){
-
+	if(typeof uid != 'number'){
+		uid = Number(uid);
+	}
 	this.attentions.push(uid);
 }
 
@@ -246,13 +248,16 @@ ShopBean.prototype.ownAttention = function(uid){
 	if(this.attentions == null){
 		return false;
 	}
+	if(typeof uid != 'number'){
+		uid = Number(uid);
+	}
+	//var num_uid = Number(uid);
 
-	var num_uid = Number(uid);
-	if(num_uid <= 0) {
+	if(uid <= 0) {
 		return false;
 	}
 	for(var key in this.attentions){
-		if(this.attentions[key] == num_uid){
+		if(this.attentions[key] == uid){
 			return true;
 		}
 	}

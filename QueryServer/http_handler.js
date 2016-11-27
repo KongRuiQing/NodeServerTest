@@ -86,21 +86,24 @@ exports.getShopDetail = function(headers, query,callback)
 	var uid = query['uid'] || 0;
 	
 	var shop_id = Number(query['shop_id']);
+
 	var json_result = null;
+
 	if(shop_id > 0){
 		json_result = ShopCache.getShopDetail(uid,shop_id);
+
 		if(json_result != null){
 			json_result['error'] = 0;
 			callback(0,json_result);
 			return;
 		}else{
 			callback(0,{
-				'error' : 1
+				'error' : 1004
 			});
 		}
 	}else{
 		callback(0,{
-			'error' : 1
+			'error' : 1006
 		});
 	}
 
