@@ -561,3 +561,18 @@ exports.getMyShopItemDbParams = function(item_id){
 	}
 	return null;
 }
+
+exports.getGameShopList = function(uid,city,area_code,category_code,page_size)
+{
+	var list = [];
+	for(var key in g_shop_cache['dict']){
+		var shop_info =g_shop_cache['dict'][key];
+		if(shop_info != null){
+			if(shop_info.matchFilter(city,area_code,category_code)){
+				list.push(shop_info.getShopBasicinfo());
+			}
+		}
+	}
+	list.sort(function(){ return 0.5 - Math.random();});
+	return list.slice(0,page_size);
+}

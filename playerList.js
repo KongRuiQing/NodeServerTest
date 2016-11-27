@@ -86,7 +86,7 @@ g_playerlist.InitFromDb = function(
 		var item_id = player_favorites_item[i]['item_id'];
 		var shop_id = player_favorites_item[i]['shop_id'];
 		var add_time = player_favorites_item[i]['add_time'];
-		logger.log("PLAYER_LIST",add_time);
+		//logger.log("PLAYER_LIST",add_time);
 		if(this.playerCache[uid] != null){
 			this.playerCache[uid]['favorites'].push({
 				'shop_id' : shop_id,
@@ -358,92 +358,9 @@ exports.getMyAttention = function(guid){
 }
 
 
-exports.changeSex = function(guid,sex){
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null){
-		logger.warn("PLAYER_LIST","changeSex:uid = null,guid:" + guid);
-		logger.log("PLAYER_LIST","All guid is:");
-		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
-		return {
-			'error' : 1
-		};
-	}
-	var player_info = g_playerlist['playerCache'][uid];
-	if(sex != player_info['sex']){
-		player_info['sex'] = sex;
-		db_proxy.ChangeSex(uid,sex);
-	}
-	return {
-		'error' : 0
-	};
-}
 
-exports.changeNickName = function(guid,nick_name){
 
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null){
-		logger.warn("PLAYER_LIST","changeSex:uid = null,guid:" + guid);
-		logger.log("PLAYER_LIST","All guid is:");
-		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
-		return {
-			'error' : 1
-		};
-	}
-	var player_info = g_playerlist['playerCache'][uid];
-	if(nick_name != player_info['nick_name']){
-		player_info['nick_name'] = nick_name;
-		db_proxy.ChangeNickName(uid,nick_name);
-	}
 
-	return {
-		'error' : 0,
-		'nick_name' : nick_name
-	};
-}
-
-exports.changeBirthday = function(guid,birthday_timestamp){
-
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null){
-		logger.warn("PLAYER_LIST","changeSex:uid = null,guid:" + guid);
-		logger.log("PLAYER_LIST","All guid is:");
-		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
-		return {
-			'error' : 1
-		};
-	}
-	var player_info = g_playerlist['playerCache'][uid];
-	if(birthday_timestamp != player_info['birthday_timestamp']){
-		player_info['birthday_timestamp'] = birthday_timestamp;
-		db_proxy.ChangeBirthday(uid,birthday_timestamp);
-	}
-
-	return {
-		'error' : 0,
-		'birthday':birthday_timestamp
-	};
-}
-
-exports.changeSign = function(guid,sign){
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null){
-		logger.warn("PLAYER_LIST","changeSex:uid = null,guid:" + guid);
-		logger.log("PLAYER_LIST","All guid is:");
-		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
-		return {
-			'error' : 1
-		};
-	}
-	var player_info = g_playerlist['playerCache'][uid];
-	if(sign != player_info['sign']){
-		player_info['sign'] = sign;
-		db_proxy.ChangeSign(uid,sign);
-	}
-	return {
-		'error' : 0,
-		'sign':sign
-	};
-}
 
 exports.CheckSeller = function(guid){
 	var uid = g_playerlist['guid_to_uid'][guid];

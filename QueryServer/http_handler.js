@@ -323,3 +323,36 @@ exports.getMyActivity = function(headers,query,callback){
 	});
 	return;
 }
+
+exports.getGameShopList = function(){
+
+	var zone = Number(query['area_code'] || 0);
+	var city = Number(query['city_no'] || 0);
+	var guid = headers['guid'];
+
+	var category = Number(query['cate_code'] || 0) ;
+
+	var uid = PlayerCache.getUid(guid);
+	
+	var json_result = {'error' : 0};
+	if(city == 0){
+		json_result['error'] = 1010;
+		callback(true,json_result);
+		return;
+	}
+	if(uid == 0){
+		json_result['error'] = 1001;
+		callback(true,json_result);
+		return;
+	}
+
+
+	var page_size = 10;
+	
+	var shop_list = ShopCache.getGameShopList(uid,city,zone,category,page_size);
+	
+	json_result['list'] = shop_list;
+	json_result['count'] = shop_list.length;
+
+	callback(0,json_result);
+}
