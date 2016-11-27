@@ -313,15 +313,9 @@ exports.changeUserInfo =function(fields,files,callback){
 	};
 	var key_field = ['nick_name','sex','birthday','sign','address','email','name','telephone','verify_code'];
 
-	for(var key in key_field){
-		if(! key in fields){
-			json_result['error'] = 2;
-			json_result['miss_key'] = key;
-			break;
-		}
-	}
-	logger.log("HTTP_HANDLER","[changeUserInfo] birthday:" + moment(fields['birthday']).format('YYYY-MM-DD HH:mm:ss'));
-	logger.log("HTTP_HANDLER","[changeUserInfo] now:" + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
+	
+	//logger.log("HTTP_HANDLER","[changeUserInfo] birthday:" + moment(fields['birthday']).format('YYYY-MM-DD HH:mm:ss'));
+	//logger.log("HTTP_HANDLER","[changeUserInfo] now:" + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
 	
 	if(moment(fields['birthday']).isAfter(moment(Date.now()))){
 		json_result['error'] = 1007;
