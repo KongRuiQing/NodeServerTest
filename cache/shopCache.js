@@ -333,10 +333,10 @@ exports.attentionShop = function(uid,shop_id){
 		if(shop_info.ownAttention(uid)){
 			shop_info.addAttention(uid);
 		}
-		return true;
+		return shop_info.getShopAttentionInfo();
 	}
 
-	return false;
+	return null;
 }
 
 exports.cancelAttentionShop = function(uid,shop_id){

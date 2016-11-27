@@ -246,6 +246,13 @@ exports.changeShopState = function(fields,files,callback){
 }
 
 exports.attentionShop = function(fields,files,callback){
+	if(! 'guid' in fields){
+		callback(true,{
+			'error' : 1001
+		});
+		return;
+	}
+
 	var guid = fields['guid'];
 	var shop_id = Number(fields['shop_id']);
 
@@ -256,9 +263,9 @@ exports.attentionShop = function(fields,files,callback){
 	};
 	if(player_attention_shop_info != null && player_attention_shop_info['error'] == 0){
 		var result = ShopProxy.attentionShop(player_attention_shop_info['uid'],shop_id);
-		if(result){
+		if(result != null){
 			db.attentionShop(player_attention_shop_info['uid'],shop_id,1,player_attention_shop_info['attention_time']);
-			json_result['shop_id'] = shop_id;
+			json_result['shop_info'] = result;
 			json_result['error'] = 0;
 		}else{
 			json_result['error'] = 5;
@@ -268,6 +275,7 @@ exports.attentionShop = function(fields,files,callback){
 	}else{
 		json_result['error'] = player_attention_shop_info['error'];
 	}
+	//这里应该返回关注商铺的基本信息
 	callback(true,json_result);
 }
 
