@@ -559,7 +559,7 @@ exports.attentionShop = function(guid,shop_id){
 		
 	}else{
 
-		return {'error' : 1};
+		return {'error' : 1005};
 	}
 }
 

@@ -268,10 +268,10 @@ exports.attentionShop = function(fields,files,callback){
 			json_result['shop_info'] = result;
 			json_result['error'] = 0;
 		}else{
-			json_result['error'] = 5;
+			json_result['error'] = 1004;
 		}
 	}else if(player_attention_shop_info == null){
-		json_result['error'] = 4;
+		json_result['error'] = 1001;
 	}else{
 		json_result['error'] = player_attention_shop_info['error'];
 	}
