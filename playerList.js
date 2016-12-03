@@ -3,7 +3,7 @@ var util = require('util');
 var logger = require('./logger').logger();
 var ShopProxy = require('./cache/shopCache');
 var moment = require('moment');
-
+var Player = require("./Bean/Player");
 g_playerlist = {
 	'player_online_list':{},
 	'playerCache':{},
@@ -14,56 +14,35 @@ g_playerlist = {
 };
 
 
-g_playerlist.removePlayerByUID = function(uid)
-{
-	if(this.player_online_list[uid]){
-		this.player_online_list[uid] = null;
-	}
-}
-
-g_playerlist.getPlayerInfo = function(uid){
-	if(this.playerCache[uid]){
-		return this.playerCache[uid];
-	}
-	return null;
-}
-
-g_playerlist.InitFromDb = function(
+exports.InitFromDb = function(
 	all_user_info,
 	all_login_info,
 	player_attention_shop_list,
 	player_favorites_item){
 
 	for(var i in all_login_info){
+
 		var uid = parseInt(all_login_info[i]['Id']);
-		this.playerCache[uid] = {
-			"uid": uid,
-			"account":all_login_info[i]['Account'],
-			"password":all_login_info[i]['Password'],
-			'state' : Number(all_login_info[i]['state'])
-		};
-		this['account_uid'][all_login_info[i]['Account']] = all_login_info[i]['Id'];
+		g_playerlist['playerCache'][uid] = new Player();
+
+		g_playerlist['playerCache'][uid].setLoginInfo(
+			all_login_info[i]['Account']
+			,all_login_info[i]['Password']
+			,Number(all_login_info[i]['state']));
 		
-		this.MaxUID = Math.max(this.MaxUID,uid);
+		g_playerlist['account_uid'][all_login_info[i]['Account']] = all_login_info[i]['Id'];
+		
+		g_playerlist['MaxUID'] = Math.max(g_playerlist['MaxUID'],uid);
+
+		logger.log("PLAYER_LIST","[InitFromDb] total login info =" + all_login_info.length);
 	}
 
 	for(var i in all_user_info){
 		var uid = all_user_info[i]['id'];
 
-		if(this.playerCache[uid] != null){
-			this.playerCache[uid]['head'] = all_user_info[i]['head'];
-			this.playerCache[uid]['name'] = all_user_info[i]['name'];
+		if(g_playerlist['playerCache'][uid] != null){
 
-			this.playerCache[uid]['birthday_timestamp'] = all_user_info[i]['birthday_timestamp'];
-			this.playerCache[uid]['sign'] = all_user_info[i]['sign'] ;
-			this.playerCache[uid]['address'] = all_user_info[i]['address'] ;
-			this.playerCache[uid]['telephone'] = all_user_info[i]['telephone'];
-			this.playerCache[uid]['email'] = all_user_info[i]['email'];
-			this.playerCache[uid]['real_name'] = all_user_info[i]['real_name'];
-			this.playerCache[uid]['attention_shop'] = [];
-			this.playerCache[uid]['sex'] = all_user_info[i]['sex'];
-			this.playerCache[uid]['shop_id'] = parseInt(all_user_info[i]['shop_id']);
-			this.playerCache[uid]['favorites'] = [];
+			g_playerlist['playerCache'][uid].setUserInfo(all_user_info[i]);
 		}
 	}
 	//logger.log("PLAYER_LIST",'Init Player Attention Shop Num : ' + player_attention_shop_list.length);
@@ -72,12 +51,12 @@ g_playerlist.InitFromDb = function(
 		var uid = player_attention_shop_list[i]['uid'];
 		var shop_id = player_attention_shop_list[i]['shop_id'];
 		var attention_time = player_attention_shop_list[i]['attention_time'];
+		var remark = player_attention_shop_list[i]['attention_remark'];
 
-		if(this.playerCache[uid] != null){
-			this.playerCache[uid]['attention_shop'].push({
-				'shop_id' : shop_id,
-				'attention_time' : attention_time
-			});
+
+		if(g_playerlist['playerCache'][uid] != null){
+			g_playerlist['playerCache'][uid].attentionShop(shop_id,attention_time,remark);
+			
 		}
 	}
 
@@ -86,50 +65,47 @@ g_playerlist.InitFromDb = function(
 		var item_id = player_favorites_item[i]['item_id'];
 		var shop_id = player_favorites_item[i]['shop_id'];
 		var add_time = player_favorites_item[i]['add_time'];
-		//logger.log("PLAYER_LIST",add_time);
-		if(this.playerCache[uid] != null){
-			this.playerCache[uid]['favorites'].push({
-				'shop_id' : shop_id,
-				'item_id' : item_id,
-				'add_time' : add_time
-			});
+		logger.log("PLAYER_LIST","[InitFromDb] uid = " + uid + " item_id = " + item_id);
+		
+		if(g_playerlist['playerCache'][uid] != null){
+			g_playerlist['playerCache'][uid].addFavoritesItem(shop_id,item_id,add_time);
 		}
 	}
+
 }
 
 exports.CheckLogin = function(login_account,login_password){
+
 	var uid = g_playerlist['account_uid'][login_account];
-	logger.log("PLAYER_LIST",'CheckLogin:uid:' + uid);
+	logger.log("PLAYER_LIST",'[CheckLogin] login_account = '+ login_account +' uid:' + uid);
+	if(uid == null){
+		//logger.log("PLAYER_LIST",'[CheckLogin] g_playerlist["account_uid"]:' + util.inspect(g_playerlist['account_uid']));
+		return 1011;
+	}
 	if(g_playerlist['playerCache'][uid] == null){
-		console.log("false1");
-		return 3;
+		//console.log("false1");
+		logger.log("PLAYER_LIST",'[CheckLogin] playerCache:' + util.inspect(g_playerlist['account_uid']));
+		return 1012;
 	}
 	var player_info = g_playerlist['playerCache'][uid];
-
-	if(player_info['state'] == 1){
-
-		return 2;
-	}
-	if(g_playerlist['playerCache'][uid]['password'] === login_password){
-		//console.log("true");
-		return 0;
+	var error_code = player_info.canLogin(login_password);
+	if(error_code > 0){
+		logger.log("PLAYER_LIST","[CheckLogin] check player login result:" + error_code);
+		return error_code;
 	}
 
-	return 1;
+	return 0;
+	
 }
 
 exports.IsLogin = function(login_account){
+
 	var uid = g_playerlist['account_uid'][login_account];
 	
 	if(g_playerlist['player_online_list'][uid] != null){
 		return true;
 	}
 	return false;
-}
-
-g_playerlist.KickPlayer = function(login_account){
-	var uid = this.account_uid[login_account];
-	this.removePlayerByUID(uid)
 }
 
 function getUTC() {  
@@ -156,41 +132,29 @@ function generate(count) {
 	return str;
 }
 
+g_playerlist.Login = function(login_account){
 
+	var uid = this['account_uid'][login_account];
+	var player_info = this['playerCache'][uid];
+
+	var guid = generate(10);
+	//logger.log("PLAYER_LIST","[Login] account : " + login_account, + " guid:" + guid + " is login");
+	this['player_online_list'][uid] = guid;
+	this['guid_to_uid'][guid] = uid;
+
+	player_info.setLoginGuid(guid);
+
+	return player_info.getUserLoginInfo();
+}
 
 exports.Login = function(login_account){
 
-	var uid = g_playerlist['account_uid'][login_account];
-	var player_info = g_playerlist['playerCache'][uid];
-
-	var guid = generate(10);
-	g_playerlist['player_online_list'][uid] = guid;
-	g_playerlist['guid_to_uid'][guid] = uid;
-
-	var json_login = {};
-
-	json_login['uid'] = uid;
-	json_login['guid'] = guid;
-
-	json_login['head'] = player_info['head'];
-	json_login['nick_name'] = player_info['name'];
-	json_login['sex'] = player_info['sex'];
-
-	if(player_info['birthday_timestamp']){
-		json_login['birthday_timestamp'] = player_info['birthday_timestamp'];
-	}	
-		
-	json_login['sign'] = player_info['sign'];	
-	json_login['address'] = player_info['address'];	
-	json_login['telephone'] = player_info['telephone'];	
-	json_login['email'] = player_info['email'];	
-	json_login['real_name'] = player_info['real_name'];	
-	json_login['shop_id'] = player_info['shop_id'];
-	return json_login;
+	return g_playerlist.Login(login_account);
+	
 }
 
-g_playerlist.CheckRegTelephone = function(telephone){
-	var uid = this.account_uid[telephone];
+exports.CheckRegTelephone = function(telephone){
+	var uid = g_playerlist['account_uid'][telephone];
 	if(uid == null){
 		return true;
 	}
@@ -198,13 +162,13 @@ g_playerlist.CheckRegTelephone = function(telephone){
 	return false;
 }
 
-g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
+exports.RegisterStep = function(step,client_guid,telephone,code,password){
 	
 	if(step == 1){
-		var uid = this.account_uid[telephone];
+		var uid = g_playerlist['account_uid'][telephone];
 		if( uid == null ){
 			var guid = generate(10);
-			this.reg_account[guid] = {
+			g_playerlist['reg_account'][guid] = {
 				"guid" : guid,
 				'telephone':telephone,
 				'code' : '1234',
@@ -222,10 +186,10 @@ g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
 			};
 		}
 	}else if(step == 2){
-		var uid = this.account_uid[telephone];
+		var uid = g_playerlist['account_uid'][telephone];
 		
 		if(!uid && client_guid){
-			var reg = this.reg_account[client_guid];
+			var reg = g_playerlist['reg_account'][client_guid];
 			if(!reg){
 				return {
 					'error' : 1
@@ -252,11 +216,11 @@ g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
 		}
 		
 	}else if(step == 3){
-		var uid = this.account_uid[telephone];
+		var uid = g_playerlist['account_uid'][telephone];
 		
 		if(!uid && client_guid){
 			//console.log("reg_account = " + util.inspect(this.reg_account));
-			var reg = this.reg_account[client_guid];
+			var reg = g_playerlist['reg_account'][client_guid];
 			if(!reg){
 				return {
 					'error' : 1
@@ -264,11 +228,13 @@ g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
 			}else{
 				if(reg['telephone'] == telephone && reg['code'] == code){
 					var uid = g_playerlist.Register(telephone,password);
+
 					var loginInfo = g_playerlist.Login(telephone);
+
 					loginInfo['step'] = 4;
 					loginInfo['uid'] = uid;
 
-					this.reg_account[client_guid] = null;
+					g_playerlist['reg_account'][client_guid] = null;
 
 					return loginInfo;
 				}else{
@@ -289,33 +255,29 @@ g_playerlist.RegisterStep = function(step,client_guid,telephone,code,password){
 }
 
 function newPlayer(uid){
-	return {
-		'head' : "player/default.png",
-		'sex' : 0,
-		'shop_id' : 0,
-		'name' : "用户" + uid,
-		'attention_shop' : [],
-		'favorites' : []
-	};
+	var player = new Player(uid);
+	player.initNewPlayer();
+
+	return player;
 }
 
 g_playerlist.Register = function(telephone,password){
-	var uid = this.account_uid[telephone];
+	var uid = this['account_uid'][telephone];
 	if(uid != null){
 		return false;
 	}
-	uid = g_playerlist.MaxUID + 1;
-	g_playerlist.MaxUID = g_playerlist.MaxUID + 1;
+	uid = this.MaxUID + 1;
+	this.MaxUID = g_playerlist.MaxUID + 1;
 
-	this.account_uid[telephone] = uid;
+	this['account_uid'][telephone] = uid;
 
-	this.player_online_list[uid] = {};
+	this['player_online_list'][uid] = {};
 
-	this.playerCache[uid] = newPlayer(uid);
+	this['playerCache'][uid] = newPlayer(uid);
 	
-	this.account_uid[telephone] = uid;
+	this['account_uid'][telephone] = uid;
 
-	this.reg_account[telephone] = null;
+	this['reg_account'][telephone] = null;
 
 	db_proxy.AddNewPlayer(uid,telephone,password,function(success){
 		if(success){
@@ -327,10 +289,14 @@ g_playerlist.Register = function(telephone,password){
 
 exports.getMyFavoritesItems = function(guid,page){
 	var uid = g_playerlist['guid_to_uid'][guid];
+	var page_size = 15;
 	if(uid != null){
 		var player_info = g_playerlist['playerCache'][uid];
 		if(player_info != null){
-			return player_info['favorites'].slice((page - 1) * 15,page * 15 - 1);
+			var list = player_info.getMyFavoritemItems(page,page_size);
+			//logger.log("PLAYER_LIST","[getMyFavoritemItems] list= " + util.inspect(list));
+			return list;
+			//return player_info['favorites'].slice((page - 1) * 15,page * 15 - 1);
 		}
 	}
 	logger.warn("PLAYER_LIST","[getMyFavoritesItems] can't find uid or player info");
@@ -347,19 +313,15 @@ exports.getMyAttention = function(guid){
 		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
 		return [];
 	}
-	logger.log("PLAYER_LIST","[getMyAttention] uid: " + uid);
+	//logger.log("PLAYER_LIST","[getMyAttention] uid: " + uid);
 
-	var player = g_playerlist['playerCache'][uid];
+	var player_info = g_playerlist['playerCache'][uid];
 
-	if(player != null){
-		return player['attention_shop'];
+	if(player_info != null){
+		return player_info.getMyAttention();
 	}
 	return [];
 }
-
-
-
-
 
 
 exports.CheckSeller = function(guid){
@@ -375,12 +337,12 @@ exports.CheckSeller = function(guid){
 
 	//logger.log("PLAYER_LIST","uid = " + uid);
 	var player_info = g_playerlist['playerCache'][uid];
-	if(player_info != null && player_info['shop_id'] == 0){
-		return uid;
+	if(player_info == null || player_info.isSeller()){
+		return 0;
 	}
 	//logger.log("PLAYER_LIST",util.inspect(g_playerlist['playerCache']));
 
-	return 0;
+	return uid;
 }
 
 exports.SetUserShopId = function(guid,shop_id){
@@ -396,26 +358,12 @@ exports.SetUserShopId = function(guid,shop_id){
 	}
 	var player_info = g_playerlist['playerCache'][uid];
 
-	player_info['shop_id'] = shop_id;
+	player_info.beSeller(shop_id);
 }
 
-exports.changeShopState = function(guid){
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null){
-		logger.error("PLAYER_LIST","[changeShopState]No guid find in guid:" + guid);
-		return;
-	}
-
-	var player_info = g_playerlist['playerCache'][uid];
-	if(player_info == null){
-		logger.error("PLAYER_LIST","[changeShopState] No player info find uid:" + uid);
-		return;
-	}
-
-	return player_info['shop_id'];
-}
 
 exports.attentionShop = function(guid,shop_id){
+
 	var uid = g_playerlist['guid_to_uid'][guid];
 	if(uid == null || uid == 0){
 		logger.error("PLAYER_LIST","[attentionShop] No guid find in guid: " + guid);
@@ -435,11 +383,10 @@ exports.attentionShop = function(guid,shop_id){
 	}
 
 	if(!find_attention_shop){
+
 		var now_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-		player_info['attention_shop'].push({
-			'shop_id' : shop_id,
-			'attention_time' : now_time
-		});
+		player_info.attentionShop(shop_id,now_time,"");
+
 
 		return {
 			'error' : 0,
@@ -470,12 +417,9 @@ exports.addToFavorites = function(guid,shop_id,item_id){
 					return 0;
 				}
 			}
+			var now_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+			player_info.addFavoritesItem(shop_id,item_id,now_time);
 			
-			player_info['favorites'].push({
-				'shop_id' : shop_id,
-				'item_id' : item_id,
-				'add_time' : moment(Date.now()).format('YYYY-MM-DD HH:mm:ss')
-			});
 			//logger.log("PLAYER_LIST",moment(now).format('YYYY-MM-DD HH:mm:ss'));
 		}
 		
@@ -486,16 +430,23 @@ exports.addToFavorites = function(guid,shop_id,item_id){
 
 exports.changeUserInfo = function(uid,user_info_list){
 	if(uid in g_playerlist['playerCache']){
+
 		var player_info = g_playerlist['playerCache'][uid];
-		player_info['name'] = user_info_list[0];
-		player_info['sex'] = user_info_list[1];
-		player_info['birthday_timestamp'] = user_info_list[2];
-		player_info['sign'] = user_info_list[3];
-		player_info['address'] = user_info_list[4];
-		player_info['email'] = user_info_list[5];
-		player_info['real_name'] = user_info_list[6];
-		player_info['telephone'] = user_info_list[7];
-		player_info['verify_code'] = user_info_list[8];
+
+		if(player_info != null){
+			player_info.ChangeUserInfo(
+				player_info.getHead()
+				,user_info_list[0] // name
+				,user_info_list[2] // birthday_timestamp
+				,user_info_list[3] // sign
+				,user_info_list[4] // address
+				,user_info_list[7] // telephone
+				,user_info_list[5] // email
+				,user_info_list[6] // real_name
+				,user_info_list[1] // sex
+				,user_info_list[8] // shop_id
+				);
+		}
 	}
 	
 }
@@ -504,7 +455,7 @@ exports.getShopId = function(guid){
 	if(guid in g_playerlist['guid_to_uid']){
 		var uid = g_playerlist['guid_to_uid'][guid];
 		if(uid in g_playerlist['playerCache']){
-			return g_playerlist['playerCache'][uid]['shop_id'];
+			return g_playerlist['playerCache'][uid].getShopId();
 		}
 	}
 
@@ -513,21 +464,23 @@ exports.getShopId = function(guid){
 
 exports.removeFavoritesItem = function(guid,favorites_id){
 	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid > 0){
+	if(uid != null && uid > 0){
 		var player_info = g_playerlist['playerCache'][uid];
-		var my_favorites_items = player_info['favorites'];
-		for(var key in my_favorites_items){
-			if(my_favorites_items[key]['item_id'] == favorites_id){
 
-				my_favorites_items[key] = null;
-				my_favorites_items.splice(key,1);
+		if(player_info.hasFavoritesItem(favorites_id)){
+			player_info.removeFavoritesItem(favorites_id);
+			var list = player_info.getMyFavoritemItems();
+			//logger.log("PLAYER_LIST","[removeFavoritesItem]" + util.inspect(list));
+			return {
+				'item_id' : favorites_id,
+				'uid' : uid
+			};
 
-				return {
-					'item_id' : favorites_id,
-					'uid' : uid
-				};
-			}
+		}else{
+
 		}
+
+		
 	}
 
 	return null;
@@ -538,7 +491,7 @@ exports.checkMyActivity = function(guid){
 	if(uid > 0){
 		var player_info = g_playerlist['playerCache'][uid];
 		if(player_info != null){
-			var shop_id = player_info['shop_id'];
+			var shop_id = player_info.getShopId();
 			if(shop_id > 0){
 				return {
 					"uid" : uid,
@@ -556,7 +509,7 @@ exports.checkRenewalActivity = function(guid){
 	if(uid > 0){
 		var player_info = g_playerlist['playerCache'][uid];
 		if(player_info != null){
-			var shop_id = player_info['shop_id'];
+			var shop_id = player_info.getShopId();
 			if(shop_id > 0){
 				return {
 					'error' : 0,
@@ -578,26 +531,13 @@ exports.cancelAttentionShop = function(guid,shop_id){
 	if(uid > 0){
 		var player_info = g_playerlist['playerCache'][uid];
 
-		if(player_info != null && 'attention_shop' in player_info){
-			var find = false;
-			logger.log("PLAYER_LIST","[cancelAttentionShop] player_info['attention_shop'] = " + util.inspect(player_info['attention_shop']));
-			for(var i = 0; i < player_info['attention_shop'].length; ++i){
-				if(player_info['attention_shop'][i]['shop_id'] == shop_id){
-					find = true;
-					player_info['attention_shop'].splice(i,1);
-					break;
-				}
-			}
-
-			if(find){
-				return {
-					'uid' : uid
-				};
-			}else{
-				return {
-					'error' : '1002'
-				};
-			}
+		if(player_info != null && player_info.hasAttentionShop(shop_id)){
+			player_info.cancelAttentionShop(shop_id);
+			
+			return {
+				'uid' : uid
+			};
+			
 		}
 	}else{
 		return {

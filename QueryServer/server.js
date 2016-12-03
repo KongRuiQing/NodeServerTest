@@ -23,6 +23,7 @@ handle_http['/game_shop_list'] = http_handler.getGameShopList;
 handle_http['/get_my_shop_item_list'] = http_handler.getMyShopItemList;
 handle_http['/get_my_shop_info'] = http_handler.getMyShopInfo;
 handle_http['/my_activity'] = http_handler.getMyActivity;
+handle_http['/attention_board_list'] = http_handler.getShopAttentionBoard;
 
 //console.log(http_handler.getApkVersion("","",function(){}));
 

@@ -26,13 +26,12 @@ exports.login = function(fields,files,callback){
 	var login_password = fields['password'];
 	
 	var json_result = {};
+	
 	var login_result = PlayerProxy.CheckLogin(login_account,login_password);
 	
 	if( login_result == 0){
 
-		if(PlayerProxy.IsLogin(login_account)){
-			g_playerlist.KickPlayer(login_account);
-		}
+		
 		var login_response = PlayerProxy.Login(login_account);
 		json_result['user_info'] = login_response;
 		json_result['success'] = true;
@@ -53,7 +52,7 @@ exports.register = function(fields,files,callback){
 	var code = fields['code'] || null;
 	var password = fields['password'] || null;
 	//console.log("register start:" + util.inspect(fields));
-	var result = g_playerlist.RegisterStep(step,guid,telephone,code,password);
+	var result = PlayerProxy.RegisterStep(step,guid,telephone,code,password);
 	//console.log("register end:" + util.inspect(result));
 	callback(true,result);
 }
@@ -233,7 +232,7 @@ exports.becomeSeller = function(fields,files,callback){
 
 exports.changeShopState = function(fields,files,callback){
 	var guid = fields['guid'];
-	var shopId = PlayerProxy.changeShopState(guid);
+	var shopId = PlayerProxy.getShopId(guid);
 	var json_result = {};
 	if(shopId > 0){
 		ShopProxy.changeShopState(shopId);

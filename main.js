@@ -1,7 +1,7 @@
 var net = require('net');
 var db = require('./mysqlproxy');
 var iconv = require('iconv-lite');
-var player = require("./player");
+
 var http = require('http');
 var path=require('path');
 var url=require('url');

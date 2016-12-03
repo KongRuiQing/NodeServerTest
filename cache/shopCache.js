@@ -131,7 +131,7 @@ exports.InitFromDb = function(
 
 }
 
-exports.getShopList = function(uid,city_no,area_code,category,page,page_size){
+exports.getShopList = function(uid,city_no,area_code,category,page,page_size,search_key){
 	var all_list = [];
 	
 	for(var i in g_shop_cache['dict']){
@@ -139,7 +139,14 @@ exports.getShopList = function(uid,city_no,area_code,category,page,page_size){
 		var shop_info = g_shop_cache['dict'][i];
 
 		if(shop_info && shop_info.matchFilter(city_no,area_code,category)){
-			all_list.push(shop_info.getShopBasicInfo(uid));
+			if(search_key.length > 0){
+				if(shop_info.search(search_key)){
+					all_list.push(shop_info.getShopBasicInfo(uid));
+				}
+			}else{
+				all_list.push(shop_info.getShopBasicInfo(uid));
+			}
+			
 		}
 	}
 	
@@ -264,7 +271,7 @@ exports.getMyFavoritesItems = function(items){
 			if(shop != null){
 				var shop_basic_info = shop.getShopBasicInfo(0);
 				var favorites_item = shop_item.getFavoritesItemJsonValue();
-				favorites_item['add_favorites_time'] = items[i]['add_time'];
+				favorites_item['add_favorites_time'] = items[i]['add_favorites_time'];
 				favorites_item['id'] = item_id;
 				favorites_item['shop_id'] = shop_id;
 				favorites_item['shop_name'] = shop_basic_info['shop_name'];
@@ -575,4 +582,28 @@ exports.getGameShopList = function(uid,city,area_code,category_code,page_size)
 	}
 	list.sort(function(){ return 0.5 - Math.random();});
 	return list.slice(0,page_size);
+}
+
+exports.getShopAttentionBoard = function(uid,city,area_code,category_code,search_key){
+
+	var list = [];
+
+	for(var key in g_shop_cache['dict']){
+		var shop_info = g_shop_cache['dict'][key];
+		if(shop_info != null){
+			if(shop_info.matchFilter(city,area_code,category_code)){
+				if(search_key.length > 0){
+					if(shop_info.search(search_key)){
+						list.push(shop_info.getShopBoardInfo());
+					}
+				}else{
+					list.push(shop_info.getShopBoardInfo());
+				}
+			}
+		}
+	}
+
+	return list.sort(function(a,b){
+		return b['attention_num'] - a['attention_num']
+	});
 }

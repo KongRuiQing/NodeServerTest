@@ -11,13 +11,11 @@ var server = null;
 
 
 var handle_http = {};
-handle_http['/become_seller'] = http_handler.becomeSeller;
+
 handle_http['/login'] = http_handler.login;
 handle_http['/register'] = http_handler.register;
-handle_http['/change_sex'] = http_handler.changeSex;
-handle_http['/change_nickname'] = http_handler.changeNickName;
-handle_http['/change_birthday'] = http_handler.changeBirthday;
-handle_http['/change_sign'] = http_handler.changeSign;
+handle_http['/become_seller'] = http_handler.becomeSeller;
+
 handle_http['/attention_shop'] = http_handler.attentionShop;
 handle_http['/add_favorites'] = http_handler.addToFavorites;
 handle_http['/change_user_info'] = http_handler.changeUserInfo;
@@ -42,7 +40,7 @@ exports.start = function(Host,Port)
 			form.maxFieldsSize = 2 * 1024 * 1024;
 			form.keepExtensions = true;
 
-			logger.log("POST SERVER",pathname);
+			logger.log("POST SERVER","url:" + pathname);
 
 			form.parse(request, function(err, fields, files) {
 				if(err){

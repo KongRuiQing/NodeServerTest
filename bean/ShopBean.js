@@ -1,4 +1,4 @@
-
+"use strict";
 var FindUtil = require("../FindUtil.js");
 
 var ShopBean = function(){
@@ -513,6 +513,30 @@ ShopBean.prototype.getShopAttentionInfo = function(){
 		'shop_name' : this.name,
 		'shop_business' : this.business,
 		'shop_id' : this.id
+	};
+}
+
+ShopBean.prototype.search = function(search_key){
+	if(search_key.length == 0){
+		return true;
+	}
+	if(this.name.indexOf(search_key) >= 0){
+		return true;
+	}
+	return false;
+}
+
+ShopBean.prototype.getShopBoardInfo = function(uid){
+	return {
+		'id' : this.id,
+		'shop_name' : this.name,
+		'shop_address' : this.address_brief,
+		'shop_image' : this.image,
+		'long' : this.longitude,
+		'late' : this.latitude,
+		'shop_attention' : "",
+		'attention_num' : this.attentions.length,
+		'is_attention' : this.ownAttention(uid),
 	};
 }
 

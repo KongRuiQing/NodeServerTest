@@ -1,16 +1,22 @@
+"use strict";
 
-var PlayerAttentionShopInfo = function(shop_id,attention_time){
-	this.shop_id = shop_id;
+var PlayerAttentionShopInfo = function(shop_id,attention_time,remark){
+	this.shop_id = Number(shop_id);
 	this.attention_time = attention_time;
-
+	this.remark = remark;
 };
 
 PlayerAttentionShopInfo.prototype.getJsonValue = function(){
 	return {
 		'shop_id' : this.shop_id,
-		'attention_time' : this.attention_time
+		'attention_time' : this.attention_time,
+		'remark' : this.remark,
 	};
 }
+PlayerAttentionShopInfo.prototype.getShopId = function(){
+	return this.shop_id;
+}
+
 
 var PlayerFavoritesItemInfo = function(shop_id,item_id,add_favorites_time){
 	this.shop_id = shop_id;
@@ -18,9 +24,7 @@ var PlayerFavoritesItemInfo = function(shop_id,item_id,add_favorites_time){
 	this.add_favorites_time = add_favorites_time;
 };
 
-
-
-PlayerFavoritesItemInfo.prototype.getJsonValue = function{
+PlayerFavoritesItemInfo.prototype.getJsonValue = function(){
 
 	return {
 		'shop_id' : this.shop_id,
@@ -59,7 +63,15 @@ var Player = function(){
 
 }
 
-Player.prototype.InitUserInfo = function(db_row) {
+Player.prototype.initNewPlayer = function(uid){
+	this.id = Number(uid);
+	this.head = "player/default.png";
+	this.sex = 0;
+	this.shop_id = 0;
+	this.nick_name = "用户" + uid;
+}
+
+Player.prototype.setUserInfo = function(db_row) {
 	// user info
 	this.id = Number(db_row['id']);
 	this.head = db_row['head'];
@@ -74,14 +86,31 @@ Player.prototype.InitUserInfo = function(db_row) {
 	this.shop_id = Number(db_row['shop_id']);
 };
 
-Player.prototype.ChangeUserInfo = function(){
 
+
+Player.prototype.ChangeUserInfo = function(
+	head,name,birthday_timestamp,sign,address,telephone,email,real_name,sex){
+	
+	this.head = head;
+	this.name = name;
+	this.birthday_timestamp = birthday_timestamp;
+	this.sign = sign;
+	this.address = address;
+	this.telephone = telephone;
+	this.email = email;
+	this.real_name = real_name;
+	this.sex = sex;
 }
 
 Player.prototype.setLoginInfo = function(login_account,login_password,state){
+
 	this.login_account = login_account;
 	this.login_password = login_password;
 	this.state = state;
+}
+
+Player.prototype.setLoginGuid = function(guid){
+	this.guid = guid;
 }
 
 Player.prototype.login = function(guid){
@@ -89,8 +118,8 @@ Player.prototype.login = function(guid){
 	this.last_login_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 }
 
-Player.prototype.attentionShop = function(shop_id,attention_time){
-	var info = new PlayerAttentionShopInfo(shop_id,attention_time);
+Player.prototype.attentionShop = function(shop_id,attention_time,remark){
+	var info = new PlayerAttentionShopInfo(shop_id,attention_time,remark);
 	this.attention_shop.push(info);
 }
 
@@ -130,9 +159,27 @@ Player.prototype.canLogin = function(login_password){
 }
 
 Player.prototype.getUserLoginInfo = function(){
-	return {
+	var json_login = {};
 
-	}
+	json_login['uid'] = this.id;
+	json_login['guid'] = this.guid;
+
+	json_login['head'] = this.head;
+	json_login['nick_name'] = this.name;
+	json_login['sex'] = this.sex;
+
+	if(this.birthday_timestamp){
+		json_login['birthday_timestamp'] = this.birthday_timestamp;
+	}	
+		
+	json_login['sign'] = this.sign;	
+	json_login['address'] = this.address;	
+	json_login['telephone'] = this.telephone;	
+	json_login['email'] = this.email;	
+	json_login['real_name'] = this.real_name;	
+	json_login['shop_id'] = this.shop_id;
+
+	return json_login;
 }
 
 Player.prototype.getMyFavoritemItems = function(){
@@ -152,6 +199,42 @@ Player.prototype.beSeller = function(shop_id){
 
 	}
 	this.shop_id = shop_id;
+}
+
+Player.prototype.getMyAttention = function(){
+	var list = [];
+	for(var key in this.attention_shop){
+		list.push(this.attention_shop[key].getJsonValue());
+	}
+	return list;
+}
+
+Player.prototype.getShopId = function(){
+	return this.shop_id;
+}
+
+Player.prototype.getHead = function(){
+	return this.head;
+}
+
+Player.prototype.hasFavoritesItem = function(favorites_item_id){
+	for(var key in this.favorites){
+		if(this.favorites[key].getItemId() == favorites_item_id){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Player.prototype.hasAttentionShop = function(shop_id){
+	for(var key in this.attention_shop){
+		if(this.attention_shop[key].getShopId() == shop_id){
+			return true;
+		}
+	}
+
+	return false;
 }
 
 module.exports = Player;

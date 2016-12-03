@@ -58,19 +58,23 @@ exports.getShopList = function(headers, query,callback){
 	if(page <= 0){
 		page = 1;
 	}
-	var zone = parseInt(query['area_code']) || 0;
-	var city = parseInt(query['city_no']);
+	var zone = Number(query['area_code'] || 0) ;
+	var city = Number(query['city_no'] || 0);
 	var guid = headers['guid'];
 	var uid = PlayerCache.getUid(guid);
 	if(city == 0) city = 167;
-	var category = parseInt(query['cate_code']) || 0;
+	var category = Number(query['cate_code'] || 0) ;
 
 	var page_size = 10;
 	if('page_size' in query){
-		page_size = parseInt(query['page_size']);
+		page_size = Number(query['page_size'] || 0);
+	}
+	var search_key = "";
+	if('search_key' in query){
+		search_key = query['search_key'];
 	}
 
-	var shop_list = ShopCache.getShopList(uid,city,zone,category,page,page_size);
+	var shop_list = ShopCache.getShopList(uid,city,zone,category,page,page_size,search_key);
 	var json_result = {
 		"list" : shop_list['list'],
 		'result' : 0,
@@ -354,5 +358,26 @@ exports.getGameShopList = function(headers,query,callback){
 	json_result['list'] = shop_list;
 	json_result['count'] = shop_list.length;
 
+	callback(0,json_result);
+}
+
+exports.getShopAttentionBoard = function(headers,query,callback){
+
+	var area_code = Number(query['area_code'] || 0);
+	var city = Number(query['city_no'] || 0);
+	var guid = headers['guid'];
+	var search_key = query['search_key'] || "";
+
+	var category = Number(query['cate_code'] || 0) ;
+
+	var uid = PlayerCache.getUid(guid);
+
+	var json_value = ShopCache.getShopAttentionBoard(uid,city,area_code,category,search_key);
+
+	var json_result = {
+		'count' : json_value.length,
+		'list':json_value.slice((page - 1) * page_size,page * page_size),
+	}
+	
 	callback(0,json_result);
 }

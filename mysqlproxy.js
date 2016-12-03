@@ -5,6 +5,7 @@ var friend = require('./logic/friend');
 var logger = require('./logger').logger();
 var ShopCache = require("./cache/shopCache");
 var DbCache = require("./cache/DbCache");
+var PlayerProxy = require("./playerList");
 var db_config = {
 	host     : '139.224.227.82',
 	user     : 'eplus-find',
@@ -54,7 +55,7 @@ function initUserInfoFromDB(callback){
 		
 		var all_user_info = result[0];
 		var all_login_info = result[1];
-		g_playerlist.InitFromDb(all_user_info,all_login_info,result[2],result[3]);
+		PlayerProxy.InitFromDb(all_user_info,all_login_info,result[2],result[3]);
 		logger.log("MYSQL","init userinfo from db");
 	});
 }
