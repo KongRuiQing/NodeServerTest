@@ -67,9 +67,11 @@ exports.InitFromDb = function(db_list_result){
 			}
 		}
 	}
+	//logger.log("DB_CACHE","[Init][init shop_ad] db:" + util.inspect(db_list_result[2]));
 	var list_all_ad_info = db_list_result[2];
 	for(var key in list_all_ad_info){
 		var bean = new AdBean(list_all_ad_info[key]);
+		logger.log("DB_CACHE","[Init][init shop_ad] bean:" + util.inspect(bean.getJsonValue()));
 		g_db_cache['ad_image'].push(bean.getJsonValue());
 	}
 

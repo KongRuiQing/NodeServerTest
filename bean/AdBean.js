@@ -1,14 +1,10 @@
 "use strict";
 
-var AdBean = function(){
-	this.image = "";
-	this.shop_id = 0;
-};
-
-AdBean.prototype.initFromDb = function(DbRow){
-	this.imageg = DbRow['image'];
+var AdBean = function(DbRow){
+	this.image = DbRow['image'];
 	this.shop_id = DbRow['shop_id'];
 };
+
 
 AdBean.prototype.getJsonValue = function(){
 	return {

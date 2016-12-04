@@ -121,8 +121,9 @@ exports.getAdImage = function(headers, query,callback){
 	var json_value = {
 		'ad_image' : []
 	};
+	//logger.log("HTTP_HANDER",util.inspect(json_result));
 	for(var key in json_result){
-		json_value['ad_image'].push(json_result['image']);
+		json_value['ad_image'].push(json_result[key]['image']);
 	}
 	callback(0,json_value);
 	
