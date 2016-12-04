@@ -117,19 +117,16 @@ exports.getShopDetail = function(headers, query,callback)
 
 exports.getAdImage = function(headers, query,callback){
 	
-	db.getAdImage(function(success,content){
-		if(success){
-			var json_value = {};
-			json_value['ad_image'] = [];
-			for(var i in content){
-				json_value['ad_image'].push(content[i]);
-			}
-
-			callback(0,json_value);
-		}else{
-			callback(1,null);
-		}
-	});
+	var json_result = DbCache.getShopAd();
+	var json_value = {
+		'ad_image' : []
+	};
+	for(var key in json_result){
+		json_value['ad_image'].push(json_result['image']);
+	}
+	callback(0,json_value);
+	
+	
 }
 
 exports.getShopSpread = function(headers, query,callback){

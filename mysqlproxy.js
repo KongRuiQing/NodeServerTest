@@ -18,8 +18,11 @@ var db_config = {
 var connection = mysql.createConnection(db_config);
 
 connection.on("error",function(err){
-	logger.error(err);
+
+	logger.error("MySqlError:" + err);
+
 	if(err.code === 'PROTOCOL_CONNECTION_LOST'){
+		connection = null;
 		connection = mysql.createConnection(db_config);
 		connection.connect(function(err_msg){
 			if(err_msg){

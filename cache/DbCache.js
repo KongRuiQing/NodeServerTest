@@ -1,10 +1,11 @@
 var util = require('util');
 var logger = require('../logger').logger();
-
+var AdBean = require("../bean/AdBean");
 g_db_cache = {
 	'area_menu' : {},
 	'city_info' : {},
-	'category_menu' : {}
+	'category_menu' : {},
+	'ad_image' : [],
 };
 
 exports.InitFromDb = function(db_list_result){
@@ -66,6 +67,11 @@ exports.InitFromDb = function(db_list_result){
 			}
 		}
 	}
+	var list_all_ad_info = db_list_result[2];
+	for(var key in list_all_ad_info){
+		var bean = new AdBean(list_all_ad_info[key]);
+		g_db_cache['ad_image'].push(bean.getJsonValue());
+	}
 
 	//logger.log("DB_CACHE",util.inspect(g_db_cache['category_menu']));
 
@@ -115,4 +121,8 @@ exports.getShopCategoryClass = function(){
 
 exports.getShopArea = function(){
 	
+}
+
+exports.getShopAd = function(){
+	return g_db_cache['ad_image'];
 }
