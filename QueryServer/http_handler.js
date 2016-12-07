@@ -24,10 +24,11 @@ function watchApkVersion(root_path){
 
 			var arr = parse_result['name'].split('.');
 			var apk_version_num = 0;
-
+			var apk_version_name = "";
 			arr.forEach(function(num){
-				apk_version_num = apk_version_num * 10 + Number(num);
+				apk_version_name = apk_version_name + "" + num;
 			});
+			apk_version_num = Number(apk_version_name);
 			//console.log(apk_version_num);
 			if(max_apk_num < apk_version_num){
 				max_apk_num = apk_version_num;

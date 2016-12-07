@@ -185,6 +185,7 @@ exports.RegisterStep = function(step,client_guid,telephone,code,password){
 				'error' : 2
 			};
 		}
+		// 
 	}else if(step == 2){
 		var uid = g_playerlist['account_uid'][telephone];
 		
