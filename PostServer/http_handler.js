@@ -616,7 +616,8 @@ exports.saveShopDetail = function(fields,files,callback){
 
 		var uploadFileKey = {
 			'card_image_1' : 'shop/card/',
-			'card_image_2' : 'shop/card/'
+			'card_image_2' : 'shop/card/',
+			'qualification' : 'shop/qualification/'
 		};
 
 		for(var key in uploadFileKey){
@@ -648,6 +649,7 @@ exports.saveShopDetail = function(fields,files,callback){
 			'shop_id':shop_id,
 			'shop_info':save_result
 		};
+		logger.log("HTTP_HANDLER",util.inspect(json_result));
 		//console.log("json_result:" + util.inspect(json_result));
 	}else{
 		json_result['error'] = 1;

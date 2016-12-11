@@ -80,18 +80,30 @@ exports.InitFromDb = function(db_list_result){
 	
 }
 
-exports.getAreaMenu = function(city){
-	if(g_db_cache['area_menu'][city] == null){
-		return {};
+exports.getAreaMenu = function(city_code){
+	if(g_db_cache['area_menu'][city_code] == null){
+		return {
+			'list' : [],
+			'city':{
+				'name' : 'NULL',
+				'code' : 0
+			}
+		};
 	}
-	if(g_db_cache['city_info'][city] == null){
-		return {};
+	if(g_db_cache['city_info'][city_code] == null){
+		return {
+			'list' : [],
+			'city':{
+				'name' : 'NULL',
+				'code' : 0
+			}
+		};
 	}
 
 	return {
-		'list' : g_db_cache['area_menu'][city],
+		'list' : g_db_cache['area_menu'][city_code],
 		'city' : {
-			'name' : g_db_cache['city_info'][city]['name'],
+			'name' : g_db_cache['city_info'][city_code]['name'],
 			'code' : 0
 		}
 	};

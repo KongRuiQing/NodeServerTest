@@ -919,7 +919,8 @@ exports.saveShopDetail = function(json_value){
 	,'wx'
 	,'email'
 	,'card_image_1'
-	,'card_image_2'];
+	,'card_image_2'
+	,'qualification'];
 
 	var db_params = [];
 	params_hash.forEach(function(key){
@@ -928,7 +929,7 @@ exports.saveShopDetail = function(json_value){
 	
 
 	connection.query(
-		"CALL p_save_shop_detail(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+		"CALL p_save_shop_detail(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 		,db_params
 		,function(err,result){
 			if(err){

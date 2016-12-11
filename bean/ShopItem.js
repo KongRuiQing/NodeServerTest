@@ -175,7 +175,7 @@ ShopItem.prototype.getDetailJsonItem = function(){
 		'item_property' : []
 	};
 	for(var i in this.item_propertys){
-		item_detail.push(this.item_propertys[i].getJsonValue());
+		item_detail['item_property'].push(this.item_propertys[i].getJsonValue());
 	}
 
 	return item_detail;

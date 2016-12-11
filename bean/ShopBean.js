@@ -84,6 +84,7 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.city_no = Number(db_row['city_no']);
 	this.area_code = Number(db_row['area_code']);
 	this.address = db_row['address'];
+	this.qualification = db_row['qualification'];
 	this.category_code1 = Number(db_row['category_code1']);
 	this.category_code2 = Number(db_row['category_code2']);
 	this.category_code3 = Number(db_row['category_code3']);
@@ -143,6 +144,7 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	
 	this.business = "";
 	this.card_image = [shop_info["card_image_1"],shop_info["card_image_2"]];
+	this.qualification = "";
 	this.state = 0;
 }
 
@@ -452,6 +454,9 @@ ShopBean.prototype.saveShopDetail = function(json_value){
 		}
 		if('email' in json_value){
 			this.email = json_value['email'];
+		}
+		if('qualification' in json_value){
+			this.qualification = json_value['qualification'];
 		}
 		if('card_image_1' in json_value && json_value['card_image_1'].length > 0){
 			if(this.card_image.length == 0){
