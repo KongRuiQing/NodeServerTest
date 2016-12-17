@@ -18,7 +18,11 @@ exports.InitFromDb = function(
 	all_user_info,
 	all_login_info,
 	player_attention_shop_list,
-	player_favorites_item){
+	player_favorites_item,
+	player_schedule_info,
+	player_schedule_shop,
+	player_schedule_shop_image,
+	player_schedule_shop_comment){
 
 	for(var i in all_login_info){
 
@@ -70,6 +74,48 @@ exports.InitFromDb = function(
 		if(g_playerlist['playerCache'][uid] != null){
 			g_playerlist['playerCache'][uid].addFavoritesItem(shop_id,item_id,add_time);
 		}
+	}
+	//logger.log("PLAYER_LIST","[playerList][init] player_schedule_info:" + util.inspect(player_schedule_info));
+	for(var i in player_schedule_info){
+		var uid = Number(player_schedule_info[i]['uid']);
+
+		var schedule_id = Number(player_schedule_info[i]['schedule_id']);
+		var image = player_schedule_info[i]['image'];
+		if(uid in g_playerlist['playerCache']){
+			g_playerlist['playerCache'][uid].setScheduleImage(schedule_id,image);
+		}
+	}
+
+	for(var i in player_schedule_shop){
+		var uid = Number(player_schedule_shop[i]['uid']);
+		var schedule_id = Number(player_schedule_info[i]['schedule_id']);
+		var shop_id = Number(player_schedule_shop[i]['shop_id']);
+		
+		if(uid in g_playerlist['playerCache']){
+			g_playerlist['playerCache'][uid].setScheduleShopId(schedule_id,shop_id)
+		}
+	}
+
+	for(var i in player_schedule_shop_image){
+		var uid = Number(player_schedule_shop_image['uid']);
+		var schedule_id = Number(player_schedule_shop_image[i]['schedule_id']);
+		var shop_id = Number(player_schedule_shop_image[i]['shop_id']);
+		var image = player_schedule_shop_image[i]['image'];
+		var image_index = Number(player_schedule_shop_image[i]['image_index'])
+		if(uid in g_playerlist['playerCache']){
+			g_playerlist['playerCache'][uid].setScheduleShopImage(schedule_id,shop_id,image_index,image);
+		}
+	}
+
+	for(var i in player_schedule_shop_comment){
+		var uid = Number(player_schedule_shop_comment['uid']);
+		var schedule_id = Number(player_schedule_shop_comment[i]['schedule_id']);
+		var shop_id = Number(player_schedule_shop_comment[i]['shop_id']);
+		var comment = player_schedule_shop_comment[i]['comment'];
+		if(uid in g_playerlist['playerCache']){
+			g_playerlist['playerCache'][uid].setScheduleShopComment(schedule_id,shop_id,comment);
+		}
+		
 	}
 
 }
@@ -436,7 +482,7 @@ exports.changeUserInfo = function(uid,user_info_list){
 
 		if(player_info != null){
 			player_info.ChangeUserInfo(
-				player_info.getHead()
+				 user_info_list[9] // head image
 				,user_info_list[0] // name
 				,user_info_list[2] // birthday_timestamp
 				,user_info_list[3] // sign
@@ -445,7 +491,7 @@ exports.changeUserInfo = function(uid,user_info_list){
 				,user_info_list[5] // email
 				,user_info_list[6] // real_name
 				,user_info_list[1] // sex
-				,user_info_list[8] // shop_id
+				,player_info.getShopId() // shop_id
 				);
 		}
 	}
@@ -547,4 +593,30 @@ exports.cancelAttentionShop = function(guid,shop_id){
 	}
 
 	return null;
+}
+
+exports.getMyScheduleRouteInfo = function(guid){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	uid = 1;
+	//logger.log("PLAYER_LIST","[playerList][getMyScheduleRouteInfo] uid" + uid);
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			return player_info.getScheduleRouteInfo();
+		}
+
+	}
+	return {};
+}
+
+exports.ChangeScheduleImage = function(guid,schedule_id,shop_id,image_index,image){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			player_info.ChangeScheduleImage(schedule_id,shop_id,image_index,image);
+
+			return player_info.getOneScheduleRouteInfo(schedule_id);
+		}
+	}
 }

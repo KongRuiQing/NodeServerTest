@@ -1,5 +1,7 @@
 "use strict";
 
+var ScheduleRouteBean = require("./ScheduleRouteBean.js");
+
 var PlayerAttentionShopInfo = function(shop_id,attention_time,remark){
 	this.shop_id = Number(shop_id);
 	this.attention_time = attention_time;
@@ -61,12 +63,20 @@ var Player = function(){
 	this.sex = 0;
 	this.shop_id = 0;
 
+	this.schedule = [
+	new ScheduleRouteBean(1),
+	new ScheduleRouteBean(2),
+	new ScheduleRouteBean(3),
+	new ScheduleRouteBean(4),
+	new ScheduleRouteBean(5),
+	]
+
 }
 
 Player.prototype.initNewPlayer = function(uid){
 	this.id = Number(uid);
-	this.head = "player/default.png";
-	this.sex = 0;
+	this.head = "";
+	this.sex = 1;
 	this.shop_id = 0;
 	this.nick_name = "用户" + uid;
 }
@@ -171,7 +181,7 @@ Player.prototype.getUserLoginInfo = function(){
 	if(this.birthday_timestamp){
 		json_login['birthday_timestamp'] = this.birthday_timestamp;
 	}	
-		
+
 	json_login['sign'] = this.sign;	
 	json_login['address'] = this.address;	
 	json_login['telephone'] = this.telephone;	
@@ -236,5 +246,52 @@ Player.prototype.hasAttentionShop = function(shop_id){
 
 	return false;
 }
+
+Player.prototype.setScheduleImage = function(schedule_id,image){
+	if(schedule_id < this.schedule.length && schedule_id >= 0){
+		this.schedule[schedule_id].setScheduleImage(image);
+	}
+}
+
+Player.prototype.setScheduleShopId = function(schedule_id,shop_id){
+	if(schedule_id < this.schedule.length && schedule_id >= 0){
+		this.schedule[schedule_id].addShop(shop_id);
+	}
+}
+
+Player.prototype.setScheduleShopImage = function(schedule_id,shop_id,image_index,image){
+	if(schedule_id < this.schedule.length && schedule_id >= 0){
+		this.schedule[schedule_id].addShopImage(shop_id,image_index,image);
+	}
+}
+
+Player.prototype.setScheduleShopComment = function(schedule_id,shop_id,comment){
+	if(schedule_id < this.schedule.length && schedule_id >= 0){
+		this.schedule[schedule_id].addShopComment(shop_id,comment);
+	}
+}
+
+Player.prototype.getScheduleRouteInfo = function(){
+	var json_result = {};
+	json_result['list'] = [];
+	for(var key in this.schedule){
+		json_result['list'].push(this.schedule[key].getJsonValue());
+	}
+
+	return json_result;
+}
+
+Player.prototype.ChangeScheduleImage = function(schedule_id,shop_id,image_index,image){
+	if(schedule_id < this.schedule.length && schedule_id >= 0){
+		this.schedule[schedule_id].ChangeScheduleImage(shop_id,image_index,image);
+	}
+}
+
+Player.prototype.getOneScheduleRouteInfo = function(schedule_id){
+	if(schedule_id < this.schedule.length && schedule_id >= 0){
+		return this.schedule[schedule_id].getJsonValue();
+	}
+}
+
 
 module.exports = Player;

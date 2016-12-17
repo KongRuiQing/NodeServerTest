@@ -607,3 +607,17 @@ exports.getShopAttentionBoard = function(uid,city,area_code,category_code,search
 		return b['attention_num'] - a['attention_num']
 	});
 }
+exports.fillScheduleShopInfo = function(json_value){
+	
+	for(var i in json_value['list']){
+		var schedule_info = json_value['list'][i];
+		for(var j in schedule_info['schedule_info']){
+			var shop_id = schedule_info['schedule_info'][j]['shop_id'];
+			
+			var shop_info = g_shop_cache['dict'][shop_id];
+			if(shop_info != null){
+				schedule_info['schedule_info'][j]['shop_info'] = shop_info.getSheduleInfo();
+			}
+		}
+	}	
+}

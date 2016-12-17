@@ -91,8 +91,7 @@ exports.becomeSeller = function(fields,files,callback){
 
 	var uploadFile = {
 		"qualification" : "shop/qualification/",
-		"card_image_1" : "shop/card/",
-		"card_image_2" : "shop/card/"
+		"card_image" : "shop/card/",
 	};
 
 	check_dir(uploadFile);
@@ -163,6 +162,10 @@ exports.becomeSeller = function(fields,files,callback){
 		'city_no' : {
 			'name' : 'city_no',
 			'type' : 'int'
+		},
+		'card_number' : {
+			'name' : 'card_number',
+			'type' : 'string'
 		}
 	}
 	var shopInfo = {};
@@ -174,7 +177,6 @@ exports.becomeSeller = function(fields,files,callback){
 			var newPath = path.join("assets",virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
 			shopInfo[file_key] = path.join(virtual_file_name);
-			//logger.log("HTTP_HANDLER",file_key + ":" + virtual_file_name);
 		}
 		
 	} 
@@ -310,16 +312,11 @@ exports.changeUserInfo =function(fields,files,callback){
 	var json_result = {
 		'error' : 0
 	};
-	var key_field = ['nick_name','sex','birthday','sign','address','email','name','telephone','verify_code'];
+	var key_field = ['nick_name','sex','birthday','sign','address','email','name','telephone'];
 
-	
-	//logger.log("HTTP_HANDLER","[changeUserInfo] birthday:" + moment(fields['birthday']).format('YYYY-MM-DD HH:mm:ss'));
-	//logger.log("HTTP_HANDLER","[changeUserInfo] now:" + moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
-	
 	if(moment(fields['birthday']).isAfter(moment(Date.now()))){
 		json_result['error'] = 1007;
 	}
-
 
 	if(json_result['error'] != 0){
 		callback(true,json_result);
@@ -334,20 +331,40 @@ exports.changeUserInfo =function(fields,files,callback){
 	var guid = fields['guid'];
 	var uid = PlayerProxy.getUid(guid);
 
+	var uploadFileKey = {
+		"head_image" : "player/"
+	};
+	check_dir(uploadFileKey);
+	var image = {};
+
+	for(var file_key in uploadFileKey){
+		if(file_key in files){
+			var upload_file = files[file_key];
+
+			var virtual_file_name = path.join(uploadFileKey[file_key],path.basename(upload_file.path));
+			var newPath = path.join("assets",virtual_file_name);
+			fs.renameSync(upload_file.path, newPath);
+			image[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
+		}else{
+			image[file_key] = '';
+		}
+	} 
+
 
 
 	if(uid != null){
 		var list_result = [];
 
-		list_result.push(fields['nick_name']);
-		list_result.push(fields['sex']);
-		list_result.push(fields['birthday']);
-		list_result.push(fields['sign']);
-		list_result.push(fields['address']);
-		list_result.push(fields['email']);
-		list_result.push(fields['name']);
-		list_result.push(fields['telephone']);
-		list_result.push(fields['verify_code']);
+		list_result.push(fields['nick_name']); //0
+		list_result.push(fields['sex']); //1
+		list_result.push(fields['birthday']); //2
+		list_result.push(fields['sign']); //3
+		list_result.push(fields['address']);//4
+		list_result.push(fields['email']);//5
+		list_result.push(fields['name']);//6
+		list_result.push(fields['telephone']);//7
+		//list_result.push(fields['verify_code']); //8
+		list_result.push(image['head_image']); //8
 
 		PlayerProxy.changeUserInfo(uid,list_result);
 		db.changeUserInfo(uid,list_result);
@@ -361,7 +378,8 @@ exports.changeUserInfo =function(fields,files,callback){
 		json_result['email'] = fields['email'];
 		json_result['name'] = fields['name'];
 		json_result['telephone'] = fields['telephone'];
-		
+		json_result['head_image'] = image['head_image'];
+
 	}else{
 		json_result['error'] = 1;
 	}
@@ -375,14 +393,14 @@ exports.addShopItem = function(fields,files,callback){
 	var shop_id = PlayerProxy.getShopId(guid);
 
 	if(shop_id != null && shop_id > 0){
-		
+
 		var uploadFileKey = {
 			"image" : "shop/item/",
 			"image1" : "shop/item/",
 			"image2" : "shop/item/",
 			"image3" : "shop/item/",
 			"image4" : "shop/item/"
-			
+
 		};
 		check_dir(uploadFileKey);
 		var image = {};
@@ -583,7 +601,8 @@ exports.saveShopDetail = function(fields,files,callback){
 			'distribution' : 'STRING',
 			'qq' : 'STRING',
 			'wx' : 'STRING',
-			'email' : 'STRING'
+			'email' : 'STRING',
+			'card_number' : 'STRING'
 		};
 		//console.log("fields:" + util.inspect(fields));
 
@@ -615,8 +634,7 @@ exports.saveShopDetail = function(fields,files,callback){
 		}
 
 		var uploadFileKey = {
-			'card_image_1' : 'shop/card/',
-			'card_image_2' : 'shop/card/',
+			'card_image' : 'shop/card/',
 			'qualification' : 'shop/qualification/'
 		};
 
@@ -649,7 +667,7 @@ exports.saveShopDetail = function(fields,files,callback){
 			'shop_id':shop_id,
 			'shop_info':save_result
 		};
-		logger.log("HTTP_HANDLER",util.inspect(json_result));
+		//logger.log("HTTP_HANDLER",util.inspect(json_result));
 		//console.log("json_result:" + util.inspect(json_result));
 	}else{
 		json_result['error'] = 1;
@@ -817,9 +835,92 @@ exports.cancelAttentionShop = function(fields,files,callback){
 		'error' : 1003
 	});
 	return;
+}
 
+exports.uploadScheduleImage = function(fields,files,callback){
+	if(!'guid' in fields){
+		var json_result = {
+			'error' : 1001
+		}
 
+		callback(true,json_result);
+		return;
+	}
+	if(!'schedule_id' in fields ){
+		var json_result = {
+			'error' : 1013
+		}
+
+		callback(true,json_result);
+		return;
+	}
+	if(!'shop_id' in fields ){
+		var json_result = {
+			'error' : 1014
+		}
+
+		callback(true,json_result);
+		return;
+	}
+	if(!'image_index' in fields ){
+		var json_result = {
+			'error' : 1015
+		}
+		callback(true,json_result);
+		return;
+	}
+	var uploadFileKey = {
+		'image' : 'user/schedule/'
+	}
+	var params = {};
+	for(var key in uploadFileKey){
+		if(key in files){
+			var upload_file = files[key];
+			var parse_result = path.parse(upload_file.path);
+			var virtual_file_name = path.join(uploadFileKey[key],parse_result['base']);
+			var newPath = path.join("assets",virtual_file_name);
+			var newDir = path.join("assets",uploadFileKey[key]);
+			if(!fs.existsSync(newDir)){
+				fs.mkdirSync(newDir);
+			}
+			fs.renameSync(upload_file.path, newPath);
+			params[key] = virtual_file_name.replace(/\\/g,"\\\\");
+		}else{
+			params[key] = "";
+		}
+	}
+
+	var guid = fields['guid'];
+	var schedule_id = Number(fields['schedule_id']);
+	var shop_id = Number(fields['shop_id']);
+	var image_index = Number(fields['image_index']);
+	var image = params['image'];
+
+	var json_value = PlayerProxy.ChangeScheduleImage(
+		guid
+		,schedule_id
+		,shop_id
+		,image_index
+		,image);
+
+	if(json_value == null){
+		var json_result = {
+			'error' : 1015
+		}
+		callback(true,json_result);
+		return;
+	}else{
+		//
+		db.saveScheduleShopCommentImage(json_value['uid'],schedule_id,shop_id,image_index,image);
+		var json_result = {
+			'error' : 0,
+			'schedule_id'　: schedule_id,
+			'shop_id' : shop_id,
+			'image_index' : image_index,
+			'image' : image 
+		}
+		callback(true,json_result);
+	}
 
 	
-
 }

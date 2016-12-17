@@ -24,6 +24,7 @@ handle_http['/get_my_shop_item_list'] = http_handler.getMyShopItemList;
 handle_http['/get_my_shop_info'] = http_handler.getMyShopInfo;
 handle_http['/my_activity'] = http_handler.getMyActivity;
 handle_http['/attention_board_list'] = http_handler.getShopAttentionBoard;
+handle_http['/get_my_schedule_route_info'] = http_handler.getMyScheduleRouteInfo;
 
 //console.log(http_handler.getApkVersion("","",function(){}));
 

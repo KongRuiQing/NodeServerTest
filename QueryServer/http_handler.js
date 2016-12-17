@@ -382,3 +382,13 @@ exports.getShopAttentionBoard = function(headers,query,callback){
 	
 	callback(0,json_result);
 }
+
+exports.getMyScheduleRouteInfo = function(headers,query,callback){
+	//var guid = headers['guid'];
+	//var uid = PlayerCache.getUid(guid);
+	var json_result = PlayerCache.getMyScheduleRouteInfo("");
+	//
+	ShopCache.fillScheduleShopInfo(json_result);
+	logger.log("HTTP_HANDER","[QueryServer][http_handler][getMyScheduleRouteInfo] result :" + util.inspect(json_result));
+	callback(0,json_result);
+}

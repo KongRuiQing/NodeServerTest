@@ -58,7 +58,7 @@ function initUserInfoFromDB(callback){
 		
 		var all_user_info = result[0];
 		var all_login_info = result[1];
-		PlayerProxy.InitFromDb(all_user_info,all_login_info,result[2],result[3]);
+		PlayerProxy.InitFromDb(all_user_info,all_login_info,result[2],result[3],result[4],result[5],result[6],result[7]);
 		logger.log("MYSQL","init userinfo from db");
 	});
 }
@@ -649,8 +649,8 @@ exports.InsertBecomeSeller = function(uid,json_obj,callback){
 		json_obj['business'],
 		json_obj['qualification'].replace(/\\/g,"\\\\"),
 		json_obj['image_in_attention'].replace(/\\/g,"\\\\"),
-		json_obj['card_image_1'].replace(/\\/g,"\\\\"),
-		json_obj['card_image_2'].replace(/\\/g,"\\\\"),
+		json_obj['card_image'].replace(/\\/g,"\\\\"),
+		json_obj['card_number'],
 		json_obj['state']
 		], function(err,result){
 			if(err){
@@ -819,11 +819,12 @@ exports.addToFavorites = function(uid,shop_id,item_id){
 exports.changeUserInfo = function(uid,user_info_list){
 
 	var db_params = [uid].concat(user_info_list);
-	logger.log("MYSQL_PROXY","[changeUserInfo] db_params: " + util.inspect(db_params));
+	//logger.log("MYSQL_PROXY","[changeUserInfo] db_params: " + util.inspect(db_params));
 	
-	connection.query("CALL p_change_user_info(?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
+	connection.query("CALL p_change_user_info(?,?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
 		if(err){
 			logger.error("MYSQL_PROXY","changeUserInfo error:" + err);
+			logger.log("MYSQL_PROXY","[changeUserInfo] db_params:" + util.inspect(db_params));
 		}else{
 			logger.log("MYSQL_PROXY","changeUserInfo success");
 		}
@@ -918,8 +919,8 @@ exports.saveShopDetail = function(json_value){
 	,'qq'
 	,'wx'
 	,'email'
-	,'card_image_1'
-	,'card_image_2'
+	,'card_image'
+	,'card_number'
 	,'qualification'];
 
 	var db_params = [];
@@ -985,6 +986,16 @@ exports.saveShopItem = function(json_value){
 			}
 		});
 	}
+}
 
-	
+exports.saveScheduleShopCommentImage = function(uid,schedule_id,shop_id,image_index,image){
+	var db_params = [uid,schedule_id,shop_id,image_index,image];
+	connection.query("CALL p_save_schedule_shop_image(?,?,?,?,?)",db_params,function(err,result){
+		if(err){
+			
+			logger.log("MYSQL_PROXY","p_save_schedule_shop_image error:" + err);
+		}else{
+			logger.log("MYSQL_PROXY","p_save_schedule_shop_image success");
+		}
+	});
 }

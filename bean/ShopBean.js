@@ -25,7 +25,8 @@ var ShopBean = function(){
 	this.image = "";
 	this.ad_images = [];
 	this.business = "";
-	this.card_image = [];
+	this.card_image = "";
+	this.card_number = "";
 	this.qualification = "";
 	this.state = 0;
 
@@ -95,8 +96,8 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.qq = db_row['qq'];
 	this.wx = db_row['wx'];
 	this.image = db_row['image'];
-	this.card_image.push(db_row['card_image_1']);
-	this.card_image.push(db_row['card_image_2']);
+	this.card_image = db_row['card_image'];
+	this.card_number = db_row['card_number'];
 
 	this.state = Number(db_row['state']);
 }
@@ -143,7 +144,7 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	}
 	
 	this.business = "";
-	this.card_image = [shop_info["card_image_1"],shop_info["card_image_2"]];
+	this.card_image = shop_info["card_image"];
 	this.qualification = "";
 	this.state = 0;
 }
@@ -154,7 +155,7 @@ ShopBean.prototype.getShopBasicInfo = function(uid){
 	return {
 		'id' : this.id,
 		'shop_name' : this.name,
-		'shop_address' : this.address_brief,
+		'shop_address' : this.address,
 		'shop_image' : this.image,
 		'long' : this.longitude,
 		'late' : this.latitude,
@@ -179,8 +180,8 @@ ShopBean.prototype.getShopDbDetailInfo = function(){
 		'qq' : this.qq,
 		'wx' : this.wx,
 		'email' : this.email,
-		'card_image_1' : this.card_image[0],
-		'card_image_2' : this.card_image[1]
+		'card_image' : this.card_image,
+		'card_number' : this.card_number
 	};
 }
 
@@ -318,8 +319,8 @@ ShopBean.prototype.getMyShopInfo = function(){
 		'category_code1' : this.category_code1,
 		'category_code2' : this.category_code2,
 		'category_code3' : this.category_code3,
-		'card_image_1' : this.card_image.length >= 1 ? this.card_image[0] : '',
-		'card_image_2' : this.card_image.length >= 2 ? this.card_image[1] : '',
+		'card_image' : this.card_image,
+		'card_number' : this.card_number,
 		'attention' : false,
 		'comment_num' : 0,
 		'shop_item' : [],
@@ -458,23 +459,11 @@ ShopBean.prototype.saveShopDetail = function(json_value){
 		if('qualification' in json_value){
 			this.qualification = json_value['qualification'];
 		}
-		if('card_image_1' in json_value && json_value['card_image_1'].length > 0){
-			if(this.card_image.length == 0){
-				this.card_image.push(json_value['card_image_1']);
-			}else{
-				this.card_image[0] = json_value['card_image_1'];
-			}
+		if('card_image' in json_value){
+			this.card_image = json_value['card_image'];
 		}
-		if('card_image_2' in json_value && json_value['card_image_2'].length > 0){
-			if(this.card_image.length == 1){
-				this.card_image.push(json_value['card_image_2']);
-			}else if(this.card_image.length >= 2){
-				this.card_image[1] = json_value['card_image_2'];
-			}else{
-				this.card_image.push("");
-				this.card_image.push("");
-				this.card_image[1] = json_value['card_image_2'];
-			}
+		if('card_number' in json_value){
+			this.card_number = json_value['card_number'];
 		}
 
 		return {
@@ -492,8 +481,8 @@ ShopBean.prototype.saveShopDetail = function(json_value){
 			'qq' : this.qq,
 			'wx' : this.wx,
 			'email' : this.email,
-			'card_image_1' : this.card_image[0],
-			'card_image_2' : this.card_image[1],
+			'card_image' : this.card_image,
+			'card_number' : this.card_number,
 			'qualification' : this.qualification
 		};
 	}
@@ -542,6 +531,17 @@ ShopBean.prototype.getShopBoardInfo = function(uid){
 		'shop_attention' : "",
 		'attention_num' : this.attentions.length,
 		'is_attention' : this.ownAttention(uid),
+	};
+}
+
+ShopBean.prototype.getSheduleInfo = function(){
+	return {
+		'id' : this.id,
+		'shop_name' : this.name,
+		'shop_address' : this.address,
+		'shop_image' : this.image,
+		'long' : this.longitude,
+		'late' : this.latitude,
 	};
 }
 

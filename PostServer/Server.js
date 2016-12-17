@@ -15,7 +15,6 @@ var handle_http = {};
 handle_http['/login'] = http_handler.login;
 handle_http['/register'] = http_handler.register;
 handle_http['/become_seller'] = http_handler.becomeSeller;
-
 handle_http['/attention_shop'] = http_handler.attentionShop;
 handle_http['/add_favorites'] = http_handler.addToFavorites;
 handle_http['/change_user_info'] = http_handler.changeUserInfo;
@@ -27,6 +26,8 @@ handle_http['/add_shop_activity'] = http_handler.addShopActivity;
 handle_http['/save_shop_detail'] = http_handler.saveShopDetail;
 handle_http['/save_shop_item'] = http_handler.saveShopItem;
 handle_http['/cancel_attention_shop'] = http_handler.cancelAttentionShop;
+handle_http['/upload_schedule_image'] = http_handler.uploadScheduleImage;
+handle_http['/post_schedule_comment'] = http_handler.postScheduleComment;
 exports.start = function(Host,Port)
 {
 	
@@ -48,7 +49,6 @@ exports.start = function(Host,Port)
 					response.end("123");
 					return;
 				}
-
 				try{
 					handle_http[pathname](fields,files,function(success,json_result){
 						response.writeHead(200, {'content-type': 'text/plain'});
