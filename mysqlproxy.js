@@ -999,3 +999,28 @@ exports.saveScheduleShopCommentImage = function(uid,schedule_id,shop_id,image_in
 		}
 	});
 }
+
+exports.saveScheduleRouteImage = function(schedule_id,image){
+	var db_params = [schedule_id,image];
+	connection.query("CALL p_save_schedule_route_image(?,?)",db_params,function(err,result){
+		if(err){
+			logger.log("MYSQL_PROXY","p_save_schedule_route_image err:" + err);
+			logger.log("MYSQL_PROXY","p_save_schedule_route_image params : " + db_params);
+		}else{
+			logger.log("MYSQL_PROXY","p_save_schedule_route_image success");
+		}
+	});
+}
+
+exports.updateUserInfo = function(uid,callback){
+	var db_params = [uid];
+	connection.query("CALL p_update_user_info(?)",db_params,function(err,result){
+		if(err){
+			logger.log("MYSQL_PROXY","p_update_user_info err:" + err);
+			logger.log("MYSQL_PROXY","p_update_user_info params:" + util.inspect(db_params));
+		}else{
+			logger.log("MYSQL_PROXY","p_update_user_info success");
+			callback(uid,result);
+		}
+	});
+}

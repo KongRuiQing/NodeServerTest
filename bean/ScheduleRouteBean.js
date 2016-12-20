@@ -2,7 +2,8 @@ var moment = require('moment');
 var logger = require('../logger').logger();
 var SchedulteRouteBean = function(index){
 	this.uid = 0;
-	this.id = index;
+	this.id = 0;
+	this.sort_key = index;
 	this.image = "";
 	this.shop_id = [];
 	this.schedule_info = {};
@@ -53,9 +54,17 @@ SchedulteRouteShopBean.prototype.ChangeScheduleImage = function(image_index,imag
 
 SchedulteRouteBean.prototype.initFromDbRow = function(db_row) {
 	this.uid = Number(db_row['uid']);
-	this.id = Number(db_row['index']);
+	this.id = Number(db_row['id']);
+	this.sort_key = Number(db_row['sort_index']);
 	this.image = db_row['image'];
 };
+
+SchedulteRouteBean.prototype.setUid = function(uid){
+	this.uid = uid;
+}
+SchedulteRouteBean.prototype.getId = function(){
+	return this.id;
+}
 
 SchedulteRouteBean.prototype.addShop = function(shop_id){
 	if(this.ownShop(shop_id)){
@@ -106,9 +115,10 @@ SchedulteRouteBean.prototype.getJsonValue = function(){
 		this.cache_json_value = {
 			'uid' : this.uid,
 			'id' : this.id,
+			'sort_key' : this.sort_key,
 			'image' : this.image,
 			'schedule_info' : []
-		}
+		};
 
 		for(var key in this.shop_id){
 			var shop_id = this.shop_id[key];
@@ -130,7 +140,13 @@ SchedulteRouteBean.prototype.getJsonValue = function(){
 SchedulteRouteBean.prototype.ChangeScheduleImage = function(shop_id,image_index,image){
 	if(shop_id in this.schedule_info){
 		this.schedule_info[shop_id].ChangeScheduleImage(image_index,image);
+		this.dirty_flag = true;
 	}
+}
+
+SchedulteRouteBean.prototype.ChangeScheduleRouteImage = function(image){
+	this.image = image;
+	this.dirty_flag = true;
 }
 
 module.exports = SchedulteRouteBean;

@@ -79,10 +79,10 @@ exports.InitFromDb = function(
 	for(var i in player_schedule_info){
 		var uid = Number(player_schedule_info[i]['uid']);
 
-		var schedule_id = Number(player_schedule_info[i]['schedule_id']);
-		var image = player_schedule_info[i]['image'];
+		var sort_key = Number(player_schedule_info[i]['sort_index']);
+		//var image = player_schedule_info[i]['image'];
 		if(uid in g_playerlist['playerCache']){
-			g_playerlist['playerCache'][uid].setScheduleImage(schedule_id,image);
+			g_playerlist['playerCache'][uid].initScheduleInfo(sort_key,player_schedule_info[i]);
 		}
 	}
 
@@ -190,7 +190,18 @@ g_playerlist.Login = function(login_account){
 
 	player_info.setLoginGuid(guid);
 
+	db_proxy.updateUserInfo(uid,updateUserInfo);
+
 	return player_info.getUserLoginInfo();
+}
+
+function updateUserInfo(uid,db_result){
+	var player_info = g_playerlist['playerCache'][uid];
+	if(player_info != null){
+		player_info.updateUserInfo(db_result);
+	}else{
+		logger.log("PLAYER_LIST","error");
+	}
 }
 
 exports.Login = function(login_account){
@@ -302,9 +313,9 @@ exports.RegisterStep = function(step,client_guid,telephone,code,password){
 }
 
 function newPlayer(uid){
-	var player = new Player(uid);
-	player.initNewPlayer();
-
+	var player = new Player();
+	player.initNewPlayer(uid);
+	//logger.log("PLAYER_LIST",util.inspect(player));
 	return player;
 }
 
@@ -328,7 +339,7 @@ g_playerlist.Register = function(telephone,password){
 
 	db_proxy.AddNewPlayer(uid,telephone,password,function(success){
 		if(success){
-			console.log("Register success")
+			logger.log("PLAYER_LIST","Register success")
 		}
 	});
 	return uid;
@@ -597,7 +608,7 @@ exports.cancelAttentionShop = function(guid,shop_id){
 
 exports.getMyScheduleRouteInfo = function(guid){
 	var uid = g_playerlist['guid_to_uid'][guid];
-	uid = 1;
+	
 	//logger.log("PLAYER_LIST","[playerList][getMyScheduleRouteInfo] uid" + uid);
 	if(uid > 0){
 		var player_info = g_playerlist['playerCache'][uid];
@@ -619,4 +630,18 @@ exports.ChangeScheduleImage = function(guid,schedule_id,shop_id,image_index,imag
 			return player_info.getOneScheduleRouteInfo(schedule_id);
 		}
 	}
+}
+
+exports.ChangeScheduleRouteImage = function(guid,schedule_id,image){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			player_info.ChangeScheduleRouteImage(schedule_id,image);
+			logger.log("PLAYER_LIST","params:" + util.inspect(player_info.getOneScheduleRouteInfo(schedule_id)));
+			return player_info.getOneScheduleRouteInfo(schedule_id);
+		}
+	}
+	logger.log("PLAYER_LIST","ChangeScheduleRouteImage can't find uid in g_playerlist");
+	return null;
 }

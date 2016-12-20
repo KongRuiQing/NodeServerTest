@@ -64,14 +64,15 @@ var Player = function(){
 	this.shop_id = 0;
 
 	this.schedule = [
-	new ScheduleRouteBean(1),
-	new ScheduleRouteBean(2),
-	new ScheduleRouteBean(3),
-	new ScheduleRouteBean(4),
-	new ScheduleRouteBean(5),
+		new ScheduleRouteBean(1),
+		new ScheduleRouteBean(2),
+		new ScheduleRouteBean(3),
+		new ScheduleRouteBean(4),
+		new ScheduleRouteBean(5),
 	]
-
 }
+
+
 
 Player.prototype.initNewPlayer = function(uid){
 	this.id = Number(uid);
@@ -94,6 +95,10 @@ Player.prototype.setUserInfo = function(db_row) {
 	this.real_name = db_row['real_name'];
 	this.sex = Number(db_row['sex']);
 	this.shop_id = Number(db_row['shop_id']);
+
+	for(var i in this.schedule){
+		this.schedule[i].setUid(this.id);
+	}
 };
 
 
@@ -248,32 +253,47 @@ Player.prototype.hasAttentionShop = function(shop_id){
 }
 
 Player.prototype.setScheduleImage = function(schedule_id,image){
-	if(schedule_id < this.schedule.length && schedule_id >= 0){
-		this.schedule[schedule_id].setScheduleImage(image);
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].setScheduleImage(image);
+			break;
+		}
 	}
+	
 }
 
 Player.prototype.setScheduleShopId = function(schedule_id,shop_id){
-	if(schedule_id < this.schedule.length && schedule_id >= 0){
-		this.schedule[schedule_id].addShop(shop_id);
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].addShop(shop_id);
+			break;
+		}
 	}
+
 }
 
 Player.prototype.setScheduleShopImage = function(schedule_id,shop_id,image_index,image){
-	if(schedule_id < this.schedule.length && schedule_id >= 0){
-		this.schedule[schedule_id].addShopImage(shop_id,image_index,image);
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].addShopImage(shop_id,image_index,image);
+		}
 	}
+	
 }
 
 Player.prototype.setScheduleShopComment = function(schedule_id,shop_id,comment){
-	if(schedule_id < this.schedule.length && schedule_id >= 0){
-		this.schedule[schedule_id].addShopComment(shop_id,comment);
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].addShopComment(shop_id,comment);
+		}
 	}
+	
 }
 
 Player.prototype.getScheduleRouteInfo = function(){
 	var json_result = {};
 	json_result['list'] = [];
+
 	for(var key in this.schedule){
 		json_result['list'].push(this.schedule[key].getJsonValue());
 	}
@@ -282,15 +302,52 @@ Player.prototype.getScheduleRouteInfo = function(){
 }
 
 Player.prototype.ChangeScheduleImage = function(schedule_id,shop_id,image_index,image){
-	if(schedule_id < this.schedule.length && schedule_id >= 0){
-		this.schedule[schedule_id].ChangeScheduleImage(shop_id,image_index,image);
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].ChangeScheduleImage(shop_id,image_index,image);
+		}
 	}
+	
 }
 
 Player.prototype.getOneScheduleRouteInfo = function(schedule_id){
-	if(schedule_id < this.schedule.length && schedule_id >= 0){
-		return this.schedule[schedule_id].getJsonValue();
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			return this.schedule[key].getJsonValue();
+		}
 	}
+	
+}
+
+Player.prototype.ChangeScheduleRouteImage = function(schedule_id,image){
+	for(var key in this.schedule){
+		console.log("exec: key=[" + key + "]" + this.schedule[key].getId());
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].ChangeScheduleRouteImage(image);
+		}
+	}
+	
+}
+
+Player.prototype.updateUserInfo = function(db_result){
+	var schedule_info = db_result[0];
+	var index = 0;
+	//console.log(this.schedule);
+	for(var key in schedule_info){
+		if(index >= this.schedule.length){
+			break;
+		}
+		this.schedule[index].initFromDbRow(schedule_info[key]);
+		index += 1;
+	}
+}
+
+Player.prototype.initScheduleInfo = function(sort_key,schedule_info){
+	if(sort_key>= 1 && sort_key<= this.schedule.length){
+		this.schedule[sort_key - 1].initFromDbRow(schedule_info);
+		//console.log("sort_key:" + sort_key);
+	}
+	//
 }
 
 
