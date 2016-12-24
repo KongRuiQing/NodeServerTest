@@ -971,10 +971,10 @@ exports.saveShopItem = function(json_value){
 	for(var key in json_value['item_propertys']){
 
 		db_params = [
-			 json_value['item_propertys'][key]['id']
-			,json_value['id']
-			,json_value['item_propertys'][key]['property_type']
-			,json_value['item_propertys'][key]['property_value']
+		json_value['item_propertys'][key]['id']
+		,json_value['id']
+		,json_value['item_propertys'][key]['property_type']
+		,json_value['item_propertys'][key]['property_value']
 		];
 		
 		connection.query("CALL p_save_shop_item_property(?,?,?,?)",db_params,function(err,result){
@@ -1021,6 +1021,19 @@ exports.updateUserInfo = function(uid,callback){
 		}else{
 			logger.log("MYSQL_PROXY","p_update_user_info success");
 			callback(uid,result);
+		}
+	});
+}
+
+exports.changeScheduleTitle = function(schedule_id,uid,name){
+	var db_params = [schedule_id,uid,name];
+	connection.query("CALL p_set_schedule_name(?,?,?)",[schedule_id,uid,name],function(err,result){
+		if(err){
+			logger.log("MYSQL_PROXY","p_set_schedule_name err:" + err);
+			logger.log("MYSQL_PROXY","p_set_schedule_name params:" + util.inspect(db_params));
+		}else{
+			logger.log("MYSQL_PROXY","p_set_schedule_name success");
+			return;
 		}
 	});
 }

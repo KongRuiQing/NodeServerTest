@@ -3,6 +3,7 @@ var logger = require('../logger').logger();
 var SchedulteRouteBean = function(index){
 	this.uid = 0;
 	this.id = 0;
+	this.name = "";
 	this.sort_key = index;
 	this.image = "";
 	this.shop_id = [];
@@ -57,6 +58,7 @@ SchedulteRouteBean.prototype.initFromDbRow = function(db_row) {
 	this.id = Number(db_row['id']);
 	this.sort_key = Number(db_row['sort_index']);
 	this.image = db_row['image'];
+	this.name = db_row['name'];
 };
 
 SchedulteRouteBean.prototype.setUid = function(uid){
@@ -117,7 +119,8 @@ SchedulteRouteBean.prototype.getJsonValue = function(){
 			'id' : this.id,
 			'sort_key' : this.sort_key,
 			'image' : this.image,
-			'schedule_info' : []
+			'schedule_info' : [],
+			'name' : this.name
 		};
 
 		for(var key in this.shop_id){
@@ -147,6 +150,10 @@ SchedulteRouteBean.prototype.ChangeScheduleImage = function(shop_id,image_index,
 SchedulteRouteBean.prototype.ChangeScheduleRouteImage = function(image){
 	this.image = image;
 	this.dirty_flag = true;
+}
+
+SchedulteRouteBean.prototype.setScheduleName = function(name){
+	this.name = name;
 }
 
 module.exports = SchedulteRouteBean;

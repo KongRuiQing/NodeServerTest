@@ -34,3 +34,7 @@ exports.getFlatternDistance = function(lat1,lng1,lat2,lng2){
 
 	return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg));
 }
+
+exports.randVertifyCode = function(){
+	return "";
+}

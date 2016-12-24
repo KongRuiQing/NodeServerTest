@@ -1,4 +1,4 @@
-
+'use strict';
 var util = require('util');
 var logger = require('../logger').logger();
 var PlayerProxy = require("../playerList");
@@ -9,7 +9,7 @@ var ActivityBean = require("../bean/ActivityBean");
 
 var ShopComment = require("../bean/ShopComment.js");
 
-g_shop_cache = {
+let g_shop_cache = {
 	'dict' : {},
 	'item_property_name' : {},
 	'shop_item_property' : {},
@@ -621,3 +621,9 @@ exports.fillScheduleShopInfo = function(json_value){
 		}
 	}	
 }
+
+exports.addFavoritesUser = function(shop_id,item_id,uid){
+	if(item_id in g_shop_cache['shop_items']){
+		g_shop_cache['shop_items'][item_id].addAttention(uid);
+	}
+}	

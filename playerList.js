@@ -1,10 +1,15 @@
+'use strict';
 var db_proxy = require("./mysqlproxy");
 var util = require('util');
 var logger = require('./logger').logger();
 var ShopProxy = require('./cache/shopCache');
 var moment = require('moment');
 var Player = require("./Bean/Player");
-g_playerlist = {
+
+let sms = require('./proxy/sms.js');
+let RegAccountBean = require("./bean/RegAccountBean");
+
+let g_playerlist = {
 	'player_online_list':{},
 	'playerCache':{},
 	'account_uid':{},
@@ -219,12 +224,93 @@ exports.CheckRegTelephone = function(telephone){
 	return false;
 }
 
-exports.RegisterStep = function(step,client_guid,telephone,code,password){
+exports.ReSendRegisterVerifyCode = function(client_guid,telephone){
+
+	if(client_guid in g_playerlist['reg_account']){
+
+	}
+
+}
+
+function GetRandomNum()
+{    
+	var Rand = Math.random();   
+	return (Math.round(Rand * 10)) % 10;   
+}   
+
+function generateVerifyCode(){
+	var chars = ['0','1','2','3','4','5','6','7','8','9'];
+	var result = "";
+	for(var i = 0; i < 4 ; i ++){
+		result += chars[GetRandomNum()];
+	}
+	return result;
+}
+
+function sendRegisterVerifyCode(telephone,verify_code){
+	sms.send_sms(telephone,verify_code);
+}
+
+exports.RegisterStep = function(step,cuid,telephone,code,password){
+
+	let reg_account = null;
+	
+
+	if(cuid in g_playerlist['reg_account']){
+
+		reg_account = g_playerlist['reg_account'][cuid];
+		//logger.log("PLAYER_LIST","reg_account:" + util.inspect(reg_account));
+
+		if(step == 1){
+			reg_account.setTelephone(telephone);
+			reg_account.setStep(1);
+			reg_account.setVerifyCode(generateVerifyCode());
+			sendRegisterVerifyCode(telephone,reg_account.getVerifyCode());
+		}else if(step != reg_account.step()){
+			return {
+				'error' : 1019,
+			};
+		}
+	}else{
+		if(step != 1){
+			return {
+				'error' : 1019,
+			};
+		}
+		reg_account = new RegAccountBean(cuid);
+		g_playerlist['reg_account'][cuid] = reg_account;
+		reg_account.setTelephone(telephone);
+		reg_account.setVerifyCode(generateVerifyCode());
+		sendRegisterVerifyCode(telephone,reg_account.getVerifyCode());
+
+		//logger.log("PLAYER_LIST","! reg_account:" + util.inspect(reg_account));
+	}
+	var is_finish_register = reg_account.verifyRegisterStep(telephone,code,password);
+	//logger.log("PLAYER_LIST","[playerList.js][RegisterStep] is_finish_register =" + is_finish_register);
+	if(!is_finish_register && reg_account != null){
+		console.log("reg_account.result():" + util.inspect(reg_account.result()));
+		return reg_account.result();
+	}else if(is_finish_register){
+		var uid = g_playerlist.Register(telephone,password);
+
+		var loginInfo = g_playerlist.Login(telephone);
+
+		g_playerlist['reg_account'][client_guid] = null;
+
+		loginInfo['step'] = 4;
+		loginInfo['uid'] = uid;
+		return loginInfo;
+	}
+}
+
+
+exports.RegisterStep1 = function(step,client_guid,telephone,code,password){
 	
 	if(step == 1){
 		var uid = g_playerlist['account_uid'][telephone];
 		if( uid == null ){
 			var guid = generate(10);
+
 			g_playerlist['reg_account'][guid] = {
 				"guid" : guid,
 				'telephone':telephone,
@@ -257,7 +343,7 @@ exports.RegisterStep = function(step,client_guid,telephone,code,password){
 					return {
 						"guid" : client_guid,
 						'telephone':telephone,
-						'code' : '1234',
+						'code' : reg['code'],
 						'step' : 3
 					};
 				}else
@@ -644,4 +730,19 @@ exports.ChangeScheduleRouteImage = function(guid,schedule_id,image){
 	}
 	logger.log("PLAYER_LIST","ChangeScheduleRouteImage can't find uid in g_playerlist");
 	return null;
+}
+
+exports.changeScheduleTitle = function(guid,schedule_id,schedule_name){
+	var uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			player_info.changeScheduleTitle(schedule_id,schedule_name);
+		}
+		return {
+			'uid' : uid
+		};
+	}
+
+	
 }

@@ -64,11 +64,11 @@ var Player = function(){
 	this.shop_id = 0;
 
 	this.schedule = [
-		new ScheduleRouteBean(1),
-		new ScheduleRouteBean(2),
-		new ScheduleRouteBean(3),
-		new ScheduleRouteBean(4),
-		new ScheduleRouteBean(5),
+	new ScheduleRouteBean(1),
+	new ScheduleRouteBean(2),
+	new ScheduleRouteBean(3),
+	new ScheduleRouteBean(4),
+	new ScheduleRouteBean(5),
 	]
 }
 
@@ -348,6 +348,15 @@ Player.prototype.initScheduleInfo = function(sort_key,schedule_info){
 		//console.log("sort_key:" + sort_key);
 	}
 	//
+}
+
+Player.prototype.changeScheduleTitle = function(schedule_id,schedule_name){
+	for(var key in this.schedule){
+		console.log("exec: key=[" + key + "]" + this.schedule[key].getId());
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].setScheduleName(schedule_name);
+		}
+	}
 }
 
 

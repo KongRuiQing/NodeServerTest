@@ -28,6 +28,7 @@ handle_http['/save_shop_item'] = http_handler.saveShopItem;
 handle_http['/cancel_attention_shop'] = http_handler.cancelAttentionShop;
 handle_http['/upload_schedule_image'] = http_handler.uploadScheduleImage;
 handle_http['/post_schedule_comment'] = http_handler.postScheduleComment;
+handle_http['/change_schedule_title'] = http_handler.changeScheduleTitle;
 exports.start = function(Host,Port)
 {
 	

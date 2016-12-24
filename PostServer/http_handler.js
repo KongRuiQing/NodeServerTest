@@ -1,3 +1,5 @@
+'use strict';
+
 const fs = require('fs');
 var util = require('util');
 var logger = require('../logger').logger();
@@ -48,11 +50,11 @@ exports.login = function(fields,files,callback){
 exports.register = function(fields,files,callback){
 	var step = parseInt(fields['step']);
 	var telephone = fields['telephone'];
-	var guid = fields['guid'] || null;
+	var cuid = fields['cuid'] || null;
 	var code = fields['code'] || null;
 	var password = fields['password'] || null;
 	//console.log("register start:" + util.inspect(fields));
-	var result = PlayerProxy.RegisterStep(step,guid,telephone,code,password);
+	var result = PlayerProxy.RegisterStep(step,cuid,telephone,code,password);
 	//console.log("register end:" + util.inspect(result));
 	callback(true,result);
 }
@@ -290,6 +292,7 @@ exports.addToFavorites = function(fields,files,callback){
 	if(check_has_item == true){
 
 		var uid = PlayerProxy.addToFavorites(guid,shop_id,item_id);
+		ShopProxy.addFavoritesUser(shop_id,item_id,uid);
 		if(uid > 0){
 			db.addToFavorites(uid,shop_id,item_id);
 			json_result['error'] = 0;
@@ -960,4 +963,47 @@ exports.uploadScheduleImage = function(fields,files,callback){
 			return;
 		}
 	}
+}
+
+exports.changeScheduleTitle = function(fields,files,callback){
+
+	if(!'guid' in fields){
+		let json_result = {
+			'error' : 1001
+		}
+
+		callback(true,json_result);
+		return;
+	}
+	if(!'name' in fields){
+		let json_result = {
+			'error' : 1001
+		}
+		callback(true,json_result);
+		return;
+	}
+
+	if(!'schedule_id' in fields){
+		let json_result = {
+			'error' : 1001
+		}
+		callback(true,json_result);
+		return;
+	}
+
+
+	let schedule_id = Number(fields['schedule_id']);
+	let schedule_name = fields['name'];
+	let guid = fields['guid'];
+	let json_value = PlayerProxy.changeScheduleTitle(guid,schedule_id,schedule_name);
+	if(json_value != null){
+		db.changeScheduleTitle(schedule_id,json_value['uid'],schedule_name);
+	}
+	let json_result = {
+		'error' : 0,
+		'schedule_id' : schedule_id,
+		'name' : name
+	};
+	callback(true,json_result);
+	return;
 }
