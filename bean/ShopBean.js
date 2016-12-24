@@ -162,6 +162,9 @@ ShopBean.prototype.getShopBasicInfo = function(uid){
 		'shop_attention' : "",
 		'attention_num' : this.attentions.length,
 		'is_attention' : this.ownAttention(uid),
+		'beg' : this.beg,
+		'end' : this.end,
+		'days' : this.days
 	};
 }
 

@@ -1,4 +1,6 @@
 'use strict';
+var moment = require('moment');
+
 let RegAccountBean = function(cuid,telephone){
 	this._cuid = cuid;
 	this._telephone = telephone;
@@ -23,8 +25,19 @@ RegAccountBean.prototype.setTelephone = function(telephone){
 	this._telephone = telephone;
 }
 
-RegAccountBean.prototype.sendVerifyCode = function(verify_code){
+RegAccountBean.prototype.canSendVerifyCode = function(current_time){
+	if(this._last_send_code_time.length = 0){
+		return true;
+	}
 
+	var a = moment(current_time);
+	var b = moment(this._last_send_code_time);
+
+	if(b.isBefore(a) && a.diff(b,'seconds') > 60 * 2){
+		return true;
+	}
+	return false;
+	
 }
 
 RegAccountBean.prototype.verifyRegisterStep = function(telephone,code,password){
@@ -46,8 +59,8 @@ RegAccountBean.prototype.verifyRegisterStep = function(telephone,code,password){
 		}
 		
 	}else if(this.step() == 3){
-		
-		if(this.code() == code && tiis.telephone() == telephone){
+
+		if(this.code() == code && this.telephone() == telephone){
 			this.setPassword(password);
 			this.nextStep();
 			return true;
@@ -111,8 +124,10 @@ RegAccountBean.prototype.result = function(){
 RegAccountBean.prototype.getVerifyCode = function(){
 	return this._code;
 }
-RegAccountBean.prototype.setVerifyCode = function(code){
+
+RegAccountBean.prototype.setVerifyCode = function(code,send_time){
 	this._code = code;
+	this._last_send_code_time = send_time;
 }
 
 

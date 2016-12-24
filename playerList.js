@@ -5,6 +5,7 @@ var logger = require('./logger').logger();
 var ShopProxy = require('./cache/shopCache');
 var moment = require('moment');
 var Player = require("./Bean/Player");
+var FindUtil = require('./FindUtil');
 
 let sms = require('./proxy/sms.js');
 let RegAccountBean = require("./bean/RegAccountBean");
@@ -251,20 +252,37 @@ function sendRegisterVerifyCode(telephone,verify_code){
 	sms.send_sms(telephone,verify_code);
 }
 
+function checkAccount(telephone){
+
+	var uid = g_playerlist['account_uid'][telephone];
+	if(uid == null){
+		return true;
+	}
+	return false;
+}
+
 exports.RegisterStep = function(step,cuid,telephone,code,password){
 
 	let reg_account = null;
 	
+	logger.log("PLAYER_LIST","[playerList][RegisterStep] params step: " + step + " telephone: " + telephone + " code: " + code + " password: " + password);
 
 	if(cuid in g_playerlist['reg_account']){
 
 		reg_account = g_playerlist['reg_account'][cuid];
-		//logger.log("PLAYER_LIST","reg_account:" + util.inspect(reg_account));
+		logger.log("PLAYER_LIST","reg_account:" + util.inspect(reg_account));
 
 		if(step == 1){
+			var check_account = checkAccount(telephone);
+			if(!check_account){
+				return{
+					'error' : 1020
+				};
+			}
+			
 			reg_account.setTelephone(telephone);
 			reg_account.setStep(1);
-			reg_account.setVerifyCode(generateVerifyCode());
+			reg_account.setVerifyCode(generateVerifyCode(),FindUtil.getCurrentTime());
 			sendRegisterVerifyCode(telephone,reg_account.getVerifyCode());
 		}else if(step != reg_account.step()){
 			return {
@@ -277,29 +295,45 @@ exports.RegisterStep = function(step,cuid,telephone,code,password){
 				'error' : 1019,
 			};
 		}
+		var check_account = checkAccount(telephone);
+		if(!check_account){
+			return{
+				'error' : 1020
+			};
+		}
+
 		reg_account = new RegAccountBean(cuid);
 		g_playerlist['reg_account'][cuid] = reg_account;
 		reg_account.setTelephone(telephone);
-		reg_account.setVerifyCode(generateVerifyCode());
+		reg_account.setVerifyCode(generateVerifyCode(),FindUtil.getCurrentTime());
 		sendRegisterVerifyCode(telephone,reg_account.getVerifyCode());
 
 		//logger.log("PLAYER_LIST","! reg_account:" + util.inspect(reg_account));
 	}
-	var is_finish_register = reg_account.verifyRegisterStep(telephone,code,password);
-	//logger.log("PLAYER_LIST","[playerList.js][RegisterStep] is_finish_register =" + is_finish_register);
-	if(!is_finish_register && reg_account != null){
+	var check_account = checkAccount(telephone);
+	if(!check_account){
+		return{
+			'error' : 1020
+		};
+	}
+
+	reg_account.verifyRegisterStep(telephone,code,password);
+	logger.log("PLAYER_LIST","[playerList.js][RegisterStep] reg_account = " + util.inspect(reg_account));
+	if(reg_account != null){
+		if(reg_account.step() == 4){
+			var uid = g_playerlist.Register(telephone,password);
+
+			var loginInfo = g_playerlist.Login(telephone);
+
+			g_playerlist['reg_account'][cuid] = null;
+
+			loginInfo['step'] = 4;
+			loginInfo['uid'] = uid;
+			return loginInfo;
+		}
+
 		console.log("reg_account.result():" + util.inspect(reg_account.result()));
 		return reg_account.result();
-	}else if(is_finish_register){
-		var uid = g_playerlist.Register(telephone,password);
-
-		var loginInfo = g_playerlist.Login(telephone);
-
-		g_playerlist['reg_account'][client_guid] = null;
-
-		loginInfo['step'] = 4;
-		loginInfo['uid'] = uid;
-		return loginInfo;
 	}
 }
 
@@ -531,6 +565,7 @@ exports.attentionShop = function(guid,shop_id){
 		var now_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 		player_info.attentionShop(shop_id,now_time,"");
 
+		logger.log("PLAYER_LIST","[playerList][attentionShop] all attention list:" + util.inspect(player_info.getMyAttention()));
 
 		return {
 			'error' : 0,
@@ -677,13 +712,13 @@ exports.cancelAttentionShop = function(guid,shop_id){
 
 		if(player_info != null && player_info.hasAttentionShop(shop_id)){
 			player_info.cancelAttentionShop(shop_id);
-			
+			logger.log("PLAYER_LIST","[playerlist.js][cancelAttentionShop] all attention shop: " + util.inspect(player_info.getMyAttention()));
 			return {
 				'uid' : uid
 			};
-			
 		}
 	}else{
+		logger.warn("PLAYER_LIST","[playerlist.js][cancelAttentionShop]  error:" +  1001);
 		return {
 			'error' : '1001'
 		};

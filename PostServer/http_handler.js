@@ -249,6 +249,7 @@ exports.changeShopState = function(fields,files,callback){
 }
 
 exports.attentionShop = function(fields,files,callback){
+	logger.log("HTTP_HANDLER","[attentionShop][params] fields:" + util.inspect(fields));
 	if(! 'guid' in fields){
 		callback(true,{
 			'error' : 1001
@@ -260,7 +261,7 @@ exports.attentionShop = function(fields,files,callback){
 	var shop_id = Number(fields['shop_id']);
 
 	var player_attention_shop_info = PlayerProxy.attentionShop(guid,shop_id);
-
+	
 	var json_result = {};
 
 	if(player_attention_shop_info != null && player_attention_shop_info['error'] == 0){
@@ -797,7 +798,7 @@ exports.saveShopItem = function(fields,files,callback){
 }
 
 exports.cancelAttentionShop = function(fields,files,callback){
-	logger.log("HTTP_HANDLER","[cancelAttentionShop] start ");
+	logger.log("HTTP_HANDLER","[cancelAttentionShop][fields] params : " + util.inspect(fields));
 
 	if(!'guid' in fields){
 		var json_result = {
@@ -818,7 +819,9 @@ exports.cancelAttentionShop = function(fields,files,callback){
 
 	var player_info = PlayerProxy.cancelAttentionShop(fields['guid'],fields['shop_id']);
 	if(player_info != null && 'uid' in player_info && player_info['uid'] > 0){
+
 		ShopProxy.cancelAttentionShop(player_info['uid'],fields['shop_id']);
+		
 		db.attentionShop(player_info['uid'],fields['shop_id'],0,moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
 
 		callback(true,{
@@ -828,12 +831,15 @@ exports.cancelAttentionShop = function(fields,files,callback){
 
 		return;
 	}
+
 	if(player_info!=null && 'error' in player_info){
+		logger.warn("HTTP_HANDLER","[cancelAttentionShop] error : " + player_info['error']);
 		callback(true,{
 			'error' : player_info['error']
 		});
 		return;
 	}
+
 	callback(true,{
 		'error' : 1003
 	});

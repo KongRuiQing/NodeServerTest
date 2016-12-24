@@ -193,7 +193,7 @@ Player.prototype.getUserLoginInfo = function(){
 	json_login['email'] = this.email;	
 	json_login['real_name'] = this.real_name;	
 	json_login['shop_id'] = this.shop_id;
-
+	//json_login['shop_state'] = 0;
 	return json_login;
 }
 

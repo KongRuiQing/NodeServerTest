@@ -1,8 +1,14 @@
+var moment = require('moment');
+
 var EARTH_RADIUS = 6378137.0;    //单位M
 var PI = Math.PI;
 
 function getRad(d){
 	return d*PI/180.0;
+}
+
+exports.getCurrentTime = function(){
+	return moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 }
 
 

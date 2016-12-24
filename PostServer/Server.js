@@ -52,7 +52,11 @@ exports.start = function(Host,Port)
 				}
 				try{
 					handle_http[pathname](fields,files,function(success,json_result){
+						
+						logger.log("POST SERVER","response:" + util.inspect(json_result));
+
 						response.writeHead(200, {'content-type': 'text/plain'});
+
 						response.end(JSON.stringify(json_result));
 					});
 				}catch(err){
