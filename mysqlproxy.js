@@ -16,29 +16,16 @@ var db_config = {
 };
 
 var connection = mysql.createConnection(db_config);
-
-connection.on("error",function(err){
-
-	logger.error("MySqlError:" + err);
-
-	if(err.code === 'PROTOCOL_CONNECTION_LOST'){
-		connection = null;
-		connection = mysql.createConnection(db_config);
-		connection.connect(function(err_msg){
-			if(err_msg){
-				logger.error(err_msg);
-				return;
-			}
-		});
-	}else{
-		logger.error(util.inspect(err));
-		return;
+function handleMySqlError(err){
+	if(err){
+		if(err.code === 'PROTOCOL_CONNECTION_LOST'){
+			reconnect_mysql();
+		}
 	}
-})
+}
 
-connection.connect(function(err){
-	if(err)
-	{
+function handleInitMysql(err){
+	if(err){
 		logger.error(err);
 		return;
 	}
@@ -48,9 +35,31 @@ connection.connect(function(err){
 	initDbCache();
 	initShopCache();
 
-	logger.log("START","sql connection success");
-});
+	logger.log("MYSQL_PROXY","sql init connection success");
+}
 
+function connect_mysql(){
+	connection = mysql.createConnection(db_config);
+	connection.connect(handleInitMysql);
+	connection.on('error',handleMySqlError);
+}
+
+function reconnect_mysql(){
+	connection = mysql.createConnection(db_config);
+	connection.connect(function(err){
+		if(err){
+			logger.error("MYSQL_PROXY",err);
+		}else{
+			logger.log("MYSQL_PROXY","re connect success");
+		}
+	});
+	connection.on('error',handleMySqlError);
+}
+
+
+//
+connect_mysql();
+//
 
 function initUserInfoFromDB(callback){
 	
