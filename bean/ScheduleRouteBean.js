@@ -41,6 +41,14 @@ SchedulteRouteShopBean.prototype.getJsonValue = function(){
 	};
 }
 
+SchedulteRouteShopBean.prototype.getCommentJsonValue = function(){
+	return {
+		'comment' : this.comment,
+		'image' : this.imageToList(),
+	};
+}
+
+
 SchedulteRouteShopBean.prototype.imageToList = function(){
 	var list = [];
 	for(var key in this.image){
@@ -74,7 +82,18 @@ SchedulteRouteBean.prototype.addShop = function(shop_id){
 	}
 	this.shop_id.push(shop_id);
 	this.schedule_info[shop_id] = new SchedulteRouteShopBean(shop_id);
+	return true;
 }
+
+SchedulteRouteBean.prototype.addShopByClient = function(shop_id){
+	if(this.addShop(shop_id)){
+		this.dirty_flag = true;
+		return true;
+	}
+	return false;
+}
+
+
 SchedulteRouteBean.prototype.addShopImage = function(shop_id,image_index,image){
 	if(this.ownShop(shop_id)){
 		this.schedule_info[shop_id].addImage(image);
@@ -125,14 +144,7 @@ SchedulteRouteBean.prototype.getJsonValue = function(){
 
 		for(var key in this.shop_id){
 			var shop_id = this.shop_id[key];
-			if(shop_id in this.schedule_info){
-				this.cache_json_value['schedule_info'].push(this.schedule_info[shop_id].getJsonValue());
-			}else{
-				this.cache_json_value['schedule_info'].push({
-					'image' : "",
-				});
-			}
-			
+			this.cache_json_value['schedule_info'].push(this.schedule_info[shop_id].getJsonValue());
 		}
 
 		this.dirty_flag = false;
@@ -154,6 +166,15 @@ SchedulteRouteBean.prototype.ChangeScheduleRouteImage = function(image){
 
 SchedulteRouteBean.prototype.setScheduleName = function(name){
 	this.name = name;
+	this.dirty_flag = true;
+}
+
+SchedulteRouteBean.prototype.getShopCommentInfo = function(shop_id){
+	console.log("shop_id : " + shop_id);
+	if(shop_id in this.schedule_info){
+		return this.schedule_info[shop_id].getCommentJsonValue();
+	}
+	return null;
 }
 
 module.exports = SchedulteRouteBean;

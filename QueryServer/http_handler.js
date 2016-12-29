@@ -389,6 +389,6 @@ exports.getMyScheduleRouteInfo = function(headers,query,callback){
 	var json_result = PlayerCache.getMyScheduleRouteInfo(guid);
 	//
 	ShopCache.fillScheduleShopInfo(json_result);
-	logger.log("HTTP_HANDER","[QueryServer][http_handler][getMyScheduleRouteInfo] result :" + util.inspect(json_result));
+	
 	callback(0,json_result);
 }

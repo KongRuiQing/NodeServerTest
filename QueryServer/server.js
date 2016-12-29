@@ -3,6 +3,7 @@ var url=require('url');
 var http_handler = require("./http_handler");
 var logger = require('../logger').logger();
 var server =null;
+var util = require('util');
 
 var handle_http = {};
 handle_http['/shop_list'] = http_handler.getShopList;
@@ -44,6 +45,8 @@ function handle_server(request,response){
 	if (typeof handle_http[pathname] === 'function'){
 		
 		handle_http[pathname](headers,request_url.query,function(error_code,content){
+
+			logger.log("QUERY_SERVER","query result:\n" + util.inspect(content,{depth:null}));
 
 			if(error_code == 0){
 

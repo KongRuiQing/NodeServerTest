@@ -611,6 +611,7 @@ exports.fillScheduleShopInfo = function(json_value){
 	
 	for(var i in json_value['list']){
 		var schedule_info = json_value['list'][i];
+		
 		for(var j in schedule_info['schedule_info']){
 			var shop_id = schedule_info['schedule_info'][j]['shop_id'];
 			
@@ -620,6 +621,13 @@ exports.fillScheduleShopInfo = function(json_value){
 			}
 		}
 	}	
+}
+
+exports.getShopScheduleInfo = function(shop_id){
+	var shop_info = g_shop_cache['dict'][shop_id];
+	if(shop_info != null){
+		return shop_info.getSheduleInfo();
+	}
 }
 
 exports.addFavoritesUser = function(shop_id,item_id,uid){

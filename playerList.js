@@ -20,6 +20,8 @@ let g_playerlist = {
 };
 
 
+
+
 exports.InitFromDb = function(
 	all_user_info,
 	all_login_info,
@@ -91,14 +93,26 @@ exports.InitFromDb = function(
 			g_playerlist['playerCache'][uid].initScheduleInfo(sort_key,player_schedule_info[i]);
 		}
 	}
-
+	//logger.log("PLAYER_LIST","[playerList][init] player_schedule_shop:" + util.inspect(player_schedule_shop));
 	for(var i in player_schedule_shop){
 		var uid = Number(player_schedule_shop[i]['uid']);
-		var schedule_id = Number(player_schedule_info[i]['schedule_id']);
+		var schedule_id = Number(player_schedule_shop[i]['schedule_id']);
 		var shop_id = Number(player_schedule_shop[i]['shop_id']);
-		
+		if(!FindUtil.checkIsNumber(uid)){
+			logger.error("PLAYER_LIST","[playerList][init] init player_schedule_shop uid is nan");
+			continue;
+		}
+		if(!FindUtil.checkIsNumber(schedule_id)){
+			logger.error("PLAYER_LIST","[playerList][init] init player_schedule_shop schedule_id is nan");
+			continue;
+		}
+		if(!FindUtil.checkIsNumber(shop_id)){
+			logger.error("PLAYER_LIST","[playerList][init] init player_schedule_shop shop_id is nan");
+			continue;
+		}
+
 		if(uid in g_playerlist['playerCache']){
-			g_playerlist['playerCache'][uid].setScheduleShopId(schedule_id,shop_id)
+			g_playerlist['playerCache'][uid].addScheduleShopId(schedule_id,shop_id)
 		}
 	}
 
@@ -778,6 +792,38 @@ exports.changeScheduleTitle = function(guid,schedule_id,schedule_name){
 			'uid' : uid
 		};
 	}
+}
 
-	
+exports.addShopToSchedule = function(guid,shop_id,schedule_id){
+	let uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			let result = player_info.addShopToSchedule(schedule_id,shop_id);
+			if(result){
+				return {
+					'uid' : uid
+				};
+			}else{
+				return {
+					'error' : 1024
+				}
+			}
+		}
+	}
+
+	return {
+		'error' : 1001
+	};
+}
+
+exports.getScheduleShopCommentInfo = function(guid,schedule_id,shop_id){
+	let uid = g_playerlist['guid_to_uid'][guid];
+	if(uid > 0){
+		var player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			return player_info.getScheduleShopCommentInfo(schedule_id,shop_id);
+		}
+	}
+	return null;
 }

@@ -29,6 +29,7 @@ handle_http['/cancel_attention_shop'] = http_handler.cancelAttentionShop;
 handle_http['/upload_schedule_image'] = http_handler.uploadScheduleImage;
 handle_http['/post_schedule_comment'] = http_handler.postScheduleComment;
 handle_http['/change_schedule_title'] = http_handler.changeScheduleTitle;
+handle_http['/add_shop_to_schedule'] = http_handler.addShopToSchedule;
 exports.start = function(Host,Port)
 {
 	
@@ -53,7 +54,7 @@ exports.start = function(Host,Port)
 				try{
 					handle_http[pathname](fields,files,function(success,json_result){
 						
-						logger.log("POST SERVER","response:" + util.inspect(json_result));
+						logger.log("POST SERVER","response:\n" + util.inspect(json_result));
 
 						response.writeHead(200, {'content-type': 'text/plain'});
 

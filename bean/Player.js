@@ -1,5 +1,5 @@
 "use strict";
-
+var util = require("util");
 var ScheduleRouteBean = require("./ScheduleRouteBean.js");
 
 var PlayerAttentionShopInfo = function(shop_id,attention_time,remark){
@@ -262,13 +262,16 @@ Player.prototype.setScheduleImage = function(schedule_id,image){
 	
 }
 
-Player.prototype.setScheduleShopId = function(schedule_id,shop_id){
+Player.prototype.addScheduleShopId = function(schedule_id,shop_id){
+	
 	for(var key in this.schedule){
 		if(this.schedule[key].getId() == schedule_id){
+
 			this.schedule[key].addShop(shop_id);
 			break;
 		}
 	}
+	//console.log(util.inspect(this.schedule));
 
 }
 
@@ -357,6 +360,28 @@ Player.prototype.changeScheduleTitle = function(schedule_id,schedule_name){
 			this.schedule[key].setScheduleName(schedule_name);
 		}
 	}
+}
+
+Player.prototype.addShopToSchedule = function(schedule_id,shop_id){
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			let add_result = this.schedule[key].addShopByClient(shop_id);
+			return add_result;
+		}
+	}
+	return false;
+}
+
+Player.prototype.getScheduleShopCommentInfo = function(schedule_id,shop_id){
+
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			console.log("123");
+			return this.schedule[key].getShopCommentInfo(shop_id);
+		}
+	}
+
+	return null;
 }
 
 

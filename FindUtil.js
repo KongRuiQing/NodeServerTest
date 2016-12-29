@@ -44,3 +44,10 @@ exports.getFlatternDistance = function(lat1,lng1,lat2,lng2){
 exports.randVertifyCode = function(){
 	return "";
 }
+
+exports.checkIsNumber = function(num){
+	if(typeof(num) == 'number' && !isNaN(num)){
+		return true;
+	}
+	return false;
+}

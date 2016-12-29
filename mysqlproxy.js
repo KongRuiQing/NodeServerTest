@@ -1037,3 +1037,17 @@ exports.changeScheduleTitle = function(schedule_id,uid,name){
 		}
 	});
 }
+
+exports.addShopToSchedule = function(uid,schedule_id,shop_id){
+	var db_params = [uid,schedule_id,shop_id];
+	connection.query("CALL p_add_shop_to_schedule(?,?,?)",db_params,function(err,result){
+		if(err){
+			logger.warn("MYSQL_PROXY","p_add_shop_to_schedule err:" + err);
+			logger.log("MYSQL_PROXY","p_add_shop_to_schedule params: " + util.inspect(db_params));
+		}else{
+			logger.log("MYSQL_PROXY","p_add_shop_to_schedule success!");
+			return;
+		}
+	});
+
+}

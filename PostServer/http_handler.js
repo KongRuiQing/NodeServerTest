@@ -1008,8 +1008,61 @@ exports.changeScheduleTitle = function(fields,files,callback){
 	let json_result = {
 		'error' : 0,
 		'schedule_id' : schedule_id,
-		'name' : name
+		'name' : schedule_name
 	};
 	callback(true,json_result);
 	return;
+}
+
+exports.addShopToSchedule = function(fields,files,callback){
+	logger.log("HTTP_HANDLER","[addShopToSchedule] params: " + util.inspect(fields));
+	let json_result = {};
+	if(! 'guid' in fields){
+		json_result = {
+			'error' : 1001
+		}
+		callback(true,json_result);
+		return;
+	}
+	if(! 'shop_id' in fields){
+		json_result = {
+			'error' : 1022
+		}
+		callback(true,json_result);
+		return;
+	}
+
+	if(! 'schedule_id' in fields){
+		json_result = {
+			'error' : 1023
+		}
+		callback(true,json_result);
+		return;
+	}
+
+	let guid = fields['guid'];
+	let shop_id = Number(fields['shop_id']);
+	let schedule_id = Number(fields['schedule_id']);
+
+	let json_value = PlayerProxy.addShopToSchedule(guid,shop_id,schedule_id);
+	if(json_value != null){
+		if('error' in json_value){
+			json_result['error'] = json_value['error'];
+		}else{
+			// success
+			db.addShopToSchedule(json_value['uid'],schedule_id,shop_id);
+			
+			let shop_schedule_info = ShopProxy.getShopScheduleInfo(shop_id);
+			json_result['schedule_id'] = schedule_id;
+			json_result['add_result'] = {
+				'shop_id' : shop_id,
+				'shop_info' : shop_schedule_info,
+				'schedule_info' : PlayerProxy.getScheduleShopCommentInfo(guid,schedule_id,shop_id)
+			}
+		}
+	}
+
+	callback(true,json_result);
+	return;
+	
 }
