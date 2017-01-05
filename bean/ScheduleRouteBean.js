@@ -177,6 +177,17 @@ SchedulteRouteBean.prototype.getShopCommentInfo = function(shop_id){
 	return null;
 }
 
+SchedulteRouteBean.prototype.removeShopFromSchedule = function(shop_id){
+	if(shop_id in this.schedule_info){
+		this.schedule_info[shop_id] = null;
+	}
+	for(var key in this.shop_id){
+		if(this.shop_id[key] == shop_id){
+			this.shop_id.splice(key,1);
+		}
+	}
+}
+
 module.exports = SchedulteRouteBean;
 
 

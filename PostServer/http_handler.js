@@ -1064,5 +1064,52 @@ exports.addShopToSchedule = function(fields,files,callback){
 
 	callback(true,json_result);
 	return;
-	
+}
+
+exports.removeShopFromSchedule = function(fields,files,cb){
+	logger.log("HTTP_HANDLER","[removeShopFromSchedule] params: " + util.inspect(fields));
+	let json_result = {};
+
+	if(! 'guid' in fields){
+		json_result = {
+			'error' : 1001
+		}
+		callback(true,json_result);
+		return;
+	}
+	if(! 'shop_id' in fields){
+		json_result = {
+			'error' : 1022
+		}
+		callback(true,json_result);
+		return;
+	}
+
+	if(! 'schedule_id' in fields){
+		json_result = {
+			'error' : 1023
+		}
+		callback(true,json_result);
+		return;
+	}
+
+	let guid = fields['guid'];
+	let shop_id = Number(fields['shop_id']);
+	let schedule_id = Number(fields['schedule_id']);
+
+	let json_value = PlayerProxy.removeShopFromSchedule(guid,shop_id,schedule_id);
+
+	if(json_value != null){
+		if('error' in json_value){
+			json_result['error'] = json_value['error'];
+		}else{
+			// success
+			db.removeShopFromSchedule(json_value['uid'],schedule_id,shop_id);
+		}
+	}else{
+		logger.error("HTTP_HANDLER","[removeShopFromSchedule] error");
+	}
+
+	cb(true,json_result);
+
 }

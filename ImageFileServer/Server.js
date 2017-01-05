@@ -37,7 +37,6 @@ exports.start = function(Host,Port)
 	server = http.createServer(function (request, response) {
 		var pathname = url.parse(request.url).pathname;
 		//logger.log("upload",pathname);
-			
 		if(pathname == '/upload'){
 			if(request.method.toLowerCase() === 'post'){
 
@@ -91,13 +90,13 @@ exports.start = function(Host,Port)
 		else{
 			var fileName = path.normalize(pathname.replace(/\.\./g, ""));
 			if(fileName.length == 0){
-				logger.log("IMAGE","empty");
+				logger.log("IMAGE","empty image name");
 			}
 			var realPath = path.join("assets", fileName);
 			
 			var ext = path.extname(realPath);
 			ext = ext ? ext.slice(1) : 'unknown';
-			//logger.log("IMAGE",realPath);
+			logger.log("IMAGE","realPath : " + realPath);
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
 					response.writeHead(404, {
@@ -115,7 +114,7 @@ exports.start = function(Host,Port)
 								response.writeHead(500, {
 									'Content-Type': 'text/plain'
 								});
-								response.end(err);
+								response.end(err)
 							} else {
 								var contentType = mime[ext] || "text/plain";
 								response.writeHead(200, {'Content-Type': contentType});
@@ -130,6 +129,7 @@ exports.start = function(Host,Port)
 						response.write("This request URL " + pathname + " was not found on this server.");
 						response.end();
 					}
+					
 					
 				}
 			});

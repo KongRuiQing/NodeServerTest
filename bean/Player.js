@@ -384,5 +384,13 @@ Player.prototype.getScheduleShopCommentInfo = function(schedule_id,shop_id){
 	return null;
 }
 
+Player.prototype.removeShopFromSchedule = function(schedule_id,shop_id){
+	for(var key in this.schedule){
+		if(this.schedule[key].getId() == schedule_id){
+			this.schedule[key].removeShopFromSchedule(shop_id);
+		}
+	}
+}
+
 
 module.exports = Player;

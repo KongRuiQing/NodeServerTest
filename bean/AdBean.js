@@ -1,15 +1,19 @@
 "use strict";
 
 var AdBean = function(DbRow){
+	this.position = Number(DbRow['position']);
+	this.index = Number(DbRow['index']);
 	this.image = DbRow['image'];
-	this.shop_id = DbRow['shop_id'];
+	//this.shop_id = DbRow['shop_id'];
+
 };
 
 
 AdBean.prototype.getJsonValue = function(){
 	return {
-		'image' : this.image,
-		'shop_id' : this.shop_id,
+		'position' : this.position,
+		'index' : this.index,
+		'image' : this.image
 	};
 }
 

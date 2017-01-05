@@ -118,14 +118,13 @@ exports.getShopDetail = function(headers, query,callback)
 
 exports.getAdImage = function(headers, query,callback){
 	
-	var json_result = DbCache.getShopAd();
+	var position = Number(query['position']);
+	var json_result = DbCache.getShopAd(position);
 	var json_value = {
-		'ad_image' : []
+		'position' : position,
+		'ad_image' : json_result
 	};
-	//logger.log("HTTP_HANDER",util.inspect(json_result));
-	for(var key in json_result){
-		json_value['ad_image'].push(json_result[key]['image']);
-	}
+	
 	callback(0,json_value);
 	
 	

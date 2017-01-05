@@ -5,7 +5,19 @@ g_db_cache = {
 	'area_menu' : {},
 	'city_info' : {},
 	'category_menu' : {},
-	'ad_image' : [],
+	'ad_image' : {},
+};
+
+/*
+* ad_image: 
+	key:position:
+	value :{
+		dirty:
+		result:[]
+	}
+*/
+g_db_query_cache = {
+	'ad_image' : {}
 };
 
 exports.InitFromDb = function(db_list_result){
@@ -57,8 +69,7 @@ exports.InitFromDb = function(db_list_result){
 				g_db_cache['category_menu'][class_id] = 
 				{
 					'name' : '',
-					'list' : [
-					{
+					'list' : [{
 						'name':name,
 						'code' : code
 					}
@@ -70,14 +81,16 @@ exports.InitFromDb = function(db_list_result){
 	//logger.log("DB_CACHE","[Init][init shop_ad] db:" + util.inspect(db_list_result[2]));
 	var list_all_ad_info = db_list_result[2];
 	for(var key in list_all_ad_info){
+		var ad_position = Number(list_all_ad_info[key]['position']);
 		var bean = new AdBean(list_all_ad_info[key]);
-		logger.log("DB_CACHE","[Init][init shop_ad] bean:" + util.inspect(bean.getJsonValue()));
-		g_db_cache['ad_image'].push(bean.getJsonValue());
+
+		if(ad_position in g_db_cache['ad_image']){
+			g_db_cache['ad_image'][ad_position].push(bean);
+		}else{
+			g_db_cache['ad_image'][ad_position] = [bean];
+		}
 	}
-
-	//logger.log("DB_CACHE",util.inspect(g_db_cache['category_menu']));
-
-	
+	logger.log("DB_CACHE","[Init][ad_image]:" + util.inspect(g_db_cache['ad_image'],{depth:null}));
 }
 
 exports.getAreaMenu = function(city_code){
@@ -137,6 +150,29 @@ exports.getShopArea = function(){
 	
 }
 
-exports.getShopAd = function(){
-	return g_db_cache['ad_image'];
+exports.getShopAd = function(position){
+	if(position in g_db_cache['ad_image']){
+		if(position in g_db_query_cache['ad_image'] && g_db_query_cache['ad_image'][position]['dirty'] == false){
+			return g_db_query_cache['ad_image'][position]['result'];
+		}
+		
+		if(position in g_db_query_cache['ad_image']){
+			g_db_query_cache['ad_image'][position]['result'].splice(0,g_db_query_cache['ad_image'][position]['result'].length);
+		}else{
+			g_db_query_cache['ad_image'][position] = {
+				'dirty' : false,
+				'result' : []
+			};
+		}
+		for(var key in g_db_cache['ad_image'][position]){
+			g_db_query_cache['ad_image'][position]['result'].push(g_db_cache['ad_image'][position][key].getJsonValue());
+		}
+		g_db_query_cache['ad_image'][position]['result'].sort(function(a,b){
+			return a['index'] > b['index'];
+		});
+		g_db_query_cache['ad_image'][position]['dirty'] = false;
+
+		return g_db_query_cache['ad_image'][position]['result'];
+	}
+	return [];
 }

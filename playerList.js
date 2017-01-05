@@ -827,3 +827,15 @@ exports.getScheduleShopCommentInfo = function(guid,schedule_id,shop_id){
 	}
 	return null;
 }
+
+exports.removeShopFromSchedule = function(guid,schedule_id,shop_id){
+	let uid = g_playerlist['guid_to_uid'][guid];
+	if(uid != null && uid > 0){
+		let player_info = g_playerlist['playerCache'][uid];
+		if(player_info != null){
+			return player_info.removeShopFromSchedule(schedule_id,shop_id);
+		}
+	}
+
+	return null;
+}
