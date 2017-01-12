@@ -392,52 +392,68 @@ exports.changeUserInfo =function(fields,files,callback){
 }
 
 exports.addShopItem = function(fields,files,callback){
-	var guid = fields['guid'];
 	var json_result = {};
+	if(! 'guid' in fields){
+		json_result['error'] = 1001;
+	}
+	if('error' in json_result){
+		callback(true,json_result);
+		return;
+	}
+	var guid = fields['guid'];
+
 	var shop_id = PlayerProxy.getShopId(guid);
 
 	if(shop_id != null && shop_id > 0){
 
 		var uploadFileKey = {
-			"image" : "shop/item/",
+			"image0" : "shop/item/",
 			"image1" : "shop/item/",
 			"image2" : "shop/item/",
 			"image3" : "shop/item/",
-			"image4" : "shop/item/"
-
+			"image4" : "shop/item/",
+			"image5" : "shop/item/",
+			"image6" : "shop/item/",
+			"image7" : "shop/item/",
+			"image8" : "shop/item/",
+			"image9" : "shop/item/",
+			"image10" : "shop/item/",
+			"image11" : "shop/item/",
+			"image12" : "shop/item/",
+			"image13" : "shop/item/",
+			"image14" : "shop/item/",
+			"image15" : "shop/item/",
+			"image16" : "shop/item/",
+			"image17" : "shop/item/"
 		};
 		check_dir(uploadFileKey);
 		var image = {};
-		//logger.log("HTTP_HANDLER",util.inspect(files));
+		
 		for(var file_key in uploadFileKey){
 			if(file_key in files){
 				var upload_file = files[file_key];
-				logger.log("HTTP_HANDLER",util.inspect(upload_file));
+				//logger.log("HTTP_HANDLER",util.inspect(upload_file));
 				var virtual_file_name = path.join(uploadFileKey[file_key],path.basename(upload_file.path));
 				var newPath = path.join("assets",virtual_file_name);
 				fs.renameSync(upload_file.path, newPath);
-				image[file_key] = path.join(virtual_file_name);
+				image[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");;
 			}else{
 				image[file_key] = '';
 			}
 		} 
-		//logger.log("HTTP_HANDLER",util.inspect(fields));
+		//logger.log("HTTP_HANDLER","[addShopItem] images: \n" + util.inspect(image));
+
 		var price = Number(fields['price']);
 		var show_price = Number(fields['show_price']);
-
-		var my_item_info = ShopProxy.addShopItem(shop_id,fields['name'],price,show_price,image['image'],image['image1'],image['image2'],image['image3'],image['image4']);
+		let item_name = fields['name'];
 		
-		//logger.log("HTTP_HANDLER", "ShopProxy.addShopItem return:" + item_id);
+		var json_value = ShopProxy.addShopItem(shop_id,item_name,price,show_price,image);
 		
-		if(my_item_info != null){
-			var shop_image = image['image'].replace(/\\/g,"\\\\");
-			var shop_image1 = image['image1'].replace(/\\/g,"\\\\");
-			var shop_image2 = image['image2'].replace(/\\/g,"\\\\");
-			var shop_image3 = image['image3'].replace(/\\/g,"\\\\");
-			var shop_image4 = image['image4'].replace(/\\/g,"\\\\");
-
-			db.addShopItem(shop_id,my_item_info['item_id'],[shop_image,shop_image1,shop_image2,shop_image3,shop_image4],fields['name'],parseFloat(fields['price']),parseFloat(fields['show_price']));
-			json_result['item_info'] = my_item_info;
+		//logger.log("HTTP_HANDLER", "[ShopProxy][addShopItem] return : \n" + util.inspect(json_value));
+		
+		if(json_value != null){
+			db.addShopItem(json_value);
+			json_result['item_info'] = ShopProxy.getMyShopItemInfo(json_value['id']);
 			json_result['error'] = 0;
 		}else{
 			json_result['error'] = 2;
@@ -447,7 +463,7 @@ exports.addShopItem = function(fields,files,callback){
 	}else{
 		json_result['error'] = 1;
 	}
-	logger.log("HTTP_HANDLER",util.inspect(my_item_info));
+	//logger.log("HTTP_HANDLER",util.inspect(my_item_info));
 	callback(true,json_result);
 }
 
@@ -682,11 +698,13 @@ exports.saveShopDetail = function(fields,files,callback){
 exports.saveShopItem = function(fields,files,callback){
 	
 	logger.log("HTTP_HANDLER",util.inspect(fields));
+	let json_result = {};
 
 	if(!'guid' in fields){
-		var json_result = {
-			'error' : 2
-		}
+		json_result['error'] = 2;
+	}
+
+	if('error' in json_result){
 		callback(true,json_result);
 		return;
 	}
@@ -694,9 +712,10 @@ exports.saveShopItem = function(fields,files,callback){
 	var shop_id = PlayerProxy.getShopId(fields['guid']);
 
 	if(shop_id <= 0){
-		var json_result = {
-			'error' : 3
-		}
+		json_result['error'] = 3;
+	}
+
+	if('error' in json_result){
 		callback(true,json_result);
 		return;
 	}
@@ -739,6 +758,16 @@ exports.saveShopItem = function(fields,files,callback){
 		'image_6' : 'shop/image/',
 		'image_7' : 'shop/image/',
 		'image_8' : 'shop/image/',
+		'image_9' : 'shop/image/',
+		'image_10' : 'shop/image/',
+		'image_11' : 'shop/image/',
+		'image_12' : 'shop/image/',
+		'image_13' : 'shop/image/',
+		'image_14' : 'shop/image/',
+		'image_15' : 'shop/image/',
+		'image_16' : 'shop/image/',
+		'image_17' : 'shop/image/',
+		'image_18' : 'shop/image/',
 	}
 
 	
@@ -775,21 +804,18 @@ exports.saveShopItem = function(fields,files,callback){
 
 	params['shop_id'] = shop_id;
 
-	var json_result = ShopProxy.saveShopItem(params);
+	let json_value = ShopProxy.saveShopItem(params);
 
-	if(json_result != null){
+	if(json_value != null){
 		json_result['error'] = 0;
-		var db_params = ShopProxy.getMyShopItemDbParams(json_result['item_id']);
-		//logger.log("HTTP_HANDLER","db_params:" + util.inspect(db_params));
+		
 		if(db_params != null){
-			db.saveShopItem(db_params);
+			db.saveShopItem(json_value);
 		}
 		
 	}
 	if(json_result == null){
-		json_result = {
-			'error' : 1
-		}
+		json_result['error'] = 1;
 	}
 
 	callback(true,json_result);
@@ -1112,4 +1138,60 @@ exports.removeShopFromSchedule = function(fields,files,cb){
 
 	cb(true,json_result);
 
+}
+
+exports.setShopItemImage = function(fields,files,cb){
+	logger.log("HTTP_HANDLER","[removeShopFromSchedule] params: " + util.inspect(fields));
+
+	let json_result = {};
+	if(! 'guid' in fields){
+		json_result['error'] = 1001;
+	}
+	if(! 'item_id' in fields){
+		json_result['error'] = 1026;
+	}
+	if(! 'index' in fields){
+		json_result['error'] = 1027;
+	}
+
+	var uploadFileKey = {
+		'image' : 'user/schedule/'
+	}
+	var params = {};
+	for(var key in uploadFileKey){
+		if(key in files){
+			var upload_file = files[key];
+			var parse_result = path.parse(upload_file.path);
+			var virtual_file_name = path.join(uploadFileKey[key],parse_result['base']);
+			var newPath = path.join("assets",virtual_file_name);
+			var newDir = path.join("assets",uploadFileKey[key]);
+			if(!fs.existsSync(newDir)){
+				fs.mkdirSync(newDir);
+			}
+			fs.renameSync(upload_file.path, newPath);
+			params[key] = virtual_file_name.replace(/\\/g,"\\\\");
+		}else{
+			params[key] = "";
+		}
+	}
+
+
+	if('error' in json_result){
+		cb(true,json_result);
+		return;
+	}
+
+	let item_id = fields['item_id'];
+	let index = fields['index'];
+	let image = params['image'];
+	let json_value = shopCache.setShopItemImage(item_id,index,image);
+	if(json_value != null){
+		db.addShopItemImage(json_value);
+		json_result['index'] = index;
+		json_result['item_id'] = item_id;
+		json_result['image'] = image;
+	}else{
+		json_result['error'] = 1025
+	}
+	cb(true,json_result);
 }

@@ -840,13 +840,24 @@ exports.changeUserInfo = function(uid,user_info_list){
 	});
 }
 
-exports.addShopItem = function(shop_id,item_id,images,name,price,show_price){
+exports.addShopItem = function(json_value){
+	var image_list = [];
+	//var image_key = ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17'];
+	for(var i = 0; i < 18; ++i){
+		if(i in json_value['images']){
+			image_list.push(json_value['images'][i]);
+		}else{
+			image_list.push("");
+		}
+	}
 	
-	var db_params = [shop_id,item_id].concat(images).concat([name,price,show_price]);
-	logger.log("MYSQL_PROXY",util.inspect(db_params));
-	connection.query("CALL p_add_shop_item(?,?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
+	var db_params = [json_value['shop_id'],json_value['id'],json_value['name'],json_value['price'],json_value['show_price']].concat(image_list);
+	//var db_params = [shop_id,item_id].concat(images).concat([name,price,show_price]);
+	
+	connection.query("CALL p_add_shop_item(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
 		if(err){
-			logger.error("MYSQL_PROXY","addShopItem error:" + err);
+			logger.error("MYSQL_PROXY","p_add_shop_item error:" + err);
+			logger.log("MYSQL_PROXY","p_add_shop_item params:\n" + util.inspect(db_params));
 		}else{
 			logger.log("MYSQL_PROXY","addShopItem success");
 		}
@@ -955,20 +966,13 @@ exports.saveShopItem = function(json_value){
 
 	var db_params = [
 	json_value['id']
-	,json_value['image1']
-	,json_value['image2']
-	,json_value['image3']
-	,json_value['image4']
-	,json_value['image5']
-	,json_value['image6']
-	,json_value['image7']
-	,json_value['image8']
 	,json_value['name']
 	,json_value['price']
 	,json_value['show_price']
 	];
 	logger.log("MYSQL_PROXY","[saveShopItem][db][params]:" + util.inspect(json_value));
-	connection.query("CALL p_save_shop_item(?,?,?,?,?,?,?,?,?,?,?,?)",db_params,function(err,result){
+
+	connection.query("CALL p_save_shop_item(?,?,?,?)",db_params,function(err,result){
 		if(err){
 			
 			logger.log("MYSQL_PROXY","p_save_shop_item error:" + err);
@@ -1058,5 +1062,17 @@ exports.addShopToSchedule = function(uid,schedule_id,shop_id){
 			return;
 		}
 	});
+}
 
+exports.addShopItemImage = function(json_value){
+	var db_params = [json_value['item_id'],json_value['index'],json_value['image']];
+	connection.query("CALL p_add_shop_item_image(?,?,?)",db_params,function(err,result){
+		if(err){
+			logger.warn("MYSQL_PROXY","p_add_shop_item_image err:" + err);
+			logger.log("MYSQL_PROXY","p_add_shop_item_image params: " + util.inspect(json_value));
+		}else{
+			logger.log("MYSQL_PROXY","p_add_shop_item_image success!");
+			return;
+		}
+	})
 }
