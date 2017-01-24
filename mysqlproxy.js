@@ -628,7 +628,7 @@ exports.attentionShop = function(player_id,shop_id,attention,attention_time){
 
 exports.InsertBecomeSeller = function(uid,json_obj,callback){
 	logger.log("MYSQL_PROXY",'db params:' + util.inspect(json_obj));
-	connection.query("CALL p_insert_become_seller(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?,?,?,?,?, ?,?,?,?,?,?,?)",[
+	var db_params = [
 		uid,
 		json_obj['id'],
 		json_obj['name'],
@@ -660,10 +660,16 @@ exports.InsertBecomeSeller = function(uid,json_obj,callback){
 		json_obj['image_in_attention'].replace(/\\/g,"\\\\"),
 		json_obj['card_image'].replace(/\\/g,"\\\\"),
 		json_obj['card_number'],
-		json_obj['state']
-		], function(err,result){
+		json_obj['state']];
+	connection.query("CALL p_insert_become_seller(\
+		?,?,?,?,?,\
+		?,?,?,?,?, \
+		?,?,?,?,?, \
+		?,?,?,?,?,?,?,?,?,?, \
+		?,?,?,?,?,?,?)", db_params, function(err,result){
 			if(err){
 				logger.error("MYSQL_PROXY",err);
+				logger.error("MYSQL_PROXY",db_params);
 			}
 		});
 }

@@ -161,18 +161,12 @@ exports.CheckLogin = function(login_account,login_password){
 	}
 
 	return 0;
-	
 }
 
-exports.IsLogin = function(login_account){
+exports.CheckLoginByGuid = function(guid){
 
-	var uid = g_playerlist['account_uid'][login_account];
-	
-	if(g_playerlist['player_online_list'][uid] != null){
-		return true;
-	}
-	return false;
 }
+
 
 function getUTC() {  
 	var d = new Date();  
@@ -467,7 +461,7 @@ g_playerlist.Register = function(telephone,password){
 
 	this['playerCache'][uid] = newPlayer(uid);
 	
-	this['account_uid'][telephone] = uid;
+	//this['account_uid'][telephone] = uid;
 
 	this['reg_account'][telephone] = null;
 

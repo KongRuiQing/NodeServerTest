@@ -44,6 +44,8 @@ function handle_server(request,response){
 	
 	if (typeof handle_http[pathname] === 'function'){
 		
+		logger.log("QUERY_SERVER","query:\n" + util.inspect(request_url.query,{depth:null}));
+
 		handle_http[pathname](headers,request_url.query,function(error_code,content){
 
 			logger.log("QUERY_SERVER","query result:\n" + util.inspect(content,{depth:null}));

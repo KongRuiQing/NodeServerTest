@@ -36,6 +36,8 @@ exports.login = function(fields,files,callback){
 		
 		var login_response = PlayerProxy.Login(login_account);
 		json_result['user_info'] = login_response;
+		json_result['account'] = login_account;
+		json_result['password'] = login_password;
 		json_result['success'] = true;
 	}else{
 		json_result['success'] = false;
@@ -46,6 +48,8 @@ exports.login = function(fields,files,callback){
 	callback(true,json_result);
 
 }
+
+
 
 exports.register = function(fields,files,callback){
 	var step = parseInt(fields['step']);

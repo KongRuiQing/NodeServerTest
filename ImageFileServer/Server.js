@@ -89,9 +89,7 @@ exports.start = function(Host,Port)
 		}
 		else{
 			var fileName = path.normalize(pathname.replace(/\.\./g, ""));
-			if(fileName.length == 0){
-				logger.log("IMAGE","empty image name");
-			}
+
 			var realPath = path.join("assets", fileName);
 			
 			var ext = path.extname(realPath);
@@ -99,6 +97,9 @@ exports.start = function(Host,Port)
 			logger.log("IMAGE","realPath : " + realPath);
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
+
+					logger.log("IMAGE","can find image in server");
+
 					response.writeHead(404, {
 						'Content-Type': 'text/plain'
 					});

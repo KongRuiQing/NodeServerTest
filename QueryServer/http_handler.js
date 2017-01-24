@@ -46,7 +46,7 @@ function watchApkVersion(root_path){
 
 exports.getAreaMenu = function(headers, query,callback){
 	
-	var json_result = DbCache.getAreaMenu(query['city_code']);
+	var json_result = DbCache.getAreaMenu();
 	callback(0,json_result);
 	
 }
@@ -268,11 +268,6 @@ exports.getShopCategory = function(headers,query,callback){
 	callback(0,{'list':json_result});
 }
 
-exports.getShopCategoryClass = function(headers,query,callback){
-	logger.log("HTTP_HANDER","start getShopCategoryClass ");
-	var json_result = DbCache.getShopCategoryClass();
-	callback(0,{'list':json_result});
-}
 
 exports.getShopArea = function(headers,query,callback){
 	logger.log("HTTP_HANDER","start getShopArea");

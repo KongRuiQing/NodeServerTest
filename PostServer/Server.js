@@ -32,6 +32,7 @@ handle_http['/change_schedule_title'] = http_handler.changeScheduleTitle;
 handle_http['/add_shop_to_schedule'] = http_handler.addShopToSchedule;
 handle_http['/remove_shop_from_schedule'] = http_handler.removeShopFromSchedule;
 handle_http['/add_shop_item_image'] = http_handler.setShopItemImage;
+handle_http['/relogin'] = http_handler.reLogin;
 exports.start = function(Host,Port)
 {
 	

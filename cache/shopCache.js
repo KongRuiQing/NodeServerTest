@@ -326,9 +326,6 @@ exports.getShopActivityList = function(page,page_size){
 	for(var key in g_shop_cache['activity_list']){
 		list.push(g_shop_cache['activity_list'][key].getJsonValue());
 	}
-
-	
-	
 	return {
 		'page' : page,
 		'total':list.length,
