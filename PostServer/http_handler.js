@@ -9,7 +9,7 @@ var ShopProxy = require("../cache/shopCache.js");
 var path=require('path');
 var moment = require('moment');
 
-exports.new_feed = function(fields,files,callback){
+exports.new_feed = function(header,fields,files,callback){
 	
 };
 
@@ -23,7 +23,7 @@ function check_dir(dirs){
 	}
 }
 
-exports.login = function(fields,files,callback){
+exports.login = function(header,fields,files,callback){
 	var login_account = fields['account'];
 	var login_password = fields['password'];
 	
@@ -51,7 +51,7 @@ exports.login = function(fields,files,callback){
 
 
 
-exports.register = function(fields,files,callback){
+exports.register = function(header,fields,files,callback){
 	var step = parseInt(fields['step']);
 	var telephone = fields['telephone'];
 	var cuid = fields['cuid'] || null;
@@ -63,7 +63,7 @@ exports.register = function(fields,files,callback){
 	callback(true,result);
 }
 
-exports.changeSex = function(fields,files,callback){
+exports.changeSex = function(header,fields,files,callback){
 	var guid = fields['guid'];
 	var sex = parseInt(fields['sex']);
 
@@ -71,29 +71,29 @@ exports.changeSex = function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.changeNickName = function(fields,files,callback){
+exports.changeNickName = function(header,fields,files,callback){
 	var guid = fields['guid'];
 	var nickname = parseInt(fields['nickname']);
 	var json_result = PlayerProxy.changeNickName(guid,nickname);
 	callback(true,json_result);
 }
-exports.changeBirthday = function(fields,files,callback){
+exports.changeBirthday = function(header,fields,files,callback){
 	var guid = fields['guid'];
 	var birthday = fields['birthday'];
 	var json_result = PlayerProxy.changeBirthday(guid,birthday);
 	callback(true,json_result);
 }
 
-exports.changeSign = function(fields,files,callback){
+exports.changeSign = function(header,fields,files,callback){
 	var guid = fields['guid'];
 	var sign = fields['sign'];
 	var json_result = PlayerProxy.changeSign(guid,sign);	
 	callback(true,json_result);
 }
 
-exports.becomeSeller = function(fields,files,callback){
+exports.becomeSeller = function(header,fields,files,callback){
 
-	var guid = fields['guid'];
+	var uid = header['uid'];
 
 	var uploadFile = {
 		"qualification" : "shop/qualification/",
@@ -103,6 +103,7 @@ exports.becomeSeller = function(fields,files,callback){
 	check_dir(uploadFile);
 
 	logger.log("HTTP_HANDLER","[becomeSeller][params] fields:" + util.inspect(fields));
+	logger.log("HTTP_HANDLER","[becomeSeller][params] header:" + util.inspect(header));
 
 	var fieldNameToDbColName = {
 		'beg' : {
@@ -177,7 +178,7 @@ exports.becomeSeller = function(fields,files,callback){
 	var shopInfo = {};
 	for(var file_key in uploadFile){
 		var upload_file = files[file_key];
-		//logger.log("HTTP_HANDLER",file_key + "=" + util.inspect(files[file_key]));
+		
 		if(upload_file != null) {
 			var virtual_file_name = path.join(uploadFile[file_key],path.basename(upload_file.path));
 			var newPath = path.join("assets",virtual_file_name);
@@ -211,34 +212,38 @@ exports.becomeSeller = function(fields,files,callback){
 		
 	}
 
-	var json_result = {
-		'error' : 0
-	};
-	//logger.log("HTTP_HANDLER","[becomeSeller][params] shopInfo: " + util.inspect(shopInfo));
 	
-	var find_uid = PlayerProxy.CheckSeller(guid);
 	
-	if(find_uid > 0){
-		var shop_info = ShopProxy.InsertBecomeSeller(find_uid,shopInfo);
-		if(shop_info != null){
-			PlayerProxy.SetUserShopId(guid,shop_info['id']);
-			if(shop_info['id'] > 0){
-				
-				db.InsertBecomeSeller(find_uid,shop_info);
-				json_result['shop_id'] = shop_info['id'];
-			}else{
-				json_result['error'] = 2;
+	if(uid > 0){
+		db.InsertBecomeSeller(uid,shopInfo,function(err,db_row){
+			if(err){
+				logger.error(err);
+				callback(true,{
+					'error' : 2,
+					'error_msg' : "数据库失败",
+				});
+				return;
 			}
-		}
-	}else{
-		json_result['error'] = 1;
-	}
-	logger.log("HTTP_HANDLER","[becomeSeller][params] json_result: " + util.inspect(json_result));
 
-	callback(true,json_result);
+			ShopProxy.getInstance().InsertBecomeSeller(uid,db_row);
+
+			PlayerProxy.getInstance().SetUserShopId(uid,db_row['Id']);
+
+			callback(true,{
+				'error' : 0,
+				'shop_id' : db_row['Id'],
+			});
+		});
+		return;
+		
+	}
+	callback(true,{
+		'error' : 1,
+		'error_msg' : '用户没有登录',
+	});	
 }
 
-exports.changeShopState = function(fields,files,callback){
+exports.changeShopState = function(header,fields,files,callback){
 	var guid = fields['guid'];
 	var shopId = PlayerProxy.getShopId(guid);
 	var json_result = {};
@@ -252,7 +257,7 @@ exports.changeShopState = function(fields,files,callback){
 	callback(true,""); 
 }
 
-exports.attentionShop = function(fields,files,callback){
+exports.attentionShop = function(header,fields,files,callback){
 	logger.log("HTTP_HANDLER","[attentionShop][params] fields:" + util.inspect(fields));
 	if(! 'guid' in fields){
 		callback(true,{
@@ -286,7 +291,7 @@ exports.attentionShop = function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.addToFavorites = function(fields,files,callback){
+exports.addToFavorites = function(header,fields,files,callback){
 	var guid = fields['guid'];
 
 	var shop_id = fields['shop_id'];
@@ -314,7 +319,7 @@ exports.addToFavorites = function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.changeUserInfo =function(fields,files,callback){
+exports.changeUserInfo =function(header,fields,files,callback){
 
 	
 	var json_result = {
@@ -395,7 +400,7 @@ exports.changeUserInfo =function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.addShopItem = function(fields,files,callback){
+exports.addShopItem = function(header,fields,files,callback){
 	var json_result = {};
 	if(! 'guid' in fields){
 		json_result['error'] = 1001;
@@ -471,7 +476,7 @@ exports.addShopItem = function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.saveShopBasicInfo = function(fields,files,callback){
+exports.saveMyShopBasicInfo = function(header,fields,files,callback){
 	var json_result = {};
 	var uploadFileKey = {
 		"image" : "shop/image/",
@@ -494,18 +499,28 @@ exports.saveShopBasicInfo = function(fields,files,callback){
 			image[file_key] = '';
 		}
 	} 
-
-
-	var json_result = ShopProxy.saveShopBasicInfo(fields['guid'],image['image'],fields['address'],fields['telephone']);
-	if(json_result != null){
-		db.saveShopBasicInfo(json_result);
-		callback(true,json_result);
-		return;
-	}
-	callback(true,{});
+	var uid = header['uid'];
+	let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	let json_param = {
+		'shop_id' : shop_id,
+		'image' : image['image'],
+		'address' : fields['address'],
+		'telephone' : fields['telephone'],
+	};
+	db.saveShopBasicInfo(json_param,function(err,result){
+		if(err){
+			callback(true,err);
+			logger.error("HTTP_HANDLER",err);
+			return;
+		}
+		ShopProxy.getInstance().saveShopBasicInfo(shop_id,result);
+		logger.log("HTTP_HANDLER","shop_id:" + shop_id + " uid:" + uid);
+		callback(true,ShopProxy.getInstance().getMyShopBasicInfo(uid,false));
+	});
+	return;
 }
 
-exports.addShopSpreadItem = function(fields,files,callback){
+exports.addShopSpreadItem = function(header,fields,files,callback){
 	var json_result = {};
 	var uploadFileKey = {
 		"image" : "shop/image/",
@@ -534,7 +549,7 @@ exports.addShopSpreadItem = function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.addShopActivity = function(fields,files,callback){
+exports.addShopActivity = function(header,fields,files,callback){
 
 	var json_result = {};
 
@@ -565,7 +580,7 @@ exports.addShopActivity = function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.removeFavoritesItem = function(fields,files,callback){
+exports.removeFavoritesItem = function(header,fields,files,callback){
 	if('guid' in fields && 'id' in fields){
 		var json_result = PlayerProxy.removeFavoritesItem(fields['guid'],Number(fields['id']));
 		if(json_result != null){
@@ -584,7 +599,7 @@ exports.removeFavoritesItem = function(fields,files,callback){
 	return;
 }
 
-exports.renewal = function(fields,files,callback){
+exports.renewal = function(header,fields,files,callback){
 	var json_result = {
 		'error' : 10002
 	};
@@ -609,98 +624,99 @@ exports.renewal = function(fields,files,callback){
 	callback(true,json_result);
 }
 
-exports.saveShopDetail = function(fields,files,callback){
+exports.saveSellerInfo = function(header,fields,files,callback){
 	var json_result = {};
 
-	if('guid' in fields){
-		var params_type = {
-			'area_code' : 'INT',
-			'category_code1' : 'INT',
-			'category_code2' : 'INT',
-			'category_code3' : 'INT',
-			'beg' : 'INT',
-			'end' : 'INT',
-			'days' : 'INT',
-			'address' : 'STRING',
-			'distribution' : 'STRING',
-			'qq' : 'STRING',
-			'wx' : 'STRING',
-			'email' : 'STRING',
-			'card_number' : 'STRING'
-		};
-		//console.log("fields:" + util.inspect(fields));
+	var params_type = {
+		'area_code' : 'INT',
+		'category_code1' : 'INT',
+		'category_code2' : 'INT',
+		'category_code3' : 'INT',
+		'beg' : 'INT',
+		'end' : 'INT',
+		'days' : 'INT',
+		'address' : 'STRING',
+		'distribution' : 'STRING',
+		'qq' : 'STRING',
+		'wx' : 'STRING',
+		'email' : 'STRING',
+		'card_number' : 'STRING'
+	};
 
-		var shop_id = PlayerProxy.getShopId(fields['guid']);
-		var uid = PlayerProxy.getUid(fields['guid']);
-		var params = {};
-		for(var key in params_type){
-			if(key in fields){
-				if(params_type[key] == 'INT'){
-					params[key] = Number(fields[key]);
-				}
-				if(params_type[key] == 'STRING'){
-					params[key] = fields[key];
-				}
-				if(params_type[key] == 'FLOAT'){
-					params[key] = parseFloat(fields[key]);
-				}
-			}else{
-				if(params_type[key] == 'INT'){
-					params[key] = 0;
-				}
-				if(params_type[key] == 'STRING'){
-					params[key] = "";
-				}
-				if(params_type[key] == 'FLOAT'){
-					params[key] = 0.0;
-				}
+
+	var shop_id = PlayerProxy.getInstance().getMyShopId(header['uid']);
+
+
+	var params = {};
+	for(var key in params_type){
+		if(key in fields){
+			if(params_type[key] == 'INT'){
+				params[key] = Number(fields[key]);
 			}
-		}
-
-		var uploadFileKey = {
-			'card_image' : 'shop/card/',
-			'qualification' : 'shop/qualification/'
-		};
-
-		for(var key in uploadFileKey){
-			if(key in files){
-				var upload_file = files[key];
-				var parse_result = path.parse(upload_file.path);
-
-				var virtual_file_name = path.join(uploadFileKey[key],parse_result['base']);
-				var newPath = path.join("assets",virtual_file_name);
-				var newDir = path.join("assets",uploadFileKey[key]);
-				if(!fs.existsSync(newDir)){
-					fs.mkdirSync(newDir);
-				}
-				fs.renameSync(upload_file.path, newPath);
-				params[key] = virtual_file_name.replace(/\\/g,"\\\\");
-			}else{
+			if(params_type[key] == 'STRING'){
+				params[key] = fields[key];
+			}
+			if(params_type[key] == 'FLOAT'){
+				params[key] = parseFloat(fields[key]);
+			}
+		}else{
+			if(params_type[key] == 'INT'){
+				params[key] = 0;
+			}
+			if(params_type[key] == 'STRING'){
 				params[key] = "";
 			}
+			if(params_type[key] == 'FLOAT'){
+				params[key] = 0.0;
+			}
 		}
-		params['id'] = shop_id;
-
-		var save_result = ShopProxy.saveShopDetail(params);
-		
-		if(save_result != null){
-			db.saveShopDetail(params);
-		}
-
-		json_result = {
-			'shop_id':shop_id,
-			'shop_info':save_result
-		};
-		//logger.log("HTTP_HANDLER",util.inspect(json_result));
-		//console.log("json_result:" + util.inspect(json_result));
-	}else{
-		json_result['error'] = 1;
 	}
-	callback(true,json_result);
+
+	var uploadFileKey = {
+		'card_image' : 'shop/card/',
+		'qualification' : 'shop/qualification/'
+	};
+
+	for(var key in uploadFileKey){
+		if(key in files){
+			var upload_file = files[key];
+			var parse_result = path.parse(upload_file.path);
+
+			var virtual_file_name = path.join(uploadFileKey[key],parse_result['base']);
+			var newPath = path.join("assets",virtual_file_name);
+			var newDir = path.join("assets",uploadFileKey[key]);
+			if(!fs.existsSync(newDir)){
+				fs.mkdirSync(newDir);
+			}
+			fs.renameSync(upload_file.path, newPath);
+			params[key] = virtual_file_name.replace(/\\/g,"\\\\");
+		}else{
+			params[key] = "";
+		}
+	}
+	params['id'] = shop_id;
+
+	db.saveSellerInfo(params,function(err,db_row){
+		if(err){
+			logger.error(err);
+			callback(true,err);
+			return;
+		}else{
+			ShopProxy.getInstance().updateSellerInfo(db_row);
+
+			callback(true,{
+				'error' : 0,
+				'shop_info' : ShopProxy.getInstance().getMyShopSellerInfo(db_row['Id'])
+			});
+			return;
+		}
+	});
+
+	
 }
 
-exports.saveShopItem = function(fields,files,callback){
-	
+exports.saveShopItem = function(header,fields,files,callback){
+
 	logger.log("HTTP_HANDLER",util.inspect(fields));
 	let json_result = {};
 
@@ -774,7 +790,7 @@ exports.saveShopItem = function(fields,files,callback){
 		'image_18' : 'shop/image/',
 	}
 
-	
+
 
 	for(var key in params_type){
 		if(key in fields){
@@ -812,11 +828,11 @@ exports.saveShopItem = function(fields,files,callback){
 
 	if(json_value != null){
 		json_result['error'] = 0;
-		
+
 		if(db_params != null){
 			db.saveShopItem(json_value);
 		}
-		
+
 	}
 	if(json_result == null){
 		json_result['error'] = 1;
@@ -827,7 +843,7 @@ exports.saveShopItem = function(fields,files,callback){
 
 }
 
-exports.cancelAttentionShop = function(fields,files,callback){
+exports.cancelAttentionShop = function(header,fields,files,callback){
 	logger.log("HTTP_HANDLER","[cancelAttentionShop][fields] params : " + util.inspect(fields));
 
 	if(!'guid' in fields){
@@ -851,7 +867,7 @@ exports.cancelAttentionShop = function(fields,files,callback){
 	if(player_info != null && 'uid' in player_info && player_info['uid'] > 0){
 
 		ShopProxy.cancelAttentionShop(player_info['uid'],fields['shop_id']);
-		
+
 		db.attentionShop(player_info['uid'],fields['shop_id'],0,moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
 
 		callback(true,{
@@ -876,7 +892,7 @@ exports.cancelAttentionShop = function(fields,files,callback){
 	return;
 }
 
-exports.uploadScheduleImage = function(fields,files,callback){
+exports.uploadScheduleImage = function(header,fields,files,callback){
 	logger.log("HTTP_HANDLER","uploadScheduleImage fields:" + util.inspect(fields));
 	if(!'guid' in fields){
 		var json_result = {
@@ -919,7 +935,7 @@ exports.uploadScheduleImage = function(fields,files,callback){
 			return;
 		}
 	}
-	
+
 	var uploadFileKey = {
 		'image' : 'user/schedule/'
 	}
@@ -945,11 +961,11 @@ exports.uploadScheduleImage = function(fields,files,callback){
 	var schedule_id = Number(fields['schedule_id']);
 
 	if(type == 2){
-		
-		
+
+
 		var shop_id = Number(fields['shop_id']);
 		var image_index = Number(fields['image_index']);
-		
+
 		var json_value = PlayerProxy.ChangeScheduleImage(
 			guid
 			,schedule_id
@@ -1001,7 +1017,7 @@ exports.uploadScheduleImage = function(fields,files,callback){
 	}
 }
 
-exports.changeScheduleTitle = function(fields,files,callback){
+exports.changeScheduleTitle = function(header,fields,files,callback){
 
 	if(!'guid' in fields){
 		let json_result = {
@@ -1044,7 +1060,7 @@ exports.changeScheduleTitle = function(fields,files,callback){
 	return;
 }
 
-exports.addShopToSchedule = function(fields,files,callback){
+exports.addShopToSchedule = function(header,fields,files,callback){
 	logger.log("HTTP_HANDLER","[addShopToSchedule] params: " + util.inspect(fields));
 	let json_result = {};
 	if(! 'guid' in fields){
@@ -1096,7 +1112,7 @@ exports.addShopToSchedule = function(fields,files,callback){
 	return;
 }
 
-exports.removeShopFromSchedule = function(fields,files,cb){
+exports.removeShopFromSchedule = function(header,fields,files,cb){
 	logger.log("HTTP_HANDLER","[removeShopFromSchedule] params: " + util.inspect(fields));
 	let json_result = {};
 
@@ -1144,7 +1160,7 @@ exports.removeShopFromSchedule = function(fields,files,cb){
 
 }
 
-exports.setShopItemImage = function(fields,files,cb){
+exports.setShopItemImage = function(header,fields,files,cb){
 	logger.log("HTTP_HANDLER","[removeShopFromSchedule] params: " + util.inspect(fields));
 
 	let json_result = {};
@@ -1199,3 +1215,4 @@ exports.setShopItemImage = function(fields,files,cb){
 	}
 	cb(true,json_result);
 }
+

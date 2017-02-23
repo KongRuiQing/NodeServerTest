@@ -106,7 +106,7 @@ function initDbCache(){
 		if(error){
 			logger.error(error);
 		}
-		DbCache.InitFromDb(result);
+		DbCache.getInstance().InitFromDb(result);
 		logger.log("MYSQL","init all config from DB");
 	});
 }
@@ -630,46 +630,46 @@ exports.InsertBecomeSeller = function(uid,json_obj,callback){
 	logger.log("MYSQL_PROXY",'db params:' + util.inspect(json_obj));
 	var db_params = [
 		uid,
-		json_obj['id'],
-		json_obj['name'],
+		"",
 		json_obj['beg'],
 		json_obj['end'],
+		
 		json_obj['days'],
 		json_obj['longitude'],
 		json_obj['latitude'],
 		json_obj['city_no'],
 		json_obj['area_code'],
+		
 		json_obj['address'],
 		json_obj['category_code1'],
 		json_obj['category_code2'],
 		json_obj['category_code3'],
-		json_obj['info'],
+		"",
+		
 		json_obj['distribution'],
 		json_obj['telephone'],
 		json_obj['email'],
 		json_obj['qq'],
 		json_obj['wx'],
-		json_obj['image'].replace(/\\/g,"\\\\"),
-		json_obj['image1'].replace(/\\/g,"\\\\"),
-		json_obj['image2'].replace(/\\/g,"\\\\"),
-		json_obj['image3'].replace(/\\/g,"\\\\"),
-		json_obj['promotion_image'].replace(/\\/g,"\\\\"),
-		json_obj['near_image'].replace(/\\/g,"\\\\"),
-		json_obj['business'],
+		
+		"",
 		json_obj['qualification'].replace(/\\/g,"\\\\"),
-		json_obj['image_in_attention'].replace(/\\/g,"\\\\"),
 		json_obj['card_image'].replace(/\\/g,"\\\\"),
 		json_obj['card_number'],
-		json_obj['state']];
+		0];
 	connection.query("CALL p_insert_become_seller(\
-		?,?,?,?,?,\
+		?,?,?,?,\
 		?,?,?,?,?, \
 		?,?,?,?,?, \
-		?,?,?,?,?,?,?,?,?,?, \
-		?,?,?,?,?,?,?)", db_params, function(err,result){
+		?,?,?,?,?, \
+		?,?,?,?,?)", db_params, function(err,result){
 			if(err){
 				logger.error("MYSQL_PROXY",err);
 				logger.error("MYSQL_PROXY",db_params);
+				callback(err,{});
+			}else{
+				//logger.log("MYSQL_PROXY",util.inspect(result));
+				callback(null,result[0][0]);
 			}
 		});
 }
@@ -870,14 +870,19 @@ exports.addShopItem = function(json_value){
 	});
 }
 
-exports.saveShopBasicInfo = function(json_value){
-	var db_params = [json_value['id'],json_value['image'],json_value['address'],json_value['telephone']];
-	logger.log("MYSQL_PROXY",util.inspect(db_params));
+exports.saveShopBasicInfo = function(json_value,callback){
+	var db_params = [json_value['shop_id'],json_value['image'],json_value['address'],json_value['telephone']];
+	
 	connection.query("CALL p_save_my_shop_basic_info(?,?,?,?)",db_params,function(err,result){
 		if(err){
+			logger.log("MYSQL_PROXY p_save_my_shop_basic_info params: \n",util.inspect(db_params));
 			logger.error("MYSQL_PROXY","p_save_my_shop_basic_info error:" + err);
+			callback(err,{
+				'error' : 1,
+				'error_msg' : "数据库更新失败",
+			});
 		}else{
-			logger.log("MYSQL_PROXY","p_save_my_shop_basic_info success");
+			callback(null,result[0][0]);
 		}
 	});
 }
@@ -930,7 +935,7 @@ exports.addShopActivity = function(json_value){
 	});
 }
 
-exports.saveShopDetail = function(json_value){
+exports.saveSellerInfo = function(json_value,callback){
 	var params_hash= [
 	'id'
 	,'area_code'
@@ -962,8 +967,10 @@ exports.saveShopDetail = function(json_value){
 			if(err){
 				logger.log("MYSQL_PROXY",util.inspect(db_params));
 				logger.log("MYSQL_PROXY","p_save_shop_detail error:" + err);
+				callback(err);
 			}else{
 				logger.log("MYSQL_PROXY","p_save_shop_detail success");
+				callback(null,result[0][0]);
 			}
 		});
 }

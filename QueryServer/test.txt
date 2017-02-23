@@ -1,0 +1,6 @@
+http://127.0.0.1:9889/test/v1/ShopItem?type=0&name=remove1
+http://127.0.0.1:9889/test/v1/ShopItem?type=1&name=modifu1
+http://127.0.0.1:9889/test/v1/ShopItem?type=2&name=add2
+
+
+http://127.0.0.1:9889/test/v1/Shop?type=2&name=add2

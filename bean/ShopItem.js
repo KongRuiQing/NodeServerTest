@@ -4,23 +4,22 @@ var ShopItem = function(){
 	this.id = 0;
 	this.shop_id = 0;
 	this.__spread_image = "";
-	/*
-		key:0-17
-		value:string
-		*/
-		this.__images = {};
-		this.__imageArray = {
-			'dirty' : true,
-			'value' : []
-		};
-		this.name = "";
-		this.price = 0;
-		this.show_price = 0;
-		this.is_show = false;
+	
+	this.name = "";
+	this.price = 0;
+	this.show_price = 0;
+	this.is_show = false;
 	// other db
 	this.attentions = [];
 
 	this.item_propertys = [];
+
+	this.__show_images = [];
+	this.__detail_images = [];
+}
+
+ShopItem.prototype.getId = function(){
+	return this.id;
 }
 
 ShopItem.prototype.getJsonValue =function(){
@@ -28,7 +27,7 @@ ShopItem.prototype.getJsonValue =function(){
 		'id' : this.id,
 		'shop_id' : this.shop_id,
 		'spread_image' : this.__spread_image,
-		'images' : this.__images,
+		'images' : this.__show_images,
 		'name' : this.name,
 		'price' : this.price,
 		'show_price' : this.show_price,
@@ -98,19 +97,28 @@ ShopItem.prototype.initFromDb = function(db_row){
 	this.is_show = Number(db_row['is_show']) == 1;
 }
 
-ShopItem.prototype.newShopItem = function(id,shop_id,images,name,price,show_price){
-	this.id = id;
-	this.shop_id = shop_id;
-	var image_keys = ['image0','image1','image2','image3','image4','image5','image6','image7','image8','image9','image10','image11','image12','image13','image14','image15','image16','image17'];
-	
-	for(var key in image_keys){
-		if(images[image_keys[key]].length > 0){
-			this.__images[key] = images[image_keys[key]];
-		}
+
+ShopItem.prototype.setItemShowImage = function(images){
+	this.__show_images.splice(0,this.__show_images.length);
+	for(var k in images){
+		this.__show_images.push(images[k]);
 	}
-	this.name = name;
-	this.price = price;
-	this.show_price = show_price;
+} 
+
+ShopItem.prototype.addItemShowImage = function(image){
+	this.__show_images.push(image);
+}
+
+
+ShopItem.prototype.setItemDetailImage = function(images){
+	this.__detail_images.splice(0,this.__detail_images.length);
+	for(var k in images){
+		this.__detail_images.push(images[k]);
+	}
+}
+
+ShopItem.prototype.addItemDetailImage = function(image){
+	this.__detail_images.push(image);
 }
 
 ShopItem.prototype.addAttention = function(uid){
@@ -153,7 +161,7 @@ ShopItem.prototype.getItemBasicInfo = function(){
 
 ShopItem.prototype.getMyShopItemInfo = function(){
 	return {
-		'image' : this.imageToArray(),
+		'image' : this.show_image,
 		'item_name' : this.name,
 		'item_price':this.price,
 		'item_show_price' : this.show_price,
@@ -182,7 +190,8 @@ ShopItem.prototype.getDetailJsonItem = function(){
 		'name' : this.name,
 		'price' : this.price,
 		'show_price' : this.show_price,
-		'images' : this.imageToArray(),
+		'detail_image' : this.__detail_images,
+		'show_image' : this.__show_images,
 		'item_property' : []
 	};
 	for(var i in this.item_propertys){
@@ -193,7 +202,7 @@ ShopItem.prototype.getDetailJsonItem = function(){
 }
 
 ShopItem.prototype.getFavoritesItemJsonValue = function(){
-	var list = this.imageToArray();
+	var list = this.__show_image;
 	return {
 		'item_name' : this.name,
 		'price' : this.price,
@@ -262,59 +271,27 @@ ShopItem.prototype.getDbParams = function(){
 	};
 }
 
-ShopItem.prototype.imageToArray = function(){
-	if(this.__imageArray['dirty']){
-		this.__imageArray['value'].splice(0,this.__imageArray['value'].length);
-		var list = [];
-		for(var i = 0; i < 18; ++i){
-			if (i in this.__images){
-				list.push({
-					'index' : i,
-					'image' : this.__images[i]
-				});
-			}else{
-				list.push({
-					'index' : i,
-					'image' : ''
-				});
-			}
-		}
-		//console.log("this.image:" + util.inspect(list));
-		
-		list.sort(function(a,b){
-			return a['index'] - b['index'];
-		});
-		//console.log("list:" + util.inspect(list));
-		this.__imageArray['value'].splice(0,this.__images.length);
 
-		for(var key in list){
-			//console.log("key:" + key + " list[key]:" + util.inspect(list[key]));
-			this.__imageArray['value'].push(list[key]['image']);
-		}
-		//console.log("list:" + util.inspect(this.__imageArray['value']));
-		this.__imageArray['dirty'] = false;
-	}
-
-	return this.__imageArray['value'];
-}
-
-ShopItem.prototype.setItemImage = function(index,image){
-
-	this.__images[Number(index)] = image;
-	//console.log("index:"  + index + "image:" + image);
-	this.__imageArray['dirty'] = true;
-}
-
-ShopItem.prototype.delItemImage = function(index){
-	this.__images[Number(index)] = null;
-	this.__imageArray['dirty'] = true;
-	delete this.__images[index]
-}
 
 ShopItem.prototype.setSpreadImage = function(image){
 	this.__spread_image = image;
 }
 
 
+ShopItem.prototype.getSpreadItemInfo = function(dis){
+	return {
+		'distance' : dis * 3,
+		'image': this.__spread_image,
+		'item_name':this.name,
+		'item_price':this.price,
+		'item_show_price' : this.show_price,
+		'item_attention': this.attentions.length,
+		'item_id' : this.id,
+		'shop_id' : this.shop_id
+	}
+}
 
+ShopItem.prototype.getShopId = function(){
+	return this.shop_id;
+}
 module.exports = ShopItem;

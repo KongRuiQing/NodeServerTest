@@ -10,16 +10,30 @@ var FindUtil = require('./FindUtil');
 let sms = require('./proxy/sms.js');
 let RegAccountBean = require("./bean/RegAccountBean");
 
-let g_playerlist = {
-	'player_online_list':{},
-	'playerCache':{},
-	'account_uid':{},
-	'reg_account' :{},
-	'guid_to_uid' : {},
-	'MaxUID' : 0,
-};
 
+function PlayerManager(){
+	this.player_online_list = {};
+	this.playerCache = {};
+	this.account_uid = {};
+	this.reg_account = {};
+	this.guid_to_uid = {};
+	this.MaxUID = 0;
+}
 
+let g_playerlist = new PlayerManager();
+
+PlayerManager.prototype.getMyShopId = function(uid){
+
+	if(uid in this.playerCache){
+		return this.playerCache[uid].getShopId();
+	}
+
+	return 0;
+}
+
+exports.getInstance = function(){
+	return g_playerlist;
+}
 
 
 exports.InitFromDb = function(
@@ -531,20 +545,21 @@ exports.CheckSeller = function(guid){
 	return uid;
 }
 
-exports.SetUserShopId = function(guid,shop_id){
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null){
-		logger.warn("PLAYER_LIST","CheckSeller:uid = null,guid:" + guid);
-		logger.log("PLAYER_LIST","All guid is:");
-		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
-		return {
-			'error' : 1
-		};
-		return;
-	}
-	var player_info = g_playerlist['playerCache'][uid];
+PlayerManager.prototype.SetUserShopId = function(uid,shop_id){
+	if(uid > 0){
+		if(uid in this.playerCache){
+			var player_info = this.playerCache[uid];
 
-	player_info.beSeller(shop_id);
+			player_info.beSeller(shop_id);
+			return null;
+		}
+	}
+
+	return {
+		'error' : 1,
+		'error_msg' : '没有找到用户',
+	};
+	
 }
 
 
@@ -588,7 +603,11 @@ exports.attentionShop = function(guid,shop_id){
 }
 
 exports.getUid = function(guid){
-	return g_playerlist['guid_to_uid'][guid];
+	if(guid in g_playerlist['guid_to_uid']){
+		return g_playerlist['guid_to_uid'][guid];
+	}
+	return null;
+	
 }
 
 

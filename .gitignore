@@ -30,14 +30,17 @@ build/Release
 node_modules
 /assets
 /logs
-
+/doc
+/down
 # =========================
 # Operating System Files
 # =========================
 
 # OSX
 # =========================
-
+.zip
+.txt
+.json
 .DS_Store
 .AppleDouble
 .LSOverride

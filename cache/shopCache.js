@@ -6,10 +6,117 @@ var ShopItem = require("../bean/ShopItem");
 var ShopBean = require("../bean/ShopBean");
 var FindUtil = require("../FindUtil.js");
 var ActivityBean = require("../bean/ActivityBean");
-
+var events = require('events');
 var ShopComment = require("../bean/ShopComment.js");
 
-let g_shop_cache = {
+
+
+
+function ShopManager(){
+	this.dict = {};
+	this.item_property_name = {};
+	this.shop_item_property = {};
+	this.shop_items = {};
+	this.show_items = [];
+	this.activity_list = {};
+	this.max_shop_item_id = 0;
+	this.max_shop_id = 0;
+	this.max_activity_id = 0;
+
+	//events.EventEmitter.call(this);
+}
+//util.inherits(ShopManager, events.EventEmitter);
+
+ShopManager.prototype.getDebugAllItemString = function(){
+	return util.inspect(this.shop_items);
+}
+
+ShopManager.prototype.removeShopItem = function(param){
+	let item_id = param['id'];
+	if(item_id in this.shop_items){
+		let itemBean = this.shop_items[item_id];
+		let shop_id = itemBean.getShopId();
+		delete this.shop_items[item_id];
+
+		for(var key in this.show_items){
+			if(this.show_items[key] == item_id){
+				this.show_items.splice(key,1);
+				break;
+			}
+		}
+		if(shop_id in this.dict){
+			let shopBean = this.dict[shop_id];
+			shopBean.removeShopItem(item_id);
+		}
+	}
+	
+	return null;
+}
+
+ShopManager.prototype.updateShopItem = function(param){
+	let item_id = param['id'];
+	if(item_id in this.shop_items){
+		let itemBean = this.shop_items[item_id];
+		this.refreshShopItem(itemBean,param);
+	}
+}
+
+ShopManager.prototype.refreshShopItem = function(itemBean,param){
+	itemBean.initFromDb(param);
+
+	if(itemBean.isSpreadItem()){
+		let find_shop_item_in_spraed_list = false;
+		for(var key in this.show_items){
+			if(this.show_items[key] == itemBean.getId()){
+				find_shop_item_in_spraed_list = true;
+				break;
+			}
+		}
+		if(!find_shop_item_in_spraed_list){
+			this.show_items.push(itemBean.getId());
+		}
+	}
+
+	itemBean.setItemShowImage(param['show_image']);
+	itemBean.setItemDetailImage(param['detail_images']);
+	itemBean.setSpreadImage(param['spread_image']);
+}
+
+ShopManager.prototype.addShopItemByAPI= function(param){
+	let item_id = param['id'];
+	let shop_id = param['shop_id'];
+	if(!(item_id in this.shop_items)){
+		if(!(shop_id in this.dict)){
+			return {
+				'error':2,
+				'error_msg' :'添加物品时,指定的商铺不存在',
+			};
+		}
+
+		let itemBean = new ShopItem();
+
+		this.refreshShopItem(itemBean,param);
+		this.shop_items[item_id] = itemBean;
+		
+		let shopBean = this.dict[shop_id];
+		shopBean.addItemToShop(item_id);
+
+	}else{
+		return {
+			'error':2,
+			'error_msg' :'添加物品时,已经有重复ID',
+		};
+	}
+}
+
+let g_shop_cache = new ShopManager();
+
+exports.getInstance = function(){
+	return g_shop_cache;
+}
+
+/*
+{
 	'dict' : {},
 	'item_property_name' : {},
 	'shop_item_property' : {},
@@ -20,7 +127,7 @@ let g_shop_cache = {
 	'max_shop_id' : 0,
 	'max_activity_id' : 0
 };
-
+*/
 //create shop  return this;
 // this.getShopBasicinfo;
 // this.getShopDetailInfo;
@@ -94,9 +201,6 @@ exports.InitFromDb = function(
 		g_shop_cache['shop_items'][item_id].addAttention(uid);
 	}
 
-
-	
-
 	for(var i in shop_item_property){
 
 		var item_id = Number(shop_item_property[i]['item_id']);
@@ -131,9 +235,11 @@ exports.InitFromDb = function(
 
 		if(item_id in g_shop_cache['shop_items']){
 			if(image_type == 1){
-				g_shop_cache['shop_items'][item_id].setItemImage(index,image);
-			}else if(image_type == 2){
 				g_shop_cache['shop_items'][item_id].setSpreadImage(image);
+			}else if(image_type == 2){
+				g_shop_cache['shop_items'][item_id].addItemShowImage(image);
+			}else if(image_type == 3){
+				g_shop_cache['shop_items'][item_id].addItemDetailImage(image);
 			}
 			
 		}else{
@@ -143,36 +249,49 @@ exports.InitFromDb = function(
 
 }
 
-exports.getShopList = function(uid,city_no,area_code,category,page,page_size,search_key){
+ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last_distance,page_size,search_key,longitude,latitude,distance){
 	var all_list = [];
-	
+	console.log("last_distance:" + last_distance)
 	for(var i in g_shop_cache['dict']){
 
 		var shop_info = g_shop_cache['dict'][i];
+		var dis = shop_info.calcDistance(longitude,latitude);
+		console.log("dis:" + dis)
+		if(dis > last_distance){
+			if(distance <= 0 || dis < distance){
+				if(shop_info && shop_info.matchFilter(city_no,area_code,category)){
+					if(search_key.length > 0){
+						if(shop_info.search(search_key)){
+							all_list.push(shop_info.getShopBasicInfo(uid,longitude,latitude));
+						}
+					}else{
+						all_list.push(shop_info.getShopBasicInfo(uid,longitude,latitude));
+					}
 
-		if(shop_info && shop_info.matchFilter(city_no,area_code,category)){
-			if(search_key.length > 0){
-				if(shop_info.search(search_key)){
-					all_list.push(shop_info.getShopBasicInfo(uid));
 				}
-			}else{
-				all_list.push(shop_info.getShopBasicInfo(uid));
 			}
-			
 		}
+		
 	}
+	all_list.sort(function(a,b){
+		return a['distance'] - b['distance'];
+	});
 	
-	if(page * page_size >= all_list.length){
+
+	if(all_list.length == 0){
 		return {
-			'list':all_list.slice((page - 1) * page_size),
-			'count' : all_list.length
+			'list' : [],
+			'last_distance' :  last_distance,
 		};
 	}else{
+		var list = all_list.slice(0,page_size);
 		return {
-			'list':all_list.slice((page - 1) * page_size, page * page_size),
-			'count' : all_list.length
+			'list': list,
+			'last_distance' :  list[list.length - 1]['distance'],
 		};
 	}
+
+	
 }
 
 
@@ -211,52 +330,96 @@ exports.getShopDetail = function(uid,shop_id){
 	return json_result;
 }
 
-exports.getShopItemDetail = function(uid,shop_id,shop_item_id) {
-	var shop_item_detail = {};
-	shop_item_detail['error'] = 2;
+ShopManager.prototype.getShop = function(shop_id){
+	if(shop_id in this.dict){
+		return this.dict[shop_id];
+	}
+	return null;
+}
 
-	var shop_info = g_shop_cache['dict'][shop_id];
+ShopManager.prototype.getItemBean = function(item_id){
+	if(item_id in this.shop_items){
+		return this.shop_items[item_id];
+	}
+	return null;
+}
+
+
+ShopManager.prototype.getShopItemDetail = function(uid,shop_id,shop_item_id) {
+	logger.log("SHOP_CACHE","[getShopItemDetail] params:[ uid:" + uid+ ",shop_id:" + shop_id + ",shop_item_id:" + shop_item_id + "]");
+	var shop_item_detail = {};
+	shop_item_detail['error'] = 0;
+
+	var shop_info = this.getShop(shop_id);
 	
 	if(shop_info != null){
-		var shop_item = g_shop_cache['shop_items'][shop_item_id];
-		
+		var shop_item = this.getItemBean(shop_item_id);
 		if(shop_item != null){
 			shop_item_detail = shop_item.getDetailJsonItem();
 			shop_item_detail['error'] = 0;
-
-			return shop_item_detail;
 		}
+	}else{
+		shop_item_detail['error'] = 0;
+		shop_item_detail['error_msg'] = "不存在这个商铺";
 	}
+	logger.log("SHOP_CACHE","[getShopItemDetail] return:[" +  util.inspect(shop_item_detail,{depth:null}) + "]");
 	
 	return shop_item_detail;
 }
 
-exports.getShopSpread = function(city_no,area_code,category_code,keyword,page){
+
+
+ShopManager.prototype.getShopSpread = function(last_distance,longitude,latitude,city_no,area_code,distance,category_code,keyword){
 	var arr_result = [];
-	var shop_spread_list = g_shop_cache['show_items'];
+	
+	for(var i in this.show_items){
+		var item_id = this.show_items[i];
 
-	for(var i in shop_spread_list){
-		var item_id = shop_spread_list[i];
-
-		var shop_item = g_shop_cache['shop_items'][item_id];
+		var shop_item = this.getItemBean(item_id);
 		
 		if(shop_item != null){
-			var shop_id = shop_item['shop_id'];
-			var shop_info = g_shop_cache['dict'][shop_id];
+			if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
+				var shop_id = shop_item['shop_id'];
 
-			if(shop_info != null && shop_info.matchFilter(city_no,area_code,category_code)){
-
-				if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
-					arr_result.push(shop_item.getItemBasicInfo());
-					
+				var shop_info = this.getShop(shop_id);
+				if(shop_info != null){
+					var dis = shop_info.calcDistance(longitude,latitude);
+					//logger.log("SHOP_CACHE","dis:" + dis + ", last_distance:" + last_distance);
+					if(dis > last_distance){
+						if(distance <= 0 || dis < distance){
+							if(shop_info.matchFilter(city_no,area_code,category_code)){
+								arr_result.push(shop_item.getSpreadItemInfo(dis));
+							}
+						}
+						
+					}
 				}
 			}
+			
 		}
 	}
 
-	var page_size = 10;
+	if(arr_result.length > 0){
+
+		arr_result.sort(function(left,right){
+			return left['distance'] - right['distance'];
+		});
+		var page_size = 30;
+		let arr_list = arr_result.slice(0,page_size);
+		return {
+			'list': arr_list,
+			'page_size' : page_size,
+			'last_distance' : arr_list[arr_list.length - 1]['distance'],
+		};
+
+	}else{
+		return {
+			'list' : [],
+			'last_distance' : last_distance,
+		}
+	}
+
 	
-	return arr_result.slice((page - 1 ) * page_size ,page * page_size);
 }
 
 
@@ -306,7 +469,7 @@ exports.getMyAttentionShopInfo = function(shop_id_list){
 
 
 
-exports.InsertBecomeSeller = function(uid,shop_info){
+ShopManager.prototype.InsertBecomeSeller = function(uid,shop_info){
 
 	var shop_id = g_shop_cache['max_shop_id'] + 1;
 	g_shop_cache['max_shop_id'] = shop_id;
@@ -393,28 +556,31 @@ exports.addShopItem = function(shop_id,name,price,show_price,image){
 	return g_shop_cache['shop_items'][item_id].getJsonValue();
 }
 
-
-exports.getMyShopInfo = function(guid){
-
-	var shop_id = PlayerProxy.getShopId(guid);
+ShopManager.prototype.getMyShopBasicInfo = function(uid,withItem){
+	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
 	
 	if(shop_id > 0){
-		var shop_info = g_shop_cache['dict'][shop_id];
-		
-		var json_result = shop_info.getMyShopInfo();
+		let shop_info = this.getShop(shop_id);
+		if(shop_info != null){
+			var json_result = shop_info.getMyShopBasicInfo();
+			json_result['shop_items'] = [];
+			var shop_item_list = shop_info.getItems();
 
-		var shop_item_list = shop_info.getItems();
-
-		for(var i in shop_item_list){
-			var shop_item_id = shop_item_list[i];
-			var shop_item = g_shop_cache['shop_items'][shop_item_id];
-			json_result['shop_item'].push(shop_item.getItemBasicInfo());
+			for(var i in shop_item_list){
+				var shop_item_id = shop_item_list[i];
+				var shop_item = this.getItemBean(shop_item_id);
+				json_result['shop_items'].push(shop_item.getItemBasicInfo());
+			}
+			return json_result;
 		}
-		//logger.log("SHOP_CACHE",util.inspect(json_result));
-		return json_result;
 	}
-	return {};
+
+	return {
+		'error' : 1,
+		'error_msg' : '找不到对应的商铺信息',
+	};
 }
+
 
 exports.getMyShopItemInfo = function(shop_item_id){
 	if(shop_item_id in g_shop_cache['shop_items']){
@@ -466,17 +632,15 @@ exports.getMyShopItemList = function(guid){
 	return json_result;
 }
 
-exports.saveShopBasicInfo = function(guid,image,address,telephone){
-	var shop_id = PlayerProxy.getShopId(guid);
+ShopManager.prototype.saveShopBasicInfo = function(shop_id,db_row){
+	
 	if(shop_id > 0){
-		var shop_info = g_shop_cache['dict'][shop_id];
+		var shop_info = this.getShop(shop_id);
 		if(shop_info != null){
-			shop_info.changeShopBasicInfo(image,address,telephone);
-
-			return shop_info.getMyShopBasicInfo();
+			shop_info.changeShopBasicInfo(db_row['image'],db_row['address'],db_row['telephone']);
 		}
 	}
-	return null;
+	
 }
 
 exports.addShopSpreadItem = function(guid,item,image,months){
@@ -535,12 +699,12 @@ exports.renewalActivity = function(json_value){
 	return activity_bean.getJsonValue();
 }
 
-exports.saveShopDetail = function(json_value){
-	//logger.log("SHOP_CACHE","json_value:" + util.inspect(json_value));
+ShopManager.prototype.updateSellerInfo = function(db_row){
+	let shop_id = db_row['Id'];
 
-	var shop_info = g_shop_cache['dict'][json_value['id']];
+	var shop_info = this.getShop(shop_id);
 	if(shop_info != null){
-		return shop_info.saveShopDetail(json_value);
+		return shop_info.updateSellerInfo(db_row);
 	}
 	return null;
 }
@@ -662,4 +826,52 @@ exports.setShopItemImage = function(item_id,index,image){
 	}
 
 	return null;
+}
+
+exports.removeShopByShopId = function(shop_id){
+	if(shop_id in g_shop_cache['dict']){
+		delete g_shop_cache['dict'][shop_id];
+
+		return null;
+	}
+
+	return {
+		'error' : 10005,
+		'error_msg' : '删除不存在的商铺',
+	};
+
+}
+
+
+exports.ModifyShopByShopId = function(isAdd,shop_id,shopParams){
+	if(isAdd){
+		if(shop_id in g_shop_cache['dict']){
+			return {
+				'error' : 10003,
+				'error_msg' : '添加商铺时有重复id'
+			};
+		}
+		let shopBean = new ShopBean();
+		shopBean.initFromDbRow(shopParams);
+		g_shop_cache['dict'][shop_id] = shopBean;
+		logger.log("SHOP_CACHE","all_list:" + util.inspect(g_shop_cache['dict']));
+	}else{
+		if(shop_id in g_shop_cache['dict']){
+			let shopBean = g_shop_cache['dict'][shop_id];
+			shopBean.initFromDbRow(shopParams);
+		}else{
+			return {
+				'error':10004,
+				'error_msg':'修改商铺时,指定的商铺id不存在',
+			};
+		}
+	}
+}
+
+ShopManager.prototype.getMyShopSellerInfo = function(shop_id){
+	let shopBean = this.getShop(shop_id);
+	if(shopBean != null){
+		return shopBean.getSellerInfo();
+	}
+	return {};
 }

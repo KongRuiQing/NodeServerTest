@@ -1,3 +1,4 @@
+'use strict';
 var db = require("../mysqlproxy");
 var util = require('util');
 var ShopCache = require("../cache/shopCache");
@@ -6,7 +7,7 @@ var DbCache = require("../cache/DbCache.js");
 var logger = require("../logger").logger();
 var fs = require('fs');
 const path = require('path');
-
+var moment = require('moment');
 var down_file_name = "";
 var down_file_version = "";
 
@@ -45,24 +46,24 @@ function watchApkVersion(root_path){
 }
 
 exports.getAreaMenu = function(headers, query,callback){
+	let last_modified_time = null;
+	if('If-Modified-Since' in query){
+		last_modified_time = moment(query['If-Modified-Since']).format('YYYY-MM-DD HH:mm:ss');
+	}
+	let city = Number(query['city']);
+	logger.log("HTTP_HANDER","[getAreaMenu]:query=" + util.inspect(query));
+	var json_result = DbCache.getInstance().getAreaMenu(last_modified_time,city);
 	
-	var json_result = DbCache.getAreaMenu();
 	callback(0,json_result);
 	
 }
 
 exports.getShopList = function(headers, query,callback){
-	var page = 1;
-	if('page' in query){
-		page = parseInt(query['page']);
-	}
-	if(page <= 0){
-		page = 1;
-	}
+	
 	var zone = Number(query['area_code'] || 0) ;
 	var city = Number(query['city_no'] || 0);
-	var guid = headers['guid'];
-	var uid = PlayerCache.getUid(guid);
+	//var guid = headers['guid'];
+	var uid = headers['uid']
 	if(city == 0) city = 167;
 	var category = Number(query['cate_code'] || 0) ;
 
@@ -74,14 +75,32 @@ exports.getShopList = function(headers, query,callback){
 	if('search_key' in query){
 		search_key = query['search_key'];
 	}
+	
+	var longitude = 0.0;
+	if('longitude' in headers){
+		longitude = Number(headers['longitude']);
+	}
+	var latitude = 0.0;
+	if('latitude' in headers){
+		latitude = Number(headers['latitude']);
+	}
+	var distance = -1.0;
+	if('distance' in query){
+		distance = Number(query['distance']);
+	}
+	let last_distance = 0;
+	if('last_distance' in query){
+		last_distance = Number(query['last_distance']);
+	}
+	logger.log("HTTP_HANDER","last_distance: " + last_distance);
+	var shop_list = ShopCache.getInstance().getShopList(uid,city,zone,category,last_distance,page_size,search_key,longitude,latitude,distance);
 
-	var shop_list = ShopCache.getShopList(uid,city,zone,category,page,page_size,search_key);
+
 	var json_result = {
 		"list" : shop_list['list'],
-		'result' : 0,
-		'page':page,
 		'page_size' : page_size,
-		'count' : shop_list['count']
+		'length' : shop_list['list'].length,
+		'last_distance' : shop_list['last_distance'],
 	}
 	callback(0,json_result);
 }
@@ -136,18 +155,24 @@ exports.getShopSpread = function(headers, query,callback){
 	var area_code = query['area_code'] || '';
 	var cate_code = query['category'] || '';
 	var sort_code = query['sortby'] || '';
-	var page = Number(query['page']);
-	if(page <= 0){
-		page = 1;
-	}
+	let distance = Number(query['distance'] || "0");
+	let longitude = parseFloat(headers['longitude']);
+	let latitude = parseFloat(headers['latitude']);
+
+	
+	let last_distance = Number(query['last_distance']);
+	
 	var keyword = "";
 	if('keyword' in query){
 		keyword = query['keyword'];
 	}
 	
-	var query_result = ShopCache.getShopSpread(city_no,area_code,cate_code,keyword,page);
+	var query_result = ShopCache.getInstance().getShopSpread(last_distance,longitude,latitude,city_no,area_code,distance,cate_code,keyword);
 	var json_value = {
-		'spread_list' : query_result
+		'spread_list' : query_result['list'],
+		'page_size': 30,
+		'length' : query_result['list'].length,
+		'last_distance' : query_result['last_distance'],
 	};
 
 	callback(0,json_value);
@@ -200,26 +225,30 @@ exports.getNearShopList = function(headers, query,callback){
 }
 
 exports.getShopItemDetail = function(headers, query,callback){
-	var uid = query['uid'];
+	var uid = headers['uid'];
 	var shop_id = query['shop_id'];
 	var item_id = query['item_id'];
 
-	var shop_item_detail = ShopCache.getShopItemDetail(uid,shop_id,item_id);
-
-	if(shop_item_detail['error'] == 0){
-		shop_item_detail['error'] = null;
+	var shop_item_detail = ShopCache.getInstance().getShopItemDetail(uid,shop_id,item_id);
+	if('error' in shop_item_detail && Number(shop_item_detail['error']) != 0){
+		callback(0,shop_item_detail);
+		return;
+	}else{
+		delete shop_item_detail['error'];
+		
 		var json_result = {
 			'error' : 0,
 			'shop_id' : shop_id,
 			'item_id' : item_id,
 			'item_detail' : shop_item_detail
 		};
-		
+
 		callback(0,json_result);
 		return;
 	}
+	
 
-	callback(1,json_result);
+	
 }
 
 exports.getMyFavoritesItems = function(headers, query,callback){
@@ -286,14 +315,11 @@ exports.getMyShopItemList = function(headers,query,callback){
 	}	
 }
 exports.getMyShopInfo = function(headers,query,callback){
-	logger.log("HTTP_HANDER","start getMyShopInfo");
-	if('guid' in headers){
-		var json_result = ShopCache.getMyShopInfo(headers['guid']);
-		callback(0,json_result);
-		return;
-	}else{
-		callback(1,"");
-	}	
+	logger.log("HTTP_HANDER","start getMyShopInfo uid: " + headers['uid']);
+
+	var json_result = ShopCache.getInstance().getMyShopBasicInfo(headers['uid'],true);
+
+	callback(0,json_result);
 }
 
 exports.getMyActivity = function(headers,query,callback){
@@ -385,4 +411,19 @@ exports.getMyScheduleRouteInfo = function(headers,query,callback){
 	ShopCache.fillScheduleShopInfo(json_result);
 	
 	callback(0,json_result);
+}
+
+exports.getBeSellerData = function(headers,query,callback)
+{
+	var json_result = {};
+
+	json_result['category'] = DbCache.getInstance().getCategory();
+	let shop_id = PlayerCache.getInstance().getMyShopId(headers['uid']);
+	logger.log("HTTP_HANDER","shop_id:" + shop_id + " uid:" + headers['uid']);
+	if(shop_id > 0){
+		json_result['shop_info'] = ShopCache.getInstance().getMyShopSellerInfo(shop_id);
+	}
+	
+	callback(0,json_result);
+
 }

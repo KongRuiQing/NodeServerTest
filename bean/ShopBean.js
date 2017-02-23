@@ -7,8 +7,8 @@ var ShopBean = function(){
 	this.beg = 0;
 	this.end = 0;
 	this.days = 0;
-	this.longitude = 0;
-	this.latitude = 0;
+	this.__longitude = 0;
+	this.__latitude = 0;
 	this.city_no = 0;
 	this.area_code = 0;
 	this.address = "";
@@ -37,7 +37,13 @@ var ShopBean = function(){
 	this.spread_items = [];
 
 	this.activity = null;
+
+	//events.EventEmitter.call(this);
+
+
 }
+
+//util.inherits(ShopBean, events.EventEmitter);
 
 var ShopSpreadItem = function(){
 	this.id = 0;
@@ -80,8 +86,8 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.beg = Number(db_row['beg']);
 	this.end = Number(db_row['end']);
 	this.days = Number(db_row['days']);
-	this.longitude = parseFloat(db_row['longitude']);
-	this.latitude = parseFloat(db_row['latitude']);
+	this.__longitude = parseFloat(db_row['longitude']);
+	this.__latitude = parseFloat(db_row['latitude']);
 	this.city_no = Number(db_row['city_no']);
 	this.area_code = Number(db_row['area_code']);
 	this.address = db_row['address'];
@@ -111,8 +117,8 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	this.beg = Number(shop_info['beg']);
 	this.end = Number(shop_info['end']);
 	this.days = Number(shop_info['days']);
-	this.longitude = parseFloat(shop_info['longitude']);
-	this.latitude = parseFloat(shop_info['latitude']);
+	this.__longitude = parseFloat(shop_info['longitude']);
+	this.__latitude = parseFloat(shop_info['latitude']);
 	this.city_no = Number(shop_info['city_no']);
 	this.area_code = Number(shop_info['area_code']);
 	if('address' in shop_info){
@@ -151,20 +157,21 @@ ShopBean.prototype.newShopBean = function(shop_info){
 
 
 
-ShopBean.prototype.getShopBasicInfo = function(uid){
+ShopBean.prototype.getShopBasicInfo = function(uid,longitude,latitude){
 	return {
 		'id' : this.id,
 		'shop_name' : this.name,
 		'shop_address' : this.address,
 		'shop_image' : this.image,
-		'long' : this.longitude,
-		'late' : this.latitude,
+		'long' : this.__longitude,
+		'late' : this.__latitude,
 		'shop_attention' : "",
 		'attention_num' : this.attentions.length,
 		'is_attention' : this.ownAttention(uid),
 		'beg' : this.beg,
 		'end' : this.end,
-		'days' : this.days
+		'days' : this.days,
+		'distance' : FindUtil.getFlatternDistance(this.__longitude,this.__latitude,longitude,latitude)
 	};
 }
 
@@ -229,9 +236,9 @@ ShopBean.prototype.getShopNearInfo = function(longitude,latitude){
 		'shop_name' : this.name,
 		'shop_address' : this.address_brief,
 		'shop_image' : this.image,
-		'long' : this.longitude,
-		'late' : this.latitude,
-		'distance' : FindUtil.getFlatternDistance(this.longitude,this.latitude,longitude,latitude)
+		'long' : this.__longitude,
+		'late' : this.__latitude,
+		'distance' : FindUtil.getFlatternDistance(this.__longitude,this.__latitude,longitude,latitude)
 	};
 }
 
@@ -304,8 +311,8 @@ ShopBean.prototype.getMyShopInfo = function(){
 		'end' : this.end,
 		'days' : this.days,
 		'image': this.image,
-		'longitude' : this.longitude,
-		'latitude' : this.latitude,
+		'longitude' : this.__longitude,
+		'latitude' : this.__latitude,
 		'city_no' : this.city_no,
 		'info' :this.info,
 		'address' : this.address,
@@ -366,9 +373,7 @@ ShopBean.prototype.getShopState = function(){
 }
 
 ShopBean.prototype.changeShopBasicInfo = function(image,address,telephone){
-	if(image.length > 0){
-		this.image = image;
-	}
+	this.image = image;
 	
 	this.address = address;
 	this.telephone = telephone;
@@ -380,6 +385,28 @@ ShopBean.prototype.getMyShopBasicInfo = function(){
 		'image' : this.image,
 		'address' : this.address,
 		'telephone' : this.telephone
+	};
+}
+
+ShopBean.prototype.getSellerInfo = function(){
+	return {
+		'id' : this.id,
+		'name' : this.name,
+		'area_code' : this.area_code,
+		'category_code1' : this.category_code1,
+		'category_code2' : this.category_code2,
+		'category_code3' : this.category_code3,
+		'beg' : this.beg,
+		'end' : this.end,
+		'days' : this.days,
+		'address' : this.address,
+		'distribution' : this.distribution,
+		'qq' : this.qq,
+		'wx' : this.wx,
+		'email' : this.email,
+		'qualification' : this.qualification,
+		'card_number' : this.card_number,
+		'card_image' : this.card_image,
 	};
 }
 
@@ -415,9 +442,9 @@ ShopBean.prototype.addShopActivity = function(){
 	return {};
 }
 
-ShopBean.prototype.saveShopDetail = function(json_value){
+ShopBean.prototype.updateSellerInfo = function(json_value){
 	
-	if(this.id = json_value['id']){
+	if(this.id = json_value['Id']){
 		
 		if('area_code' in json_value){
 			this.area_code = json_value['area_code'];
@@ -468,26 +495,6 @@ ShopBean.prototype.saveShopDetail = function(json_value){
 		if('card_number' in json_value){
 			this.card_number = json_value['card_number'];
 		}
-
-		return {
-			'id' : this.id,
-			'info' : this.info,
-			'area_code' : this.area_code,
-			'category_code1' : this.category_code1,
-			'category_code2' : this.category_code2,
-			'category_code3' : this.category_code3,
-			'beg' : this.beg,
-			'end' : this.end,
-			'days' : this.days,
-			'address' : this.address,
-			'distribution' : this.distribution,
-			'qq' : this.qq,
-			'wx' : this.wx,
-			'email' : this.email,
-			'card_image' : this.card_image,
-			'card_number' : this.card_number,
-			'qualification' : this.qualification
-		};
 	}
 
 	return null;
@@ -529,8 +536,8 @@ ShopBean.prototype.getShopBoardInfo = function(uid){
 		'shop_name' : this.name,
 		'shop_address' : this.address_brief,
 		'shop_image' : this.image,
-		'long' : this.longitude,
-		'late' : this.latitude,
+		'long' : this.__longitude,
+		'late' : this.__latitude,
 		'shop_attention' : "",
 		'attention_num' : this.attentions.length,
 		'is_attention' : this.ownAttention(uid),
@@ -543,9 +550,12 @@ ShopBean.prototype.getSheduleInfo = function(){
 		'shop_name' : this.name,
 		'shop_address' : this.address,
 		'shop_image' : this.image,
-		'long' : this.longitude,
-		'late' : this.latitude,
+		'long' : this.__longitude,
+		'late' : this.__latitude,
 	};
+}
+ShopBean.prototype.calcDistance = function(longitude,latitude,distance){
+	return FindUtil.getFlatternDistance(longitude,latitude,this.__longitude,this.__latitude)
 }
 
 module.exports = ShopBean;

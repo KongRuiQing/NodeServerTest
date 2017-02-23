@@ -1,85 +1,111 @@
+'use strict';
+
 var http = require('http');
 var url=require('url');
-var http_handler = require("./http_handler");
+
+var http_test = require("./http_test");
 var logger = require('../logger').logger();
 var server =null;
 var util = require('util');
+var connect = require('connect');
+var favicon = require('serve-favicon');
+var responseTime = require('response-time')
+var route = require("./route.js");
 
-var handle_http = {};
-handle_http['/shop_list'] = http_handler.getShopList;
-handle_http['/shop_detail'] = http_handler.getShopDetail;
-handle_http['/ad_image'] = http_handler.getAdImage;
-handle_http['/shop_spread'] = http_handler.getShopSpread;
-handle_http['/exchange_item_list'] = http_handler.getExchangeItemList;
-handle_http['/exchange_item_detail'] = http_handler.getExchangeItemDetail;
-handle_http['/activity_list'] = http_handler.getActivityList;
-handle_http['/near_shop'] = http_handler.getNearShopList;
-handle_http['/shop_item_detail'] = http_handler.getShopItemDetail;
-handle_http['/my_favorites_item'] = http_handler.getMyFavoritesItems;
-handle_http['/check_version'] = http_handler.getApkVersion;
-handle_http['/area_menu'] = http_handler.getAreaMenu;
-handle_http['/shop_attention'] = http_handler.getMyAttention;
-handle_http['/shop_category'] = http_handler.getShopCategory;
-handle_http['/game_shop_list'] = http_handler.getGameShopList;
-handle_http['/get_my_shop_item_list'] = http_handler.getMyShopItemList;
-handle_http['/get_my_shop_info'] = http_handler.getMyShopInfo;
-handle_http['/my_activity'] = http_handler.getMyActivity;
-handle_http['/attention_board_list'] = http_handler.getShopAttentionBoard;
-handle_http['/get_my_schedule_route_info'] = http_handler.getMyScheduleRouteInfo;
-
-//console.log(http_handler.getApkVersion("","",function(){}));
+var test_route = {};
+test_route['/test/v1/ad'] = http_test.testAddAdImage;
+test_route['/test/v1/Shop'] = http_test.testShop;
+test_route['/test/v1/ShopItem'] = http_test.testShopItem;
+var handle_login = require("./handle_login");
 
 var http_header = {};
 
 http_header[200] = "text/html";
 http_header[500] = 'text/plain';
 http_header[600] = 'text/plain';
+http_header[304] = 'text/plain';
 
-function handle_server(request,response){
+function handle_route(request,response,next){
 
 	var request_url = url.parse(request.url,true);
 	var pathname = request_url.pathname;
 	var headers = request.headers;
-	logger.log("QUERY_SERVER","pathname:" + pathname);
-	
-	if (typeof handle_http[pathname] === 'function'){
+	//logger.log("QUERY_SERVER","pathname:" + pathname);
+	if(!(pathname in route)){
+		next(new Error(pathname + ' is not in route'));
+	}
+	if (typeof route[pathname] === 'function'){
 		
-		logger.log("QUERY_SERVER","query:\n" + util.inspect(request_url.query,{depth:null}));
+		//logger.log("QUERY_SERVER","query params:\n" + util.inspect(request_url.query,{depth:null}) + "\n");
 
-		handle_http[pathname](headers,request_url.query,function(error_code,content){
+		route[pathname](headers,request_url.query,function(error_code,content){
 
-			logger.log("QUERY_SERVER","query result:\n" + util.inspect(content,{depth:null}));
+			logger.log("QUERY_SERVER","QUERY RESULT: \n" + util.inspect(content,{depth:null}) + "\n");
 
 			if(error_code == 0){
-
+				let status_code = 200;
+				response.writeHead(status_code, {
+					'Content-Type': http_header[status_code]
+				});
+				response.write(JSON.stringify(content));				
+			}else{
+				logger.error("QUERY_SERVER","Error pathname:" + pathname + " error_code = " + error_code);
 				response.writeHead(200, {
 					'Content-Type': http_header[200]
-				});
-				response.write(JSON.stringify(content));
-			}else
-			{
-				logger.error("QUERY_SERVER","Error pathname:" + pathname + " error_code = " + error_code);
-				response.writeHead(500, {
-					'Content-Type': http_header[500]
 				});
 				var json_content = {};
 				json_content['error'] = error_code;
 				response.write(JSON.stringify(json_content));
-				
 			}
 			response.end();
-		}) 
+		});
 	}else{
-		logger.error("QUERY_SERVER","query with pathname:" + pathname + " is not function");
-		response.writeHead(600, {
-			'Content-Type': http_header[600]
+		next(new Error(pathname + ' is not in route'));
+	}
+}
+
+function handleError(err, req, res, next){
+	logger.error("QUERY_SERVER",err);
+	res.writeHead(500, {
+		'Content-Type': http_header[500]
+	});
+	res.end();
+}
+
+
+
+function handle_test(req,rsp,next){
+	var request_url = url.parse(req.url,true);
+	var pathname = request_url.pathname;
+	var headers = req.headers;
+	
+	if(pathname in test_route){
+		test_route[pathname](headers,request_url.query,function(err,rsp_data){
+			logger.log(rsp_data);
+		});
+		response.writeHead(200, {
+			'Content-Type': http_header[200]
 		});
 		response.end();
+		return;
 	}
+	next();
+}
+
+
+function printCostTime(req,rsp,time){
+
+	logger.log("QUERY_SERVER","COST TIME: " + url.parse(req.url,true).pathname + " : " + time + "ms");
 }
 
 exports.start = function(Host,Port)
 {
-	server = http.createServer(handle_server);
-	server.listen(Port,Host);
+	var app = connect()
+	.use(favicon("favicon.ico"))
+	.use(responseTime(printCostTime))
+	.use(handle_test)
+	.use(handle_login)
+	.use(handle_route)
+	.use(handleError)
+	app.listen(Port);
 }
