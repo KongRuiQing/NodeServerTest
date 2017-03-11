@@ -62,7 +62,7 @@ exports.start = function(Host,Port)
 						}
 					}
 					var targetFile = path.join(fields['dir'],path.basename(filePath));
-					var targetDirFile = path.join("assets",targetFile);
+					var targetDirFile = path.join("../Image",targetFile);
 
 					fs.rename(filePath, targetDirFile, function (err) {
 						if (err) {
@@ -90,11 +90,11 @@ exports.start = function(Host,Port)
 		else{
 			var fileName = path.normalize(pathname.replace(/\.\./g, ""));
 
-			var realPath = path.join("assets", fileName);
+			var realPath = path.join("../Image", fileName);
 			
 			var ext = path.extname(realPath);
 			ext = ext ? ext.slice(1) : 'unknown';
-			logger.log("IMAGE","realPath : " + realPath);
+			//logger.log("IMAGE","realPath : " + realPath);
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
 

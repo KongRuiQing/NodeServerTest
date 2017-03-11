@@ -8,7 +8,7 @@ var FindUtil = require("../FindUtil.js");
 var ActivityBean = require("../bean/ActivityBean");
 var events = require('events');
 var ShopComment = require("../bean/ShopComment.js");
-
+var DbCache = require("./DbCache.js")
 
 
 
@@ -77,7 +77,7 @@ ShopManager.prototype.refreshShopItem = function(itemBean,param){
 		}
 	}
 
-	itemBean.setItemShowImage(param['show_image']);
+	itemBean.setItemShowImage(param['show_images']);
 	itemBean.setItemDetailImage(param['detail_images']);
 	itemBean.setSpreadImage(param['spread_image']);
 }
@@ -235,15 +235,15 @@ exports.InitFromDb = function(
 
 		if(item_id in g_shop_cache['shop_items']){
 			if(image_type == 1){
-				g_shop_cache['shop_items'][item_id].setSpreadImage(image);
-			}else if(image_type == 2){
 				g_shop_cache['shop_items'][item_id].addItemShowImage(image);
+			}else if(image_type == 2){
+				g_shop_cache['shop_items'][item_id].setSpreadImage(image);
 			}else if(image_type == 3){
 				g_shop_cache['shop_items'][item_id].addItemDetailImage(image);
 			}
 			
 		}else{
-			logger.warn("SHOP_CACHE","can't find item_id in g_shop_cache['shop_items']");
+			logger.warn("SHOP_CACHE","can't find item_id in g_shop_cache['shop_items'] item_id= " + item_id);
 		}
 	}
 
@@ -345,6 +345,21 @@ ShopManager.prototype.getItemBean = function(item_id){
 }
 
 
+ShopManager.prototype.getMyShopItemDetail = function(uid,shop_id,item_id){
+	
+	if(shop_id > 0){
+		let shop_item = this.getItemBean(item_id);
+		if(shop_item == null){
+			return null;
+		}
+		let result = shop_item.getDetailJsonItemInMyShop();
+		result['shop_id'] = shop_id;
+		return result;
+	}else{
+		return null;
+	}
+}
+
 ShopManager.prototype.getShopItemDetail = function(uid,shop_id,shop_item_id) {
 	logger.log("SHOP_CACHE","[getShopItemDetail] params:[ uid:" + uid+ ",shop_id:" + shop_id + ",shop_item_id:" + shop_item_id + "]");
 	var shop_item_detail = {};
@@ -379,6 +394,22 @@ ShopManager.prototype.getShopSpread = function(last_distance,longitude,latitude,
 		
 		if(shop_item != null){
 			if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
+				let item_category = shop_item.getCategoryCode();
+				console.log("item_category",util.inspect(item_category));
+				if(item_category != null && item_category.length > 0){
+					let matchCategory = false;
+
+					for(var i in item_category){
+						matchCategory = DbCache.getInstance().matchCategor(category_code,item_category[i],"item");
+						if(matchCategory){
+							break;
+						}
+					}
+					if(!matchCategory){
+						continue;
+					}
+				}
+				
 				var shop_id = shop_item['shop_id'];
 
 				var shop_info = this.getShop(shop_id);
@@ -387,7 +418,7 @@ ShopManager.prototype.getShopSpread = function(last_distance,longitude,latitude,
 					//logger.log("SHOP_CACHE","dis:" + dis + ", last_distance:" + last_distance);
 					if(dis > last_distance){
 						if(distance <= 0 || dis < distance){
-							if(shop_info.matchFilter(city_no,area_code,category_code)){
+							if(shop_info.matchFilter(city_no,area_code,0)){
 								arr_result.push(shop_item.getSpreadItemInfo(dis));
 							}
 						}
@@ -582,28 +613,28 @@ ShopManager.prototype.getMyShopBasicInfo = function(uid,withItem){
 }
 
 
-exports.getMyShopItemInfo = function(shop_item_id){
-	if(shop_item_id in g_shop_cache['shop_items']){
-		var shop_item_info = g_shop_cache['shop_items'][shop_item_id];
+ShopManager.prototype.getMyShopItemInfo = function(shop_item_id){
+	if(shop_item_id in this.shop_items){
+		var shop_item_info = this.getItemBean(shop_item_id);
 		if(shop_item_info != null){
 			return shop_item_info.getMyShopItemInfo();
 		}else{
 			logger.error("SHOP_CACHE","Find shop item error with itemid = "+ shop_item_id);
 		}
-		return {}
-
 	}
+	
+	return null;
 }
 
 
-exports.getMyShopItemList = function(guid){
-	var shop_id = PlayerProxy.getShopId(guid);
+ShopManager.prototype.getMyShopItemList = function(uid){
+	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
 	var json_result = {
 		'list':[]
 	};
-	//logger.log("SHOP_CACHE","[getMyShopItemList] shop_id : " + shop_id);
+	
 	if(shop_id > 0){
-		var shop_info = g_shop_cache['dict'][shop_id];
+		var shop_info = this.getShop(shop_id);
 		if(shop_info != null){
 			var shop_items = shop_info.getItems();
 
@@ -611,18 +642,12 @@ exports.getMyShopItemList = function(guid){
 				for(var shop_item_key in shop_items){
 
 					var shop_item_id = shop_items[shop_item_key];
-
-					if(shop_item_id in g_shop_cache['shop_items']){
-						var shop_item_info = g_shop_cache['shop_items'][shop_item_id];
-						if(shop_item_info != null){
-							var my_shop_item_info = shop_item_info.getMyShopItemInfo();
-							//logger.log("SHOP_CACHE","my_shop_item_info:" + util.inspect(my_shop_item_info));
-							json_result['list'].push(my_shop_item_info);
-						}else{
-							logger.error("SHOP_CACHE","Find shop item error with itemid = "+ shop_item_id);
-						}
-
+					let shop_item_info = this.getMyShopItemInfo(shop_item_id);
+					if(shop_item_info != null){
+						json_result['list'].push(shop_item_info)
 					}
+					
+					
 				}
 				//logger.log("SHOP_CACHE",util.inspect(json_result['list']));
 			}

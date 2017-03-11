@@ -263,8 +263,6 @@ function checkParam(fields,check){
  			return;
  		}
  	}
- 	
- 	
  }
 
 /**

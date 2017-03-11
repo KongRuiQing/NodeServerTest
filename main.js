@@ -10,10 +10,10 @@ var image_file_server = require("./ImageFileServer/Server");
 var post_server = require("./PostServer/Server");
 var down_server = require("./down/server");
 
-require("./playerList");
 
 var logger = require('./logger').logger();
 var moment = require('moment');
+require("./HttpHeadInstance");
 //
 //time = new Date(0);
 //console.log(time);
@@ -25,10 +25,8 @@ var moment = require('moment');
 //console.log(moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
 //console.log(moment("2012-02-01 01:00:01").add(1,'day').format('YYYY-MM-DD HH:mm:ss'));
 
-var arr = []
-arr[2] = 0;
-
-console.log(arr);
+//var db_seq = require("./Db_sequelize");
+//db_seq.updateUserLogin(1,2,3);
 
 var HOST = '';
 var PORT = 9888;
@@ -36,6 +34,7 @@ var QUERY_PORT = 9889;
 var IMAGE_FILE_PORT = 9890;
 var POST_SERVER_PORT = 9891;
 var DOWN_SERVER_PORT = 9892;
+
 
 //var chatServer = net.createServer();
 

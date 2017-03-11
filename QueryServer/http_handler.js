@@ -3,7 +3,7 @@ var db = require("../mysqlproxy");
 var util = require('util');
 var ShopCache = require("../cache/shopCache");
 var PlayerCache = require("../playerList.js");
-var DbCache = require("../cache/DbCache.js");
+var DbCache = require("../cache/DbCache");
 var logger = require("../logger").logger();
 var fs = require('fs');
 const path = require('path');
@@ -92,7 +92,15 @@ exports.getShopList = function(headers, query,callback){
 	if('last_distance' in query){
 		last_distance = Number(query['last_distance']);
 	}
-	logger.log("HTTP_HANDER","last_distance: " + last_distance);
+	logger.log("HTTP_HANDER","getShopList param: category = ", category,'city='
+		,city,'page_size='
+		,page_size,'search_key=,'
+		,search_key,'longitude='
+		,longitude,'latitude'
+		,latitude,'latitude'
+		,last_distance,'last_distance'
+		);
+
 	var shop_list = ShopCache.getInstance().getShopList(uid,city,zone,category,last_distance,page_size,search_key,longitude,latitude,distance);
 
 
@@ -166,7 +174,9 @@ exports.getShopSpread = function(headers, query,callback){
 	if('keyword' in query){
 		keyword = query['keyword'];
 	}
+	logger.log("HTTP_HANDER:",'city_no=',city_no,'area_code=',area_code,'cate_code=',cate_code);
 	
+
 	var query_result = ShopCache.getInstance().getShopSpread(last_distance,longitude,latitude,city_no,area_code,distance,cate_code,keyword);
 	var json_value = {
 		'spread_list' : query_result['list'],
@@ -222,6 +232,34 @@ exports.getNearShopList = function(headers, query,callback){
 	};
 	
 	callback(0,json_result);
+}
+
+exports.getMyShopItemDetail = function(headers,query,callback){
+	var uid = headers['uid'];
+
+	if(uid > 0){
+		let shop_id = PlayerCache.getInstance().getMyShopId(uid);
+		let item_id = Number(query['item_id']);
+		var shop_item_detail = ShopCache.getInstance().getMyShopItemDetail(uid,shop_id,item_id);
+		if(shop_item_detail != null){
+			callback(0,{
+				"item_info" : shop_item_detail,
+			});
+			return;
+		}else{
+			callback(0,{
+				'error' : 2,
+				'error_msg' : "没有找到对应的商品信息",
+			});
+			return;
+		}
+	}else{
+		callback(0,{
+			'error':1002,
+			'error_msg' : "没有登录",
+		});
+		return;
+	}
 }
 
 exports.getShopItemDetail = function(headers, query,callback){
@@ -291,10 +329,19 @@ exports.getMyAttention = function(headers, query,callback){
 	callback(0,json_result);
 }
 
-exports.getShopCategory = function(headers,query,callback){
-	logger.log("HTTP_HANDER","start getShopCategory ");
-	var json_result = DbCache.getShopCategory();
-	callback(0,{'list':json_result});
+exports.getCategory = function(headers,query,callback){
+	let type = Number(query['type']);
+	let list_result = [];
+	if(type == 2){
+		list_result = DbCache.getInstance().getItemCategory();
+	}else if(type == 1){
+		list_result = DbCache.getInstance().getShopCategory();
+	}
+	
+	callback(0,{
+		'list':list_result,
+		'type' : type,
+	});
 }
 
 
@@ -306,13 +353,8 @@ exports.getShopArea = function(headers,query,callback){
 }
 exports.getMyShopItemList = function(headers,query,callback){
 	//logger.log("HTTP_HANDER","start getMyShopItemList");
-	if('guid' in headers){
-		var json_result = ShopCache.getMyShopItemList(headers['guid']);
-		callback(0,json_result);
-		return;
-	}else{
-		callback(1,"");
-	}	
+	var json_result = ShopCache.getInstance().getMyShopItemList(headers['uid']);
+	callback(0,json_result);
 }
 exports.getMyShopInfo = function(headers,query,callback){
 	logger.log("HTTP_HANDER","start getMyShopInfo uid: " + headers['uid']);
@@ -417,7 +459,7 @@ exports.getBeSellerData = function(headers,query,callback)
 {
 	var json_result = {};
 
-	json_result['category'] = DbCache.getInstance().getCategory();
+	json_result['category'] = DbCache.getInstance().getShopCategory();
 	let shop_id = PlayerCache.getInstance().getMyShopId(headers['uid']);
 	logger.log("HTTP_HANDER","shop_id:" + shop_id + " uid:" + headers['uid']);
 	if(shop_id > 0){

@@ -14,4 +14,12 @@ CategoryMenuBean.prototype.getJsonValue = function() {
 	};
 };
 
+CategoryMenuBean.prototype.getCode = function(){
+	return this.__code;
+}
+
+CategoryMenuBean.prototype.getParentCode = function(){
+	return this.__parent;
+}
+
 module.exports = CategoryMenuBean;

@@ -16,6 +16,7 @@ var test_route = {};
 test_route['/test/v1/ad'] = http_test.testAddAdImage;
 test_route['/test/v1/Shop'] = http_test.testShop;
 test_route['/test/v1/ShopItem'] = http_test.testShopItem;
+var handle_head_304 = require("./http_head.js");
 var handle_login = require("./handle_login");
 
 var http_header = {};
@@ -33,6 +34,7 @@ function handle_route(request,response,next){
 	//logger.log("QUERY_SERVER","pathname:" + pathname);
 	if(!(pathname in route)){
 		next(new Error(pathname + ' is not in route'));
+		return;
 	}
 	if (typeof route[pathname] === 'function'){
 		
@@ -45,7 +47,7 @@ function handle_route(request,response,next){
 			if(error_code == 0){
 				let status_code = 200;
 				response.writeHead(status_code, {
-					'Content-Type': http_header[status_code]
+					'Content-Type': http_header[status_code],
 				});
 				response.write(JSON.stringify(content));				
 			}else{
@@ -58,18 +60,21 @@ function handle_route(request,response,next){
 				response.write(JSON.stringify(json_content));
 			}
 			response.end();
+			return;
 		});
 	}else{
 		next(new Error(pathname + ' is not in route'));
+		return;
 	}
 }
 
 function handleError(err, req, res, next){
 	logger.error("QUERY_SERVER",err);
 	res.writeHead(500, {
-		'Content-Type': http_header[500]
+		'Content-Type': http_header[500],
 	});
-	res.end();
+	
+	res.end(util.inspect(err));
 }
 
 
@@ -95,7 +100,7 @@ function handle_test(req,rsp,next){
 
 function printCostTime(req,rsp,time){
 
-	logger.log("QUERY_SERVER","COST TIME: " + url.parse(req.url,true).pathname + " : " + time + "ms");
+	logger.log("QUERY_SERVER",url.parse(req.url,true).pathname," COST TIME: "  + " : " + time + "ms");
 }
 
 exports.start = function(Host,Port)
@@ -104,6 +109,7 @@ exports.start = function(Host,Port)
 	.use(favicon("favicon.ico"))
 	.use(responseTime(printCostTime))
 	.use(handle_test)
+	.use(handle_head_304)
 	.use(handle_login)
 	.use(handle_route)
 	.use(handleError)

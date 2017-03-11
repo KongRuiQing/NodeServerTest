@@ -60,7 +60,6 @@ exports.InitFromDb = function(
 		
 		g_playerlist['MaxUID'] = Math.max(g_playerlist['MaxUID'],uid);
 
-		logger.log("PLAYER_LIST","[InitFromDb] total login info =" + all_login_info.length);
 	}
 
 	for(var i in all_user_info){
@@ -91,7 +90,7 @@ exports.InitFromDb = function(
 		var item_id = player_favorites_item[i]['item_id'];
 		var shop_id = player_favorites_item[i]['shop_id'];
 		var add_time = player_favorites_item[i]['add_time'];
-		logger.log("PLAYER_LIST","[InitFromDb] uid = " + uid + " item_id = " + item_id);
+		//logger.log("PLAYER_LIST","[InitFromDb] uid = " + uid + " item_id = " + item_id);
 		
 		if(g_playerlist['playerCache'][uid] != null){
 			g_playerlist['playerCache'][uid].addFavoritesItem(shop_id,item_id,add_time);

@@ -7,11 +7,16 @@ var CategoryMenuBean = require("../bean/CategoryMenuBean");
 var moment = require('moment');
 
 
+console.log("require","cache/DbCache.js");
 
 function DbCacheManager(){
+
 	this.area_menu = {};
 	this.city_info = {};
-	this.category_menu = [];
+	this.category_menu = {
+		'shop' : {},
+		'item' : {},
+	};
 	this.ad_image = {};
 }
 
@@ -19,6 +24,7 @@ function DbCacheManager(){
 var g_db_cache = new DbCacheManager();
 
 exports.getInstance = function(){
+
 	return g_db_cache;
 }
 
@@ -51,13 +57,20 @@ DbCacheManager.prototype.InitFromDb = function(db_list_result){
 	}
 
 	var list_category_code = db_list_result[1];
-	//logger.log("DB_CACHE","category_code:" + util.inspect(list_category_code));
+	//logger.log("DB_CACHE","category_menu:" + util.inspect(list_category_code));
 	for(var i in list_category_code){
-		var class_id = parseInt(list_category_code[i]['class']);
+		var class_id = Number(list_category_code[i]['class']);
 		var name = list_category_code[i]['name'];
-		var code = parseInt(list_category_code[i]['code']);
-		g_db_cache['category_menu'].push(new CategoryMenuBean(class_id,name,code));
+		var code = Number(list_category_code[i]['code']);
+		let type = Number(list_category_code[i]['type']);
+		if(type == 1){
+			this.category_menu['shop'][code] = new CategoryMenuBean(class_id,name,code);
+		}else if(type ==2){
+			this.category_menu['item'][code] = new CategoryMenuBean(class_id,name,code);
+		}
 	}
+	//logger.log("DB_CACHE","category_menu" + util.inspect(this.category_menu));
+
 	//logger.log("DB_CACHE","[Init][init shop_ad] db:" + util.inspect(db_list_result[2]));
 	var list_all_ad_info = db_list_result[2];
 	for(var key in list_all_ad_info){
@@ -124,14 +137,22 @@ DbCacheManager.prototype.getAreaMenu = function(Last_Modified,city){
 	};
 }
 
-exports.getShopCategory = function(){
+DbCacheManager.prototype.getShopCategory = function(){
 
 	var list = [];
-	for(var i in g_db_cache['category_menu']){
-		list.push(g_db_cache['category_menu'][i].getJsonValue());
+	for(var i in g_db_cache['category_menu']["shop"]){
+		list.push(g_db_cache['category_menu']["shop"][i].getJsonValue());
 	}
 	return list;
+}
 
+DbCacheManager.prototype.getItemCategory = function(){
+
+	var list = [];
+	for(var i in g_db_cache['category_menu']["item"]){
+		list.push(g_db_cache['category_menu']["item"][i].getJsonValue());
+	}
+	return list;
 }
 
 exports.getShopArea = function(){
@@ -311,10 +332,43 @@ exports.removeArea = function(city,code){
 	};
 }
 
-DbCacheManager.prototype.getCategory = function(){
-	var list = [];
-	for(var i in g_db_cache['category_menu']){
-		list.push(g_db_cache['category_menu'][i].getJsonValue());
+
+
+
+DbCacheManager.prototype.matchCategor = function(parent_code,child_code,type){
+	
+	if(!(type in this.category_menu)){
+		logger.log("DB_CACHE","can't find type = ",type,' in this.category_menu');
+		return false;
 	}
-	return list;
+
+	if(parent_code == 0){
+		return true;
+	}
+	if(child_code == 0){
+		return false;
+	}
+	if(parent_code == child_code){
+		return true;
+	}
+
+	if(!(child_code in this.category_menu[type])){
+		//console.log("NO :" + util.inspect(this));
+		return false;
+	}
+
+	let child_parent_code = this.category_menu[type][child_code].getParentCode();
+	//console.log("child_parent_code : " + child_parent_code);
+	while(child_parent_code != parent_code){
+		
+		if(!(child_parent_code in this.category_menu[type])){
+			//console.log("NO Whild " , util.inspect(this));
+			break;
+		}
+		child_parent_code = this.category_menu[type][child_parent_code].getParentCode();
+		//console.log("child_parent_code : " + child_parent_code);
+	}
+
+
+	return child_parent_code == parent_code;
 }

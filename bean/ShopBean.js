@@ -1,5 +1,8 @@
 "use strict";
 var FindUtil = require("../FindUtil.js");
+var DbCache = require("../cache/DbCache");
+
+console.log("require shopBean.js");
 
 var ShopBean = function(){
 	this.id = 0;
@@ -291,14 +294,20 @@ ShopBean.prototype.matchFilter = function(city_no,area_code,category_code){
 	if(this.state == 0){
 		return false;
 	}
-	if(category_code != 0 
-		&& (category_code != this.category_code3)
-		&& (category_code != this.category_code2)
-		&& (category_code != this.category_code1))
-	{
+	console.log(category_code,this.category_code1,this.category_code2,this.category_code3);
+	if(category_code != 0){
+		if(DbCache.getInstance().matchCategor(category_code,this.category_code1,'shop')){
+			return true;
+		}
+		if(DbCache.getInstance().matchCategor(category_code,this.category_code2,'shop')){
+			return true;
+		}
+		if(DbCache.getInstance().matchCategor(category_code,this.category_code3,'shop')){
+			return true;
+		}
 		return false;
 	}
-
+	
 	return true;
 }
 

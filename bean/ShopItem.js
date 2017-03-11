@@ -16,6 +16,7 @@ var ShopItem = function(){
 
 	this.__show_images = [];
 	this.__detail_images = [];
+	this.__category_code = [];
 }
 
 ShopItem.prototype.getId = function(){
@@ -95,6 +96,9 @@ ShopItem.prototype.initFromDb = function(db_row){
 	this.price = parseFloat(db_row['price']);
 	this.show_price = parseFloat(db_row['show_price']);
 	this.is_show = Number(db_row['is_show']) == 1;
+	this.__category_code.push(Number(db_row['category_code1']));
+	this.__category_code.push(Number(db_row['category_code2']));
+	this.__category_code.push(Number(db_row['category_code3']));
 }
 
 
@@ -161,15 +165,13 @@ ShopItem.prototype.getItemBasicInfo = function(){
 
 ShopItem.prototype.getMyShopItemInfo = function(){
 	return {
-		'image' : this.show_image,
+		'image' : this.__spread_image,
 		'item_name' : this.name,
 		'item_price':this.price,
 		'item_show_price' : this.show_price,
 		'item_attention': this.attentions.length,
 		'item_id' : this.id,
 		'shop_id' : this.shop_id,
-		'propertys' : this.getItemPropertys(),
-		'links' : this.getItemLinks()
 	};
 }
 
@@ -187,9 +189,30 @@ ShopItem.prototype.getItemLinks = function(){
 
 ShopItem.prototype.getDetailJsonItem = function(){
 	var item_detail = {
-		'name' : this.name,
-		'price' : this.price,
-		'show_price' : this.show_price,
+		'image' : this.__spread_image,
+		'item_name' : this.name,
+		'item_price' : this.price,
+		'item_show_price' : this.show_price,
+		'detail_image' : this.__detail_images,
+		'show_image' : this.__show_images,
+		'item_id' : this.id,
+		'shop_id' : this.shop_id,
+		'item_attention' : 0,
+		'item_property' : [],
+	};
+	for(var i in this.item_propertys){
+		item_detail['item_property'].push(this.item_propertys[i].getJsonValue());
+	}
+
+	return item_detail;
+}
+
+ShopItem.prototype.getDetailJsonItemInMyShop = function(){
+	var item_detail = {
+		'item_name' : this.name,
+		'item_price' : this.price,
+		'item_show_price' : this.show_price,
+		'item_id' : this.id,
 		'detail_image' : this.__detail_images,
 		'show_image' : this.__show_images,
 		'item_property' : []
@@ -289,6 +312,10 @@ ShopItem.prototype.getSpreadItemInfo = function(dis){
 		'item_id' : this.id,
 		'shop_id' : this.shop_id
 	}
+}
+
+ShopItem.prototype.getCategoryCode = function(){
+	return this.__category_code;
 }
 
 ShopItem.prototype.getShopId = function(){
