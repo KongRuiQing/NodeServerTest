@@ -205,7 +205,7 @@ function generate(count) {
 	return str;
 }
 
-g_playerlist.Login = function(login_account){
+PlayerManager.prototype.Login = function(login_account){
 
 	var uid = this['account_uid'][login_account];
 	var player_info = this['playerCache'][uid];
@@ -544,12 +544,12 @@ exports.CheckSeller = function(guid){
 	return uid;
 }
 
-PlayerManager.prototype.SetUserShopId = function(uid,shop_id){
+PlayerManager.prototype.SetUserShopId = function(uid,shop_id,shop_state){
 	if(uid > 0){
 		if(uid in this.playerCache){
 			var player_info = this.playerCache[uid];
 
-			player_info.beSeller(shop_id);
+			player_info.beSeller(shop_id,shop_state);
 			return null;
 		}
 	}

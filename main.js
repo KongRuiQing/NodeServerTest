@@ -25,8 +25,11 @@ require("./HttpHeadInstance");
 //console.log(moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
 //console.log(moment("2012-02-01 01:00:01").add(1,'day').format('YYYY-MM-DD HH:mm:ss'));
 
-//var db_seq = require("./Db_sequelize");
+var db_seq = require("./Db_sequelize");
 //db_seq.updateUserLogin(1,2,3);
+//db_seq.TestFindOrCreate("1");
+//db_seq.insertRequestBeSeller({'name' : '888','category' : [1,2,3],},function(err,db_row){console.log(db_row);});
+//return;
 
 var HOST = '';
 var PORT = 9888;

@@ -153,7 +153,13 @@ exports.InitFromDb = function(
 		g_shop_cache['dict'][shop_id] = new ShopBean();
 
 		g_shop_cache['dict'][shop_id].initFromDbRow(shop_list[i]);
+		let uid = Number(shop_list[i]['uid']);
+		let state = Number(shop_list[i]['state']);
+		if(state == 0 || state == 1){
+			PlayerProxy.getInstance().SetUserShopId(uid,shop_id,state);
+		}
 		
+
 		g_shop_cache['max_shop_id'] = Math.max(parseInt(shop_id),g_shop_cache['max_shop_id']);
 	}
 

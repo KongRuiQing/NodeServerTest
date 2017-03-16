@@ -62,14 +62,14 @@ var Player = function(){
 	this.real_name = "";
 	this.sex = 0;
 	this.shop_id = 0;
-
+	this.shop_state = 0;
 	this.schedule = [
 	new ScheduleRouteBean(1),
 	new ScheduleRouteBean(2),
 	new ScheduleRouteBean(3),
 	new ScheduleRouteBean(4),
 	new ScheduleRouteBean(5),
-	]
+	];
 }
 
 
@@ -193,6 +193,7 @@ Player.prototype.getUserLoginInfo = function(){
 	json_login['email'] = this.email;	
 	json_login['real_name'] = this.real_name;	
 	json_login['shop_id'] = this.shop_id;
+	json_login['shop_state'] = this.shop_state;
 	//json_login['shop_state'] = 0;
 	return json_login;
 }
@@ -209,11 +210,12 @@ Player.prototype.isSeller = function(){
 	return this.shop_id > 0;
 }
 
-Player.prototype.beSeller = function(shop_id){
+Player.prototype.beSeller = function(shop_id,shop_state){
 	if(this.shop_id != 0){
 
 	}
 	this.shop_id = shop_id;
+	this.shop_state = shop_state;
 }
 
 Player.prototype.getMyAttention = function(){

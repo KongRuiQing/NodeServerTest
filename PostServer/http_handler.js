@@ -11,7 +11,7 @@ var moment = require('moment');
 
 let BASE_SHOP_IMAGE = "../Image";
 
-//var db_sequelize = require("../db_sequelize");
+let db_sequelize = require("../db_sequelize");
 
 exports.new_feed = function(header,fields,files,callback){
 	
@@ -55,7 +55,7 @@ exports.login = function(header,fields,files,callback){
 	if( login_result == 0){
 		var login_response = PlayerProxy.Login(login_account);
 
-		//db_sequelize.emit("updateUserLogin",1,header['longitude'],header['latitude']);
+		//db_sequelize.updateLogin(,1,header['longitude'],header['latitude']);
 
 		json_result['user_info'] = login_response;
 		json_result['account'] = login_account;
@@ -115,19 +115,40 @@ exports.changeSign = function(header,fields,files,callback){
 
 exports.becomeSeller = function(header,fields,files,callback){
 
+	
 	var uid = header['uid'];
 
 	var uploadFile = {
-		"qualification" : "shop/qualification/",
 		"card_image" : "shop/card/",
 	};
 
-	check_dir(uploadFile);
-
-	logger.log("HTTP_HANDLER","[becomeSeller][params] fields:" + util.inspect(fields));
-	logger.log("HTTP_HANDLER","[becomeSeller][params] header:" + util.inspect(header));
+	//check_dir(uploadFile);
 
 	var fieldNameToDbColName = {
+		'shop_name' : {
+			'name' : 'shop_name',
+			'type' : 'string'
+		},
+		'city_no' : {
+			'name' : 'city_no',
+			'type' : 'int',
+		},
+		'area_code': {
+			'name' : 'area_code',
+			'type' : 'int'
+		},
+		'category_code1' : {
+			'name' : 'category_code1',
+			'type' : 'int'
+		},
+		'category_code2' : {
+			'name' : 'category_code2',
+			'type' : 'int'
+		},
+		'category_code3' : {
+			'name' : 'category_code3',
+			'type' : 'int'
+		},
 		'beg' : {
 			'name' : 'beg',
 			'type' : 'int'
@@ -148,49 +169,9 @@ exports.becomeSeller = function(header,fields,files,callback){
 			'name': 'telephone',
 			'type' : 'string'
 		},
-		'area_code': {
-			'name' : 'area_code',
-			'type' : 'int'
-		},
-		'distribution':{
-			'name' : 'distribution',
+		'card_name' : {
+			'name' : 'user_name',
 			'type' : 'string'
-		},
-		'category_code1' : {
-			'name' : 'category_code1',
-			'type' : 'int'
-		},
-		'category_code2' : {
-			'name' : 'category_code2',
-			'type' : 'int'
-		},
-		'category_code3' : {
-			'name' : 'category_code3',
-			'type' : 'int'
-		},
-		'qq' : {
-			'name' : 'qq',
-			'type' : 'string'
-		},
-		'wx' : {
-			'name' : 'wx',
-			'type' : 'string'
-		},
-		'email' : {
-			'name' : 'email',
-			'type' : 'string'
-		},
-		'longitude':{
-			'name' : 'longitude',
-			'type' : 'float'
-		},
-		'latitude':{
-			'name' : 'latitude',
-			'type' : 'float'
-		},
-		'city_no' : {
-			'name' : 'city_no',
-			'type' : 'int'
 		},
 		'card_number' : {
 			'name' : 'card_number',
@@ -200,35 +181,37 @@ exports.becomeSeller = function(header,fields,files,callback){
 	var shopInfo = {};
 
 	upload_file_to_json(files,uploadFile,shopInfo);
-	
+	console.log("becomeSeller.start 1");
 	for(var key in fieldNameToDbColName){
 		var key_info = fieldNameToDbColName[key];
 		if(key in fields){
 			if(key_info['type'] == "int"){
-				shopInfo[key_info['name']] = parseInt(fields[key]);
+				shopInfo[key_info['name']] = Number(fields[key]);
 				//logger.log("HTTP_HANDLER","key = " + key + ", value = " + fields[key]);
 			}else if(key_info['type'] == 'string'){
 				shopInfo[key_info['name']] = fields[key];
 			}else if(key_info['type'] == 'float'){
-				shopInfo[key_info['name']] = parseFloat(fields[key]);
+				shopInfo[key_info['name']] = Number(fields[key]);
 			}
 		}else{
 			if(key_info['type'] == "int"){
 				shopInfo[key_info['name']] = 0;
 				//logger.log("HTTP_HANDLER","key = " + key + ", value = " + fields[key]);
 			}else if(key_info['type'] == 'string'){
-				shopInfo[key_info['name']] = "未填写";
+				shopInfo[key_info['name']] = "";
 			}else if(key_info['type'] == 'float'){
 				shopInfo[key_info['name']] = 0.0;
 			}
 		}
 		
 	}
-
+	
 	
 	
 	if(uid > 0){
-		db.InsertBecomeSeller(uid,shopInfo,function(err,db_row){
+		shopInfo['uid'] = uid;
+		
+		db_sequelize.insertRequestBeSeller(shopInfo,function(err,db_row){
 			if(err){
 				logger.error(err);
 				callback(true,{
@@ -240,13 +223,16 @@ exports.becomeSeller = function(header,fields,files,callback){
 
 			ShopProxy.getInstance().InsertBecomeSeller(uid,db_row);
 
-			PlayerProxy.getInstance().SetUserShopId(uid,db_row['Id']);
+			PlayerProxy.getInstance().SetUserShopId(uid,db_row['Id'],db_row['state']);
 
 			callback(true,{
 				'error' : 0,
 				'shop_id' : db_row['Id'],
+				'state' : 1,
 			});
 		});
+
+		
 		return;
 		
 	}

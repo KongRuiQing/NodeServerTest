@@ -41,6 +41,7 @@ var ShopBean = function(){
 
 	this.activity = null;
 
+	this.__itemGroup = [];
 	//events.EventEmitter.call(this);
 
 
@@ -109,6 +110,10 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.card_number = db_row['card_number'];
 
 	this.state = Number(db_row['state']);
+
+	this.__itemGroup.push(db_row['groupName1']);
+	this.__itemGroup.push(db_row['groupName2']);
+	this.__itemGroup.push(db_row['groupName3']);
 }
 
 ShopBean.prototype.newShopBean = function(shop_info){
@@ -120,14 +125,20 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	this.beg = Number(shop_info['beg']);
 	this.end = Number(shop_info['end']);
 	this.days = Number(shop_info['days']);
-	this.__longitude = parseFloat(shop_info['longitude']);
-	this.__latitude = parseFloat(shop_info['latitude']);
+	
 	this.city_no = Number(shop_info['city_no']);
 	this.area_code = Number(shop_info['area_code']);
 	if('address' in shop_info){
 		this.address = shop_info["address"];
 	}
 	//
+	if('longitude' in shop_info){
+		this.__longitude = parseFloat(shop_info['longitude']);
+	}
+	if('latitude' in shop_info){
+		this.__latitude = parseFloat(shop_info['latitude']);
+	}
+	
 	if('category_code1' in shop_info){
 		this.category_code1 = Number(shop_info['category_code1']);
 	}
@@ -137,11 +148,13 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	if('category_code3' in shop_info){
 		this.category_code3 = Number(shop_info['category_code3']);
 	}
-	//this.address_brief = shop_info["address"];
+	if('distribution' in shop_info){
+		this.distribution = shop_info["distribution"];
+	}
+	if('telephone' in shop_info){
+		this.telephone = shop_info['telephone'];
+	}
 	
-	//this.info = "";
-	this.distribution = shop_info["distribution"];
-	this.telephone = shop_info['telephone'];
 	if('email' in shop_info){
 		this.email = shop_info['email'];
 	}
@@ -155,7 +168,10 @@ ShopBean.prototype.newShopBean = function(shop_info){
 	this.business = "";
 	this.card_image = shop_info["card_image"];
 	this.qualification = "";
-	this.state = 0;
+	if('state' in shop_info){
+		this.state = shop_info['state'];
+	}
+	
 }
 
 
@@ -393,7 +409,8 @@ ShopBean.prototype.getMyShopBasicInfo = function(){
 		'id' : this.id,
 		'image' : this.image,
 		'address' : this.address,
-		'telephone' : this.telephone
+		'telephone' : this.telephone,
+		'item_groups' : this.__itemGroup,
 	};
 }
 
