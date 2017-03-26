@@ -24,7 +24,7 @@ var handle_head = function(req,rsp,next){
 			return;
 		}
 	}else{
-		let result = HttpHeadInstance.getInstance().checkModified(request_url,null);
+		let result = HttpHeadInstance.getInstance().checkModified(request_url,headers,null);
 		
 		rsp.setHeader("Last-Modified",result);
 		headers['Last-Modified'] = result;
