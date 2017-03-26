@@ -372,3 +372,14 @@ DbCacheManager.prototype.matchCategor = function(parent_code,child_code,type){
 
 	return child_parent_code == parent_code;
 }
+
+DbCacheManager.prototype.getAreaName = function(city_no,area_code){
+	if(city_no in this.area_menu){
+		for(var key in this.area_menu[city_no]['list']){
+			if(this.area_menu[city_no]['list'][key].getCode() == area_code){
+				return this.area_menu[city_no]['list'][key].getName();
+			}
+		}
+	}
+	return "";
+}

@@ -31,6 +31,8 @@ var db_seq = require("./Db_sequelize");
 //db_seq.insertRequestBeSeller({'name' : '888','category' : [1,2,3],},function(err,db_row){console.log(db_row);});
 //return;
 
+
+
 var HOST = '';
 var PORT = 9888;
 var QUERY_PORT = 9889;

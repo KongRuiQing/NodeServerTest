@@ -26,8 +26,8 @@ var ShopBean = function(){
 	this.qq = "";
 	this.wx = "";
 	this.image = "";
-	this.ad_images = [];
-	this.business = "";
+	this.ad_images = {};
+	this.__business = "";
 	this.card_image = "";
 	this.card_number = "";
 	this.qualification = "";
@@ -40,8 +40,10 @@ var ShopBean = function(){
 	this.spread_items = [];
 
 	this.activity = null;
-
+	this.__fix_telephone = "";
 	this.__itemGroup = [];
+
+	this.__claim = 0; // shop_state == 2 时,代表认领人的信息
 	//events.EventEmitter.call(this);
 
 
@@ -106,6 +108,10 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.qq = db_row['qq'];
 	this.wx = db_row['wx'];
 	this.image = db_row['image'];
+	this.ad_images[0] = db_row['image1'];
+	this.ad_images[1] = db_row['image2'];
+	this.ad_images[2] = db_row['image3'];
+	this.ad_images[3] = db_row['image4'];
 	this.card_image = db_row['card_image'];
 	this.card_number = db_row['card_number'];
 
@@ -114,6 +120,8 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.__itemGroup.push(db_row['groupName1']);
 	this.__itemGroup.push(db_row['groupName2']);
 	this.__itemGroup.push(db_row['groupName3']);
+	this.__fix_telephone = db_row['fix_telephone'];
+	this.__business = db_row['business'];
 }
 
 ShopBean.prototype.newShopBean = function(shop_info){
@@ -165,7 +173,7 @@ ShopBean.prototype.newShopBean = function(shop_info){
 		this.wx = shop_info["wx"];
 	}
 	
-	this.business = "";
+	this.__business = "";
 	this.card_image = shop_info["card_image"];
 	this.qualification = "";
 	if('state' in shop_info){
@@ -179,6 +187,7 @@ ShopBean.prototype.newShopBean = function(shop_info){
 ShopBean.prototype.getShopBasicInfo = function(uid,longitude,latitude){
 	return {
 		'id' : this.id,
+		'state' : this.state,
 		'shop_name' : this.name,
 		'shop_address' : this.address,
 		'shop_image' : this.image,
@@ -219,12 +228,14 @@ ShopBean.prototype.getShopDbDetailInfo = function(){
 ShopBean.prototype.getShopDetailInfo = function(uid){
 	return {
 		'id' : this.id,
+		'state' : this.state,
 		'name':this.name,
 		'beg' : this.beg,
 		'end' : this.end,
 		'days' : this.days,
 		'attention': this.ownAttention(uid),
 		'image': this.image,
+		'show_images': [this.ad_images[0],this.ad_images[1],this.ad_images[2],this.ad_images[3]],
 		'address' : this.address,
 		'telephone' : this.telephone,
 		'comment_num' : this.comments.length,
@@ -240,6 +251,9 @@ ShopBean.prototype.getShopDetailInfo = function(uid){
 		'category_code1' : this.category_code1,
 		'category_code2' : this.category_code2,
 		'category_code3' : this.category_code3,
+		'item_groups' : this.__itemGroup,
+		'fix_telephone' : this.__fix_telephone,
+		'business' : this.__business,
 	}
 }
 
@@ -307,9 +321,10 @@ ShopBean.prototype.matchFilter = function(city_no,area_code,category_code){
 	if(area_code != 0 && area_code != this.area_code){
 		return false;
 	}
-	if(this.state == 0){
+	if(this.state == 1){
 		return false;
 	}
+
 	console.log(category_code,this.category_code1,this.category_code2,this.category_code3);
 	if(category_code != 0){
 		if(DbCache.getInstance().matchCategor(category_code,this.category_code1,'shop')){
@@ -365,7 +380,7 @@ ShopBean.prototype.getMyShopInfo = function(){
 		'image3' : '',
 		'promotion_image' : '',
 		'near_image' : '',
-		'business' : '',
+		'business' : this.__business,
 		'image_in_attention' : '',
 
 	};
@@ -397,6 +412,14 @@ ShopBean.prototype.getShopState = function(){
 	return this.state;
 }
 
+ShopBean.prototype.getClaim = function(){
+	return this.__claim;
+}
+
+ShopBean.prototype.setClaim = function(uid){
+	this.__claim = uid;
+}
+
 ShopBean.prototype.changeShopBasicInfo = function(image,address,telephone){
 	this.image = image;
 	
@@ -415,9 +438,12 @@ ShopBean.prototype.getMyShopBasicInfo = function(){
 }
 
 ShopBean.prototype.getSellerInfo = function(){
+	
 	return {
 		'id' : this.id,
+		'state' : this.state,
 		'name' : this.name,
+		'city_no' : this.city_no,
 		'area_code' : this.area_code,
 		'category_code1' : this.category_code1,
 		'category_code2' : this.category_code2,
@@ -426,13 +452,21 @@ ShopBean.prototype.getSellerInfo = function(){
 		'end' : this.end,
 		'days' : this.days,
 		'address' : this.address,
+		'telephone' : this.telephone,
+		'business' : this.__business,
 		'distribution' : this.distribution,
+		'fix_telephone' : this.__fix_telephone,
 		'qq' : this.qq,
 		'wx' : this.wx,
 		'email' : this.email,
 		'qualification' : this.qualification,
-		'card_number' : this.card_number,
-		'card_image' : this.card_image,
+		'longitude' : this.__longitude,
+		'latitude' : this.__latitude,
+		'image1' : this.ad_images[0],
+		'image2' : this.ad_images[1],
+		'image3' : this.ad_images[2],
+		'image4' : this.ad_images[3],
+		
 	};
 }
 
@@ -470,8 +504,16 @@ ShopBean.prototype.addShopActivity = function(){
 
 ShopBean.prototype.updateSellerInfo = function(json_value){
 	
-	if(this.id = json_value['Id']){
+	if(this.id == json_value['id']){
 		
+		if('name' in json_value){
+			this.name = json_value['name'];
+		}
+
+		if('city_no' in json_value){
+			this.city_no = json_value['city_no'];
+		}
+
 		if('area_code' in json_value){
 			this.area_code = json_value['area_code'];
 		}
@@ -484,23 +526,33 @@ ShopBean.prototype.updateSellerInfo = function(json_value){
 		if('category_code3' in json_value){
 			this.category_code3 = json_value['category_code3'];
 		}
+
 		if('beg' in json_value){
 			this.beg = json_value['beg'];
 		}
-		if('beg' in json_value){
-			this.beg = json_value['beg'];
-		}
+		
 		if('end' in json_value){
 			this.end = json_value['end'];
 		}
 		if('days' in json_value){
 			this.days = json_value['days'];
 		}
+
 		if('address' in json_value){
 			this.address = json_value['address'];
 		}
+		if('telephone' in json_value){
+			this.telephone = json_value['telephone'];
+		}
+		if('business' in json_value){
+			this.__business = json_value['business'];
+		}
+
 		if('distribution' in json_value){
 			this.distribution = json_value['distribution'];
+		}
+		if('fix_telephone' in json_value){
+			this.__fix_telephone = json_value['fix_telephone'];
 		}
 		
 		if('qq' in json_value){
@@ -515,11 +567,23 @@ ShopBean.prototype.updateSellerInfo = function(json_value){
 		if('qualification' in json_value){
 			this.qualification = json_value['qualification'];
 		}
-		if('card_image' in json_value){
-			this.card_image = json_value['card_image'];
+		if('longitude' in json_value){
+			this.__longitude = json_value['longitude'];
 		}
-		if('card_number' in json_value){
-			this.card_number = json_value['card_number'];
+		if('latitude' in json_value){
+			this.__latitude = json_value['latitude'];
+		}
+		if('image1' in json_value){
+			this.ad_images[0] = json_value['image1'];
+		}
+		if('image2' in json_value){
+			this.ad_images[1] = json_value['image2'];
+		}
+		if('image3' in json_value){
+			this.ad_images[2] = json_value['image3'];
+		}
+		if('image4' in json_value){
+			this.ad_images[3] = json_value['image4'];
 		}
 	}
 
@@ -541,7 +605,7 @@ ShopBean.prototype.getShopAttentionInfo = function(){
 		'shop_image' : this.image,
 		'shop_attention_num' : this.attentions.length,
 		'shop_name' : this.name,
-		'shop_business' : this.business,
+		'shop_business' : this.__business,
 		'shop_id' : this.id
 	};
 }
@@ -582,6 +646,17 @@ ShopBean.prototype.getSheduleInfo = function(){
 }
 ShopBean.prototype.calcDistance = function(longitude,latitude,distance){
 	return FindUtil.getFlatternDistance(longitude,latitude,this.__longitude,this.__latitude)
+}
+
+ShopBean.prototype.getClaimState = function(){
+	return {
+		'shop_id' : this.id,
+		'shop_name' : this.name,
+		'shop_state' : this.state,
+		'city_no' : this.city_no,
+		'area_code' : this.area_code,
+		'claim' : this.__claim,
+	};
 }
 
 module.exports = ShopBean;

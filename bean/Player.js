@@ -70,6 +70,7 @@ var Player = function(){
 	new ScheduleRouteBean(4),
 	new ScheduleRouteBean(5),
 	];
+	this.__claim = 0;
 }
 
 
@@ -194,6 +195,7 @@ Player.prototype.getUserLoginInfo = function(){
 	json_login['real_name'] = this.real_name;	
 	json_login['shop_id'] = this.shop_id;
 	json_login['shop_state'] = this.shop_state;
+	json_login['claim'] = this.__claim;
 	//json_login['shop_state'] = 0;
 	return json_login;
 }
@@ -228,6 +230,12 @@ Player.prototype.getMyAttention = function(){
 
 Player.prototype.getShopId = function(){
 	return this.shop_id;
+}
+Player.prototype.getClaim = function(){
+	return this.__claim;
+}
+Player.prototype.setClaim = function(shop_id){
+	this.__claim = shop_id;
 }
 
 Player.prototype.getHead = function(){

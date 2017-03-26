@@ -99,6 +99,61 @@ module.exports = function (sequelize, DataTypes) {
       type:DataTypes.STRING,
       allowNull:false,
       defaultValue:""
+    },
+    'business' : {
+      type : DataTypes.STRING,
+      allowNull : true,
+      defaultValue : '',
+    },
+    'distribution' : {
+      type : DataTypes.STRING,
+      allowNull : true,
+      defaultValue : '',
+    },
+    'fix_telephone' : {
+      type : DataTypes.STRING,
+      allowNull : true,
+      defaultValue : '',
+    },
+    'qq' : {
+      type : DataTypes.STRING,
+      allowNull : true,
+      defaultValue : '',
+    },
+    'wx' : {
+      type : DataTypes.STRING,
+      allowNull : true,
+      defaultValue : '',
+    },
+    'email' : {
+      type : DataTypes.STRING,
+      allowNull : true,
+      defaultValue : '',
+    },
+    'qualification' : {
+      type : DataTypes.STRING,
+      allowNull : true,
+      defaultValue : '',
+    },
+    'image1' : {
+      type : DataTypes.STRING,
+      allowNull : false,
+      defaultValue : '',
+    },
+    'image2' : {
+      type : DataTypes.STRING,
+      allowNull : false,
+      defaultValue : '',
+    },
+    'image3' : {
+      type : DataTypes.STRING,
+      allowNull : false,
+      defaultValue : '',
+    },
+    'image4' : {
+      type : DataTypes.STRING,
+      allowNull : false,
+      defaultValue : '',
     }
 
   },{

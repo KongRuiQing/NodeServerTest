@@ -24,4 +24,11 @@ AreaBean.prototype.getJsonValue = function(){
 	};
 }
 
+AreaBean.prototype.getCode = function(){
+	return this.code;
+}
+AreaBean.prototype.getName = function(){
+	return this.name;
+}
+
 module.exports = AreaBean;

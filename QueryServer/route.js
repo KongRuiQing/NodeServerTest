@@ -24,5 +24,5 @@ handle_http['/my_activity'] = http_handler.getMyActivity;
 handle_http['/attention_board_list'] = http_handler.getShopAttentionBoard;
 handle_http['/get_my_schedule_route_info'] = http_handler.getMyScheduleRouteInfo;
 handle_http['/get_ready_be_seller_data'] = http_handler.getBeSellerData;
-
+handle_http['/shop_claim_state'] = http_handler.getShopClaimState;
 module.exports = handle_http;

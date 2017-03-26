@@ -35,66 +35,17 @@ exports.start = function(Host,Port)
 	form.maxFieldsSize = 2 * 1024 * 1024;
 	form.keepExtensions = true;
 	server = http.createServer(function (request, response) {
-		var pathname = url.parse(request.url).pathname;
-		//logger.log("upload",pathname);
-		if(pathname == '/upload'){
-			if(request.method.toLowerCase() === 'post'){
+		var pathname = decodeURI(url.parse(request.url).pathname);
+		//logger.log("IMAGE_SERVER",'pathname: ' + decodeURI(pathname));
+		if(request.method.toLowerCase() === 'get'){
 
-				form.parse(request, function(err, fields, files) {
-					
-					if(err){
-						logger.error("UPLOAD",err);
-						return;
-					}
-					if(fields['dir'] == null || fields['dir'] == undefined){
-						logger.error("UPLOAD","No Dir in upload");
-					}
-					logger.log("AAA",util.inspect(files));
-					var filePath = '';
-					if(files.tmpFile){
-						filePath = files.tmpFile.path;
-					} else {
-						for(var key in files){
-							if( files[key].path && filePath === ''){
-								filePath = files[key].path;
-								break;
-							}
-						}
-					}
-					var targetFile = path.join(fields['dir'],path.basename(filePath));
-					var targetDirFile = path.join("../Image",targetFile);
-
-					fs.rename(filePath, targetDirFile, function (err) {
-						if (err) {
-							response.writeHead(200, {'content-type': 'text/plain'});
-							logger.error(err);
-							var json_result = {
-								'result':1,
-								'bean' : fields['bean']
-							};
-							response.end(JSON.stringify(json_result));
-						} else {
-							response.writeHead(200, {'content-type': 'text/plain'});
-							var json_result = {
-								'result':0,
-								'fileName':targetFile,
-								'bean' : fields['bean']
-							};
-							response.end(JSON.stringify(json_result));
-						}
-					});
-				});
-			}
-			
-		}
-		else{
 			var fileName = path.normalize(pathname.replace(/\.\./g, ""));
-
+			//logger.log('IMAGE_SERVER',"fileName: " + fileName);
 			var realPath = path.join("../Image", fileName);
-			
+
 			var ext = path.extname(realPath);
 			ext = ext ? ext.slice(1) : 'unknown';
-			//logger.log("IMAGE","realPath : " + realPath);
+
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
 
@@ -105,7 +56,7 @@ exports.start = function(Host,Port)
 					});
 					response.write("This request URL " + pathname + " was not found on this server.");
 					response.end();
-					
+
 				} else {
 					var fs_state = fs.statSync(realPath);
 					if(fs_state.isFile()){
@@ -130,12 +81,12 @@ exports.start = function(Host,Port)
 						response.write("This request URL " + pathname + " was not found on this server.");
 						response.end();
 					}
-					
-					
+
+
 				}
 			});
 		}
-		
+
 	});
 	server.listen(Port,Host);
 	logger.log("START","Image Server runing at port: " + Port + ".");

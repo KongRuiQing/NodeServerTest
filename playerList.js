@@ -22,6 +22,8 @@ function PlayerManager(){
 
 let g_playerlist = new PlayerManager();
 
+let PLAYER_LIST = "playerList.js";
+
 PlayerManager.prototype.getMyShopId = function(uid){
 
 	if(uid in this.playerCache){
@@ -29,6 +31,36 @@ PlayerManager.prototype.getMyShopId = function(uid){
 	}
 
 	return 0;
+}
+
+PlayerManager.prototype.chekcCanClaim = function(uid){
+	if(uid in this.playerCache){
+		let userBean = this.playerCache[uid];
+		if(userBean == null){
+			return false;
+		}
+		
+		if(userBean.getShopId() != 0){
+			logger.log("INFO","[chekcCanClaim] shop_id =", userBean.getShopId());
+			return false;
+		}
+		if(userBean.getClaim()  != 0){
+			logger.log("INFO","[chekcCanClaim] claim =", userBean.getClaim());
+			return false;
+		}
+		return true;
+	}
+
+	return false;
+}
+
+PlayerManager.prototype.setClaimShop = function(uid,shop_id){
+	if(uid in this.playerCache){
+		let userBean = this.playerCache[uid];
+		if(userBean != null){
+			userBean.setClaim(shop_id);
+		}
+	}
 }
 
 exports.getInstance = function(){
@@ -41,10 +73,7 @@ exports.InitFromDb = function(
 	all_login_info,
 	player_attention_shop_list,
 	player_favorites_item,
-	player_schedule_info,
-	player_schedule_shop,
-	player_schedule_shop_image,
-	player_schedule_shop_comment){
+	shop_claims){
 
 	for(var i in all_login_info){
 
@@ -96,59 +125,15 @@ exports.InitFromDb = function(
 			g_playerlist['playerCache'][uid].addFavoritesItem(shop_id,item_id,add_time);
 		}
 	}
-	//logger.log("PLAYER_LIST","[playerList][init] player_schedule_info:" + util.inspect(player_schedule_info));
-	for(var i in player_schedule_info){
-		var uid = Number(player_schedule_info[i]['uid']);
+	
 
-		var sort_key = Number(player_schedule_info[i]['sort_index']);
-		//var image = player_schedule_info[i]['image'];
+	logger.log(PLAYER_LIST,util.inspect(shop_claims));
+	for(var i in shop_claims){
+		let uid = Number(shop_claims[i]['uid']);
+		let shop_id = Number(shop_claims[i]['shop_id']);
 		if(uid in g_playerlist['playerCache']){
-			g_playerlist['playerCache'][uid].initScheduleInfo(sort_key,player_schedule_info[i]);
+			g_playerlist['playerCache'][uid].setClaim(shop_id);
 		}
-	}
-	//logger.log("PLAYER_LIST","[playerList][init] player_schedule_shop:" + util.inspect(player_schedule_shop));
-	for(var i in player_schedule_shop){
-		var uid = Number(player_schedule_shop[i]['uid']);
-		var schedule_id = Number(player_schedule_shop[i]['schedule_id']);
-		var shop_id = Number(player_schedule_shop[i]['shop_id']);
-		if(!FindUtil.checkIsNumber(uid)){
-			logger.error("PLAYER_LIST","[playerList][init] init player_schedule_shop uid is nan");
-			continue;
-		}
-		if(!FindUtil.checkIsNumber(schedule_id)){
-			logger.error("PLAYER_LIST","[playerList][init] init player_schedule_shop schedule_id is nan");
-			continue;
-		}
-		if(!FindUtil.checkIsNumber(shop_id)){
-			logger.error("PLAYER_LIST","[playerList][init] init player_schedule_shop shop_id is nan");
-			continue;
-		}
-
-		if(uid in g_playerlist['playerCache']){
-			g_playerlist['playerCache'][uid].addScheduleShopId(schedule_id,shop_id)
-		}
-	}
-
-	for(var i in player_schedule_shop_image){
-		var uid = Number(player_schedule_shop_image['uid']);
-		var schedule_id = Number(player_schedule_shop_image[i]['schedule_id']);
-		var shop_id = Number(player_schedule_shop_image[i]['shop_id']);
-		var image = player_schedule_shop_image[i]['image'];
-		var image_index = Number(player_schedule_shop_image[i]['image_index'])
-		if(uid in g_playerlist['playerCache']){
-			g_playerlist['playerCache'][uid].setScheduleShopImage(schedule_id,shop_id,image_index,image);
-		}
-	}
-
-	for(var i in player_schedule_shop_comment){
-		var uid = Number(player_schedule_shop_comment['uid']);
-		var schedule_id = Number(player_schedule_shop_comment[i]['schedule_id']);
-		var shop_id = Number(player_schedule_shop_comment[i]['shop_id']);
-		var comment = player_schedule_shop_comment[i]['comment'];
-		if(uid in g_playerlist['playerCache']){
-			g_playerlist['playerCache'][uid].setScheduleShopComment(schedule_id,shop_id,comment);
-		}
-		
 	}
 
 }

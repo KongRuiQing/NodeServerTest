@@ -28,7 +28,7 @@ handle_http['/add_shop_to_schedule'] = http_handler.addShopToSchedule;
 handle_http['/remove_shop_from_schedule'] = http_handler.removeShopFromSchedule;
 handle_http['/add_shop_item_image'] = http_handler.setShopItemImage;
 handle_http['/relogin'] = http_handler.reLogin;
-
+handle_http['/claim_shop'] = http_handler.claimShop;
 
 handle_http['/admin/v1/ad'] = http_notify.changeAdImage;
 handle_http['/admin/v1/shop'] = http_notify.shopCallback;

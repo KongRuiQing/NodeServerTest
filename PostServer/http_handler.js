@@ -13,6 +13,8 @@ let BASE_SHOP_IMAGE = "../Image";
 
 let db_sequelize = require("../db_sequelize");
 
+let HeadInstance = require("../HttpHeadInstance");
+
 exports.new_feed = function(header,fields,files,callback){
 	
 };
@@ -36,10 +38,7 @@ function upload_file_to_json(files,map,result){
 			let virtual_file_name = path.join(map[file_key],path.basename(upload_file.path));
 			let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
-			result[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");;
-			
-		}else{
-			result[file_key] = "";
+			result[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
 		}
 	} 
 }
@@ -181,7 +180,7 @@ exports.becomeSeller = function(header,fields,files,callback){
 	var shopInfo = {};
 
 	upload_file_to_json(files,uploadFile,shopInfo);
-	console.log("becomeSeller.start 1");
+	
 	for(var key in fieldNameToDbColName){
 		var key_info = fieldNameToDbColName[key];
 		if(key in fields){
@@ -576,6 +575,8 @@ exports.saveSellerInfo = function(header,fields,files,callback){
 	var json_result = {};
 
 	var params_type = {
+		'name' : 'STRING',
+		'city_no' : 'INT',
 		'area_code' : 'INT',
 		'category_code1' : 'INT',
 		'category_code2' : 'INT',
@@ -584,16 +585,19 @@ exports.saveSellerInfo = function(header,fields,files,callback){
 		'end' : 'INT',
 		'days' : 'INT',
 		'address' : 'STRING',
+		'telephone' : 'STRING',
+		'business' : 'STRING',
 		'distribution' : 'STRING',
+		'fix_telephont' : 'STRING',
 		'qq' : 'STRING',
 		'wx' : 'STRING',
 		'email' : 'STRING',
-		'card_number' : 'STRING'
+		'longitude' : 'FLOAT',
+		'latitude' : 'FLOAT',
 	};
 
 
 	var shop_id = PlayerProxy.getInstance().getMyShopId(header['uid']);
-
 
 	var params = {};
 	for(var key in params_type){
@@ -621,30 +625,44 @@ exports.saveSellerInfo = function(header,fields,files,callback){
 	}
 
 	var uploadFileKey = {
-		'card_image' : 'shop/card/',
-		'qualification' : 'shop/qualification/'
+		'qualification' : 'shop/qualification/',
+		'image1' : 'shop/image/',
+		'image2' : 'shop/image/',
+		'image3' : 'shop/image/',
+		'image4' : 'shop/image/',
 	};
 
 	upload_file_to_json(files,uploadFileKey,params);
+
+
+	for(var key in uploadFileKey){
+		if(key in fields){
+			params[key] = fields[key];
+		}
+	}
+	console.log("fields:",util.inspect(fields));
+	console.log("params:" + util.inspect(params));
+
+	
 	params['id'] = shop_id;
 
-	db.saveSellerInfo(params,function(err,db_row){
+	db_sequelize.saveSellerInfo(params,function(err,result){
 		if(err){
 			logger.error(err);
 			callback(true,err);
 			return;
 		}else{
-			ShopProxy.getInstance().updateSellerInfo(db_row);
-
+			ShopProxy.getInstance().updateSellerInfo(result);
+			HeadInstance.getInstance().emit("/get_ready_be_seller_data",header['uid']);
 			callback(true,{
 				'error' : 0,
-				'shop_info' : ShopProxy.getInstance().getMyShopSellerInfo(db_row['Id'])
+				'shop_info' : ShopProxy.getInstance().getMyShopSellerInfo(result['id'])
 			});
 			return;
 		}
 	});
+	return;
 
-	
 }
 
 exports.saveShopItem = function(header,fields,files,callback){
@@ -1103,3 +1121,49 @@ exports.setShopItemImage = function(header,fields,files,cb){
 	cb(true,json_result);
 }
 
+exports.claimShop = function(header,fields,files,cb){
+	logger.log("HTTP_HANDLER","[claimShop] params: " + util.inspect(fields));
+	if(!('uid' in header)){
+		cb(true,{
+			'error' : 1001,
+			'error_msg' : '没有登录',
+		});
+		return;
+	}
+	let shop_id = fields['shop_id'];
+
+	if(!ShopProxy.getInstance().chekcCanClaim(shop_id)){
+		cb(true,{
+			'error' : 1001,
+			'error_msg' : '商铺已经被人认领了',
+		});
+		return;
+	}
+	if(!PlayerProxy.getInstance().chekcCanClaim(header['uid'])){
+		cb(true,{
+			'error' : 1001,
+			'error_msg' : '只能同时认领一个商铺',
+		});
+		return;
+	}
+
+
+	let json_param = {
+		'name' : fields['name'],
+		'telephone' : fields['telephone'],
+		'uid' : header['uid'],
+		'shop_id' : fields['shop_id'],
+	};
+
+	db_sequelize.insertClaimInfo(json_param,function(err,db_row){
+		let uid = Number(db_row['uid']);
+		let shop_id = Number(db_row['shop_id']);
+		ShopProxy.getInstance().setClaimShop(uid,shop_id);
+		PlayerProxy.getInstance().setClaimShop(uid,shop_id);
+		cb(true,{
+			'claim_shop_id' : shop_id,
+		});
+		HeadInstance.getInstance().emit('shop_claim',shop_id);
+	});
+
+}

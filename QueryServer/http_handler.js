@@ -469,3 +469,35 @@ exports.getBeSellerData = function(headers,query,callback)
 	callback(0,json_result);
 
 }
+
+exports.getShopClaimState = function(headers,query,callback)
+{
+	let shop_id = Number(query['shop_id']);
+	let uid = headers['uid'];
+	if(uid == 0){
+		callback(0,{
+			'error' : 1001,
+		});
+		return;
+	}
+	let check_result = PlayerCache.getInstance().chekcCanClaim(uid);
+	if(check_result == false){
+		callback(0,{
+			'error' : 1001,
+			'error_msg' : '用户不满足认领条件',
+		});
+		return;
+	}
+	
+	if(shop_id > 0){
+		let json_result = ShopCache.getInstance().getShopClaimState(shop_id);
+
+		callback(0,json_result);
+	}else{
+		callback(0,{
+			'error' : 1,
+			'error_msg' : '不存在商铺'
+		});
+		return;
+	}
+}

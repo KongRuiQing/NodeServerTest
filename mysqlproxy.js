@@ -18,6 +18,7 @@ var db_config = {
 };
 
 var connection = mysql.createConnection(db_config);
+
 function handleMySqlError(err){
 	if(err){
 		if(err.code === 'PROTOCOL_CONNECTION_LOST'){
@@ -50,9 +51,9 @@ function reconnect_mysql(){
 	connection = mysql.createConnection(db_config);
 	connection.connect(function(err){
 		if(err){
-			logger.error("MYSQL_PROXY",err);
+			logger.error("INFO",err);
 		}else{
-			logger.log("MYSQL_PROXY","re connect success");
+			logger.log("INFO","re connect success");
 		}
 	});
 	connection.on('error',handleMySqlError);
@@ -69,8 +70,10 @@ function initUserInfoFromDB(callback){
 		
 		var all_user_info = result[0];
 		var all_login_info = result[1];
-		PlayerProxy.InitFromDb(all_user_info,all_login_info,result[2],result[3],result[4],result[5],result[6],result[7]);
-		logger.log("MYSQL","init userinfo from db");
+		var all_claim_info = result[4];
+		logger.log("INFO",all_claim_info);
+		PlayerProxy.InitFromDb(all_user_info,all_login_info,result[2],result[3],all_claim_info);
+		logger.log("INFO","init userinfo from db");
 	});
 }
 
@@ -118,7 +121,7 @@ function initShopCache() {
 		if(error){
 			logger.error(error);
 		}
-		ShopCache.InitFromDb(result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7]);
+		ShopCache.InitFromDb(result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8]);
 		logger.log("MYSQL","init all shop from DB");
 	});
 }
