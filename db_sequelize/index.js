@@ -10,21 +10,11 @@ var sequelize = new Sequelize('find', 'eplus-find', 'eplus-find', {
 
 var UserLogin = sequelize.import("./model/user_login.js");
 var ShopModel = sequelize.import("./model/ShopModel.js");
-var TestModel = sequelize.import("./model/TestModel.js");
+//var TestModel = sequelize.import("./model/TestModel.js");
 var UserModel = sequelize.import("./model/UserModel.js");
 var ClaimModel = sequelize.import("./model/ClaimModel.js")
 exports.TestFindOrCreate = function(name){
-	TestModel.findOrCreate({
-		'defaults':{
-			'name' : name	
-		},
-		'where' : {
-			'id' : null,
-		}
-		
-	}).then(function(Instance,created){
-		console.log(Instance);
-	});
+	
 }
 
 exports.updateUserLogin = function(id,longitude,latitude){
