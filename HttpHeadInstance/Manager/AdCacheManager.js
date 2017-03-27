@@ -45,6 +45,6 @@ class AdCacheManager{
 
 }
 
-module.exports = function(){
-	return new AdCacheManager();
+module.exports = function(defaultTime){
+	return new AdCacheManager(defaultTime);
 }

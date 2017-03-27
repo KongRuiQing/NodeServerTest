@@ -3,7 +3,7 @@ var moment = require('moment');
 var events = require('events');
 var util = require('util');
 var key = "if-modified-since";
-
+var url=require('url');
 var AdCacheManager = require('./Manager/AdCacheManager.js');
 
 class ReadyBeSellerDataMoniter{
@@ -46,7 +46,7 @@ util.inherits(HeadInstance, events.EventEmitter);
 
 
 HeadInstance.prototype.checkModified = function(req){
-	let query = url.parse(request.url,true).query;
+	let query = url.parse(req.url,true).query;
 	
 	
 	let request_url = url.parse(req.url,true);
