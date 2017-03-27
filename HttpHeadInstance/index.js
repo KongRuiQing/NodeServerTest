@@ -2,70 +2,31 @@
 var moment = require('moment');
 var events = require('events');
 var util = require('util');
+var key = "if-modified-since";
+
+var AdCacheManager = require('./Manager/AdCacheManager.js');
 
 class ReadyBeSellerDataMoniter{
 	constructor(defaultTime){
-		this.__last_modify = {};
+		this.__map = {};
 		this.__defaultTime = defaultTime;
 	};
-	checkModified(query,head,since){
-		let uid = head['uid'];
-		if(uid > 0){
-			if(since == null){
-				if(uid in this.__last_modify){
-					let last_modify_moment = this.__last_modify[uid];
-					return last_modify_moment.format('YYYY-MM-DD HH:mm:ss.SSS'); 
-				}else{
-
-					this.__last_modify[uid] = this.__defaultTime;
-					return this.__defaultTime.format('YYYY-MM-DD HH:mm:ss.SSS'); 
-				}
-			}else{
-				let since_moment = moment(since);
-				if(uid in this.__last_modify){
-					let last_modify_moment = this.__last_modify[uid];
-					if(since_moment.isBefore(last_modify_moment,'millisecond')){
-						return last_modify_moment.format('YYYY-MM-DD HH:mm:ss.SSS');
-					}else{
-						return null;
-					}
-				}else{
-					this.__last_modify[uid] = this.__defaultTime;
-					return this.__defaultTime.format('YYYY-MM-DD HH:mm:ss.SSS');
-				}
-			}
-		}
-		return null;
+	checkModified(req){
+		return moment(Date.now()).format('YYYY-MM-DD HH:mm:ss.SSS');
 	} 
-	changeModify(uid,modified_time){
-		this.__last_modify[uid] = moment(modified_time);
-	}
 }
 
 class ShopListDataMoniter{
-	constructor(){}
-	checkModified(query,head,since){
-		let now_moment = moment(Date.now());
-		if(since == null){
-			return now_moment.format('YYYY-MM-DD HH:mm:ss.SSS');
-		}else{
-			let since_moment = moment(since);
-			let diff = now_moment.diff(since_moment);
-			if(diff >= 3*1000){
-				return now_moment.format('YYYY-MM-DD HH:mm:ss.SSS');
-			}
-			return null;
-			
-		}
+	constructor(defaultTime){
+		this.__defaultTime = defaultTime;
+	}
+	checkModified(req){
+		return moment(Date.now()).format('YYYY-MM-DD HH:mm:ss.SSS');
 	}
 };
 
-function ShopClaimState(){
-	this.checkModified = function(query,head,since){
-		let now_moment = moment(Date.now());
-		return now_moment.format('YYYY-MM-DD HH:mm:ss.SSS');
-	}
-}
+
+
 
 function HeadInstance(){
 
@@ -73,8 +34,8 @@ function HeadInstance(){
 
 	this.__custom_map = {
 		'/get_ready_be_seller_data' : new ReadyBeSellerDataMoniter(this.defaultTime),
-		'/shop_list' : new ShopListDataMoniter(),
-		'/shop_claim_state' : new ShopClaimState()
+		'/shop_list' : new ShopListDataMoniter(this.defaultTime),
+		'/ad_image' : AdCacheManager(this.defaultTime),
 	};
 	this.map = {};
 
@@ -84,48 +45,56 @@ function HeadInstance(){
 util.inherits(HeadInstance, events.EventEmitter);
 
 
-HeadInstance.prototype.checkModified = function(url,head,since){
+HeadInstance.prototype.checkModified = function(req){
+	let query = url.parse(request.url,true).query;
 	
-	let pathname = url.pathname;
-	let query = url.query;
+	
+	let request_url = url.parse(req.url,true);
+	let pathname = request_url.pathname;
+	var headers = req.headers;
 
 	if(pathname in this.__custom_map){
-		return this.__custom_map[pathname].checkModified(query,head,since);
+		return this.__custom_map[pathname].checkModified(req);
 
 	}else if(pathname in this.map){
-		if(since == null){
+		let since_moment = null;
+		if(key in headers){
+			since_moment = moment(headers[key]);
+		}
+		if(since_moment == null){
 			return this.map[pathname].format('YYYY-MM-DD HH:mm:ss.SSS'); 
 		}else{
-			let since_moment = moment(since);
 			let last_modify_moment = this.map[pathname];
+
 			if(since_moment.isBefore(last_modify_moment,'millisecond')){
 				return last_modify_moment.format('YYYY-MM-DD HH:mm:ss.SSS'); 
-			}else{
-				return null;
 			}
+
+			return null;
 		}
 	}else{
-		console.log("pathname" , pathname,' since:',since);
+		
 		this.map[pathname] = this.defaultTime;
 		return this.defaultTime.format('YYYY-MM-DD HH:mm:ss.SSS'); 
 	}
 }
-HeadInstance.prototype.setModified = function(url,modified_time){
-	this.map[url] = modified_time;
+
+HeadInstance.prototype.getObj = function(obj_name){
+	if(obj_name in this.__custom_map){
+		return this.__custom_map[obj_name];
+	}
+	return null;
 }
+
+
 
 var instnce = new HeadInstance();
 
-instnce.on('/get_ready_be_seller_data',function(uid){
-	if(instnce != null){
-		if('/get_ready_be_seller_data' in instnce.__custom_map){
-			instnce.__custom_map['/get_ready_be_seller_data'].changeModify(uid,Date.now());
-		}
+instnce.on('/admin/v1/ad',function(position){
+	let obj = instnce.getObj('/ad_image');
+	if(obj != null){
+		obj.changeAd(position);
 	}
-});
-
-instnce.on('shop_claim',function(shop_id){
-
 });
 
 exports.getInstance = function(){
