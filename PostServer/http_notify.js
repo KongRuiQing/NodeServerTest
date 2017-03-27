@@ -32,12 +32,11 @@ function checkParam(fields,check){
  * @apiParam {String} image 广告位图片地址
  * @apiParam {String} url 链接地址
  * @apiRequestExample
- * @apiSampleRequest http://139.224.227.82:9891/admin/v1/ad
+ * @apiSampleRequest http://139.224.227.82:12000/admin/v1/ad
  * @apiExample {http} usage:
- 	http://139.224.227.82:9891/admin/v1/ad
+ 	http://139.224.227.82:12000/admin/v1/ad
  * @apiParamExample {json} Request-Example:
  * {
- 	type:1
 	position:1,
 	index:1,
 	image:"ad/1.png",
@@ -45,7 +44,6 @@ function checkParam(fields,check){
  * }
  * @apiParamExample {json} Request-Example:
  * {
- 	type:0,
 	position:1,
 	index:1,
  * }
@@ -66,78 +64,14 @@ function checkParam(fields,check){
 
  exports.changeAdImage = function(fields,files,callback){
 
- 	logger.log("INFO","fields:" + util.inspect(fields));
-
- 	let check_result = checkParam(fields,['type','position','index']);
- 	if(check_result!=null){
- 		check_result['usage'] = {
- 			'POST' : {
- 				'desc' : '',
- 				'type' : ''
- 			}
- 		}
- 		callback(true,check_result);
- 		return;
- 	}
  	
- 	let type = Number(fields['type']);
- 	
- 	if(type < 0 || type > 2){
- 		callback(true,{
- 			'error':1,
- 			'error_msg':'type只在能0-2之间取值',
- 		});
- 		return;
- 	}
- 	let position = Number(fields['position']);
- 	let index = Number(fields['index']);
-
- 	let result = null;
- 	if(type == 0){
- 		result = DbCache.removeAd({
- 			'position' : position,
- 			'index' : index,
- 		});
- 	}else{
- 		check_result = checkParam(fields,['image','url']);
- 		if(check_result != null){
- 			callback(true,check_result);
- 			return;
- 		}
- 		let image = fields['image'];
- 		let url = fields['url'];
- 		if(type == 1){
- 			result = DbCache.changeAd({
- 				'position':position,
- 				'index' : index,
- 				'image':image,
- 				'url' : url,
- 			},false);
- 		}else if(type == 2){
- 			result = DbCache.changeAd({
- 				'position':position,
- 				'index' : index,
- 				'image':image,
- 				'url':url,
- 			},true);
- 		}
- 	}
-
- 	if(result == null){
- 		callback(true,{
- 			'error' : 0,
- 		});
- 		return;
- 	}
-
- 	callback(true,result);
  }
 
 /**
  * @api {post} /v1/shop/ shop
  * @apiName /v1/shop
  * @apiGroup Shop
- * @apiVersion 0.0.1
+ * @apiVersion 0.0.0
  * @apiDescription 	shop.
  * @apiParam {Number} type 0:删除指定ID的商铺;1:修改指定ID的商铺,2:添加商铺
  * @apiParam {Number} id 对应商铺的id,参见上面参数对应的意义 [shop.id]
