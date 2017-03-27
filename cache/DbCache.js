@@ -6,6 +6,7 @@ var AreaBean = require("../bean/AreaBean");
 var CategoryMenuBean = require("../bean/CategoryMenuBean");
 var moment = require('moment');
 
+var HeadInstance = require("../HttpHeadInstance");
 
 console.log("require","cache/DbCache.js");
 
@@ -211,11 +212,18 @@ exports.removeAd = function(removeAdJson){
 		if(position in g_db_query_cache['ad_image']){
 			g_db_query_cache['ad_image'][position]['dirty'] = true;
 		}
+		HeadInstance.getInstance().emit('/admin/v1/ad',position);
+		return {
+			'error' : 0,
+		}
 	}
-	return;
+	return {
+		'error' : 1,
+	};
+
 }
 
-exports.changeAd = function(addAdJson,isAdd){
+DbCacheManager.prototype.changeAd = function(addAdJson,isAdd){
 	var findItem = false;
 	var position = Number(addAdJson['position']);
 	if(position in g_db_cache['ad_image']){
@@ -261,6 +269,10 @@ exports.changeAd = function(addAdJson,isAdd){
 	}else{
 		g_db_query_cache['ad_image'][position]['dirty'] = true;
 	}
+	HeadInstance.getInstance().emit('/admin/v1/ad',position);
+	return {
+		'error' : 0,
+	};
 	
 }
 

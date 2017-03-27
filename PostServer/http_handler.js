@@ -653,7 +653,6 @@ exports.saveSellerInfo = function(header,fields,files,callback){
 			return;
 		}else{
 			ShopProxy.getInstance().updateSellerInfo(result);
-			HeadInstance.getInstance().emit("/get_ready_be_seller_data",header['uid']);
 			callback(true,{
 				'error' : 0,
 				'shop_info' : ShopProxy.getInstance().getMyShopSellerInfo(result['id'])

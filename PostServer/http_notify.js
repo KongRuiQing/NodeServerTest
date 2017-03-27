@@ -22,12 +22,11 @@ function checkParam(fields,check){
 }
 
 /**
- * @api {post} /admin/v1/ad_image/ AdImage
- * @apiName /v1/ad_image
+ * @api {post} /admin/v1/ad/ AdImage
+ * @apiName /v1/ad
  * @apiGroup Ad
  * @apiVersion 0.0.1
  * @apiDescription 通知广告位发生变化
- * @apiParam {Number} type 0:删除广告 ;1:修改广告,2:添加广告,如果是修改和删除,以(position index)做为索引
  * @apiParam {Number} position 广告位的位置,对应以下几个枚举 0 首页 1 活动 2 我的 3 行程.
  * @apiParam {Number} index 广告位的顺序,取值范围0-5,一共6个.
  * @apiParam {String} image 广告位图片地址
@@ -63,13 +62,20 @@ function checkParam(fields,check){
  * }
 
 
- */
+*/
+
  exports.changeAdImage = function(fields,files,callback){
 
- 	logger.log("HTTP_NOTIFY","fields:" + util.inspect(fields));
+ 	logger.log("INFO","fields:" + util.inspect(fields));
 
  	let check_result = checkParam(fields,['type','position','index']);
  	if(check_result!=null){
+ 		check_result['usage'] = {
+ 			'POST' : {
+ 				'desc' : '',
+ 				'type' : ''
+ 			}
+ 		}
  		callback(true,check_result);
  		return;
  	}

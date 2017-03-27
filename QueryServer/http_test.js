@@ -7,7 +7,7 @@ function post(data,path,callback){
 	var options = {
 
 		host:'localhost',
-		port: 9891,
+		port: 12000,
 		path: path,
 		method: 'POST',
 		headers: {
@@ -19,8 +19,11 @@ function post(data,path,callback){
 	var req = http.request(options,function(serverFeedback){
 		if(serverFeedback.statusCode ==200){
 			var body = "";  
-			serverFeedback.on('data',function(data){body += data;});
+			serverFeedback.on('data',function(data){
+				body += data;
+			});
 			serverFeedback.on('end',function(){
+				
 				callback(0,body);
 			});
 		}
@@ -30,14 +33,12 @@ function post(data,path,callback){
 	req.end();
 }
 
-// http://127.0.0.1:9889/test/v1/ad?type=0&position=0&index=1 删除
-// http://127.0.0.1:9889/test/v1/ad?type=1&position=0&index=1&image=ad/2.png 修改
+// http://127.0.0.1:9889/test/v1/ad?position=0&index=1 删除
+// http://127.0.0.1:9889/test/v1/ad?&position=0&index=1&image=ad/2.png 修改
 // http://127.0.0.1:9889/test/v1/ad?type=2&position=0&index=1&image=ad/1.png 添加
 exports.testAddAdImage = function(headers, query,callback){
 	let type = 0;
-	if('type' in query){
-		type = Number(query['type']);
-	}
+	
 	let position = 0;
 	if('position' in query){
 		position = Number(query['position']);
@@ -52,7 +53,6 @@ exports.testAddAdImage = function(headers, query,callback){
 	}
 
 	var data = querystring.stringify({
-		'type' : type,
 		'position':position,
 		'index':index,
 		'image':image,

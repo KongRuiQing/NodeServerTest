@@ -42,7 +42,7 @@ function handle_route(request,response,next){
 
 		route[pathname](headers,request_url.query,function(error_code,content){
 
-			logger.log("QUERY_SERVER","QUERY RESULT: \n" + util.inspect(content,{depth:null}) + "\n");
+			logger.log("INFO","QUERY RESULT: \n" + util.inspect(content,{depth:null}) + "\n");
 
 			if(error_code == 0){
 				let status_code = 200;
@@ -51,7 +51,7 @@ function handle_route(request,response,next){
 				});
 				response.write(JSON.stringify(content));				
 			}else{
-				logger.error("QUERY_SERVER","Error pathname:" + pathname + " error_code = " + error_code);
+				logger.error("INFO","Error pathname:" + pathname + " error_code = " + error_code);
 				response.writeHead(200, {
 					'Content-Type': http_header[200]
 				});
@@ -69,7 +69,7 @@ function handle_route(request,response,next){
 }
 
 function handleError(err, req, res, next){
-	logger.error("QUERY_SERVER",err);
+	logger.error("INFO",err);
 	res.writeHead(500, {
 		'Content-Type': http_header[500],
 	});
@@ -85,13 +85,16 @@ function handle_test(req,rsp,next){
 	var headers = req.headers;
 	
 	if(pathname in test_route){
+
 		test_route[pathname](headers,request_url.query,function(err,rsp_data){
-			logger.log(rsp_data);
+			logger.log('INFO',rsp_data);
+			rsp.writeHead(200, {
+				'Content-Type': http_header[200]
+			});
+			rsp.end(rsp_data);
+
 		});
-		response.writeHead(200, {
-			'Content-Type': http_header[200]
-		});
-		response.end();
+		
 		return;
 	}
 	next();

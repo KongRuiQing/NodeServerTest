@@ -12,8 +12,10 @@ var handle_login = function(req,rsp,next){
 			
 		}else{
 			headers['uid'] = 0;
-			
 		}
+	}else{
+		console.log('guid is null');
+		headers['uid'] = 0;
 	}
 	next();
 }

@@ -44,7 +44,7 @@ function handle_route(request,response,next){
 
 						logger.log("POST_SERVER","response:\n" + util.inspect(json_result));
 
-						response.writeHead(200, {'content-type': 'text/plain'});
+						response.writeHead(200, {'content-type': 'text/html'});
 
 						response.end(JSON.stringify(json_result));
 					});
