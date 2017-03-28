@@ -53,10 +53,10 @@ function handle_Error(err, req, res, next){
 }
 
 function handle_head(req,rsp,next){
-	rsp.writeHead("Access-Control-Allow-Origin", "*");
-	rsp.writeHead("Access-Control-Allow-Headers", "X-Requested-With");
-	rsp.writeHead("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
-	rsp.writeHead("Content-Type", "application/json;charset=utf-8");
+	rsp.setHeader("Access-Control-Allow-Origin", "*");
+	rsp.setHeader("Access-Control-Allow-Headers", "X-Requested-With");
+	rsp.setHeader("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+	rsp.setHeader("Content-Type", "application/json;charset=utf-8");
 	next()
 }
 
