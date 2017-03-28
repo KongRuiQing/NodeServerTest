@@ -16,9 +16,9 @@ class AdCacheManager{
 		let headers = req.headers;
 		let query = url.parse(req.url,true).query;
 		if('position' in query){
-			let position = Number(query['']);
+			let position = Number(query['position']);
 			if(!(key in headers)){
-				if(position in this.__map){
+				if(position in this.__map && this.__map[position] != undefined){
 					return this.__map[key].format('YYYY-MM-DD HH:mm:ss.SSS');
 				}else{
 					return this.__defaultTime.format('YYYY-MM-DD HH:mm:ss.SSS'); 
