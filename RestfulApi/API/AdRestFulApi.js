@@ -2,7 +2,7 @@
 
 var events = require('events');
 var util = require('util');
-var logger = require('../logger').logger();
+var logger = require('../../logger').logger();
 var DbCacheManager = require("../../Cache/DbCache.js");
 
 function AdInstance(){
