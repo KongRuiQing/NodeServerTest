@@ -65,8 +65,8 @@ exports.start = function(Host,Port){
 	PORT = Port;
 	var app = connect()
 	.use(favicon("favicon.ico"))
-	.use(bodyParser.urlencoded({ extended: false }))
-	//.use(bodyParser.json())
+	//.use(bodyParser.urlencoded({ extended: false }))
+	.use(bodyParser.json())
 	.use(handle_head)
 	.use(handle_route)
 	.use(handle_Error)
