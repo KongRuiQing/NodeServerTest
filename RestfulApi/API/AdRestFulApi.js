@@ -38,6 +38,7 @@ function __usage(method,rsp){
 	let usage = {
 		'url':'http://ip:port/' + "/admin/v1/ad",
 		'method' : method,
+		'Content-Type': 'application/json',
 	};
 	if(method === 'POST'){
 		usage['body'] = {
@@ -69,7 +70,23 @@ function __usage(method,rsp){
 
 function __post(req,rsp){
 
-	logger.log("INFO",'req:',util.inspect(req));
+	if(!('position' in req.body)){
+		logger.log("INFO",'req:',util.inspect(req));
+		return false;
+	}
+	if(!('index' in req.body)){
+		logger.log("INFO",'req:',util.inspect(req));
+		return false;
+	}
+	if(!('image' in req.body)){
+		logger.log("INFO",'req:',util.inspect(req));
+		return false;
+	}
+	if(!('url' in req.body)){
+		logger.log("INFO",'req:',util.inspect(req));
+		return false;
+	}
+	
 
 	let position = Number(req.body['position']);
 	let index = Number(req.body['index']);
@@ -100,7 +117,7 @@ function __post(req,rsp){
 			return false;
 		}
 	}
-	return false;
+	return true;
 }	
 
 var __instance = new AdInstance();
@@ -108,7 +125,7 @@ var __instance = new AdInstance();
 __instance.on('DELETT',__delete);
 __instance.on('POST',__post);
 __instance.on('PATCH',__post);
-__instance.on('usage',__usage);
+__instance.on('USAGE',__usage);
 __instance.on('OPTIONS',__usage);
 
 exports.Instance = function(){

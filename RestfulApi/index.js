@@ -28,11 +28,12 @@ function handle_route(request,response,next){
 	var method = request.method.toUpperCase();
 	logger.log("INFO",pathname);
 	if(pathname in http_obj){
-		
-		if(http_obj[pathname].emit(method,request,response)){
+		let result = http_obj[pathname].emit(method,request,response);
+		if(result){
 			return;
 		}else{
-			http_obj[pathname].emit('usage',method,response);
+			http_obj[pathname].emit('USAGE',method,response);
+			return;
 		}
 	}else{
 		next(new Error(pathname + " no find in http_obj"));
