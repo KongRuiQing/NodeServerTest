@@ -2,7 +2,7 @@
 
 var events = require('events');
 var util = require('util');
-
+var logger = require('../logger').logger();
 var DbCacheManager = require("../../Cache/DbCache.js");
 
 function AdInstance(){
@@ -72,7 +72,7 @@ function __post(req,rsp){
 	let index = Number(req.body['index']);
 	let image = req.body['image'];
 	let url = req.body['url'];
-
+	logger.log("INFO",'position=',position);
 	let result = DbCacheManager.getInstance().changeAd({
 		'position' : position,
 		'index' : index,
