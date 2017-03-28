@@ -52,12 +52,21 @@ function handle_Error(err, req, res, next){
 	}));
 }
 
+function handle_head(req,rsp,next){
+	rsp.writeHead("Access-Control-Allow-Origin", "*");
+	rsp.writeHead("Access-Control-Allow-Headers", "X-Requested-With");
+	rsp.writeHead("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+	rsp.writeHead("Content-Type", "application/json;charset=utf-8");
+	next()
+}
+
 exports.start = function(Host,Port){
 	PORT = Port;
 	var app = connect()
 	.use(favicon("favicon.ico"))
 	//.use(bodyParser.urlencoded({ extended: false }))
 	.use(bodyParser.json())
+	.use(handle_head)
 	.use(handle_route)
 	.use(handle_Error)
 	app.listen(Port);

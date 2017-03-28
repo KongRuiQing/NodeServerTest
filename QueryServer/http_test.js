@@ -3,7 +3,7 @@ var moment = require('moment');
 var http = require('http'); 
 var querystring = require('querystring');
 
-function post(data,path,callback){
+function post(send_message,path,callback){
 	var options = {
 
 		host:'localhost',
@@ -11,8 +11,8 @@ function post(data,path,callback){
 		path: path,
 		method: 'POST',
 		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded',
-			'Content-Length': Buffer.byteLength(data)
+			'Content-Type': 'application/json',
+			
 		}
 	};
 
@@ -23,13 +23,12 @@ function post(data,path,callback){
 				body += data;
 			});
 			serverFeedback.on('end',function(){
-				
 				callback(0,body);
 			});
 		}
 
 	});
-	req.write(data);
+	req.write(JSON.stringify(send_message));
 	req.end();
 }
 
@@ -52,13 +51,13 @@ exports.testAddAdImage = function(headers, query,callback){
 		image = query['image'];
 	}
 
-	var data = querystring.stringify({
+	//var data = querystring.stringify();
+	var data = {
 		'position':position,
 		'index':index,
 		'image':image,
 		'url':'http://www.baidu.com',
-	});
-
+	}
 	post(data,'/admin/v1/ad',callback);
 }
 
