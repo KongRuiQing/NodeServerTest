@@ -13,6 +13,7 @@ function AdInstance(){
 util.inherits(AdInstance, events.EventEmitter);
 
 function __delete(req,rsp){
+
 	let position = Number(req.body['position']);
 	let index = Number(req.body['index']);
 	
@@ -68,11 +69,13 @@ function __usage(method,rsp){
 
 function __post(req,rsp){
 
+	logger.log("INFO",'req:',util.inspect(req));
+
 	let position = Number(req.body['position']);
 	let index = Number(req.body['index']);
 	let image = req.body['image'];
 	let url = req.body['url'];
-	logger.log("INFO",'position=',position);
+	
 	let result = DbCacheManager.getInstance().changeAd({
 		'position' : position,
 		'index' : index,
