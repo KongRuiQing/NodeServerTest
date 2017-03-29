@@ -117,7 +117,7 @@ function __post(req,rsp){
 			return false;
 		}
 	}
-	return true;
+	return false;
 }	
 
 var __instance = new AdInstance();
