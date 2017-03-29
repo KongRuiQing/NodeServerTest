@@ -26,7 +26,7 @@ let PORT = 0;
 function handle_route(request,response,next){
 	var pathname = url.parse(request.url).pathname;
 	var method = request.method.toUpperCase();
-	logger.log("INFO",pathnamem," method:",method);
+	logger.log("INFO",'pathname:',pathname," method:",method);
 	if(pathname in http_obj){
 		let result = http_obj[pathname].emit(method,request,response);
 		logger.log("INFO",pathname,' result = ',result);
