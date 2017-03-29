@@ -26,16 +26,18 @@ let PORT = 0;
 function handle_route(request,response,next){
 	var pathname = url.parse(request.url).pathname;
 	var method = request.method.toUpperCase();
-	logger.log("INFO",pathname);
+	logger.log("INFO",pathnamem," method:",method);
 	if(pathname in http_obj){
 		let result = http_obj[pathname].emit(method,request,response);
-		if(result){
+		logger.log("INFO",pathname,' result = ',result);
+		if(result == true){
 			return;
 		}else{
 			http_obj[pathname].emit('USAGE',method,response);
 			return;
 		}
 	}else{
+		logger.log("INFO",pathname," no find in http_obj");
 		next(new Error(pathname + " no find in http_obj"));
 	}
 }

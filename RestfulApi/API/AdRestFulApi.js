@@ -71,19 +71,19 @@ function __usage(method,rsp){
 function __post(req,rsp){
 
 	if(!('position' in req.body)){
-		logger.log("INFO",'req:',util.inspect(req));
+		logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
 		return false;
 	}
 	if(!('index' in req.body)){
-		logger.log("INFO",'req:',util.inspect(req));
+		logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
 		return false;
 	}
 	if(!('image' in req.body)){
-		logger.log("INFO",'req:',util.inspect(req));
+		logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
 		return false;
 	}
 	if(!('url' in req.body)){
-		logger.log("INFO",'req:',util.inspect(req));
+		logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
 		return false;
 	}
 	
@@ -99,23 +99,21 @@ function __post(req,rsp){
 		'image' : image,
 		'url' : url,
 	},true);
-	
+	let error = 0;
 	if('error' in result){
-		if(result['error'] == 0){
-			
-			rsp.writeHead(200, {'content-type': 'text/html'});
-			rsp.end(JSON.stringify({
-				'error' : 0,
-				'position' : position,
-				'index' : index,
-				'image' : image,
-				'url' : url,
-			}));
+		error = Number(result['error']);
+	}
+	if(error == 0){
+		rsp.writeHead(200, {'content-type': 'text/html'});
+		rsp.end(JSON.stringify({
+			'error' : 0,
+			'position' : position,
+			'index' : index,
+			'image' : image,
+			'url' : url,
+		}));
 
-			return true;
-		}else{
-			return false;
-		}
+		return true;
 	}
 	return false;
 }	
