@@ -72,24 +72,29 @@ function __post(req,rsp,emit_result){
 
 	if(!('position' in req.body)){
 		//logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
+		logger.log("INFO","req.body(position):",util.inspect(req.body));
 		emit_result = false;
 		return;
 	}
 	if(!('index' in req.body)){
 		//logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
+		logger.log("INFO","req.body(index):",util.inspect(req.body));
 		emit_result = false;
 		return;
 	}
 	if(!('image' in req.body)){
 		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
+		logger.log("INFO","req.body(image):",util.inspect(req.body));
 		emit_result = false;
 		return;
 	}
 	if(!('url' in req.body)){
 		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
+		logger.log("INFO","req.body(url):",util.inspect(req.body));
 		emit_result = false;
 		return;
 	}
+	logger.log("INFO","success parse");
 	
 
 	let position = Number(req.body['position']);
