@@ -33,14 +33,17 @@ function __delete(req,rsp){
 
 }
 
-function __usage(method,rsp){
+function __usage(method,rsp,error_msg){
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	let usage = {
-		'error' : '1',
+		'error' : error_msg === undefined?0:1,
 		'url':'http://ip:port/' + "/admin/v1/ad",
 		'method' : method,
 		'Content-Type': 'application/json',
 	};
+	if(error_msg != undefined){
+		usage['error_msg'] = error_msg;
+	}
 	if(method === 'POST'){
 		usage['body'] = {
 			'position' : '[Number]',
@@ -69,35 +72,34 @@ function __usage(method,rsp){
 
 
 
-function __post(req,rsp,emit_result){
+function __post(req,rsp){
 
 	if(!('position' in req.body)){
 		//logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
 		logger.log("INFO","req.body(position):",util.inspect(req.body));
-		emit_result = false;
+		__usage('POST',rsp,"position is undefined");
 		return;
 	}
 	if(!('index' in req.body)){
 		//logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
 		logger.log("INFO","req.body(index):",util.inspect(req.body));
-		emit_result = false;
+		__usage('POST',rsp,"index in undefined");
 		return;
 	}
 	if(!('image' in req.body)){
 		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
 		logger.log("INFO","req.body(image):",util.inspect(req.body));
-		emit_result = false;
+		__usage('POST',rsp,'image is undefined');
 		return;
 	}
 	if(!('url' in req.body)){
 		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
 		logger.log("INFO","req.body(url):",util.inspect(req.body));
-		emit_result = false;
+		__usage('POST',rsp,'url is undefined');
 		return;
 	}
 	logger.log("INFO","success parse");
 	
-
 	let position = Number(req.body['position']);
 	let index = Number(req.body['index']);
 	let image = req.body['image'];
@@ -123,14 +125,13 @@ function __post(req,rsp,emit_result){
 			'image' : image,
 			'url' : url,
 		}));
-		emit_result = true;
-		return;
+	}else{
+		__usage('POST',rsp,'error is '+ error);
 	}
-	emit_result = false;
-	return;
+
 }
-function __options(req,rsp,emit_result){
-	emit_result = false;
+function __options(req,rsp){
+	__usage('OPTIONS',rsp);
 	return;
 }
 
@@ -139,7 +140,6 @@ var __instance = new AdInstance();
 __instance.on('DELETT',__delete);
 __instance.on('POST',__post);
 __instance.on('PATCH',__post);
-__instance.on('USAGE',__usage);
 __instance.on('OPTIONS',__options);
 
 exports.Instance = function(){
