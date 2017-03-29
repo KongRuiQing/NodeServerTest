@@ -36,6 +36,7 @@ function __delete(req,rsp){
 function __usage(method,rsp){
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	let usage = {
+		'error' : '1',
 		'url':'http://ip:port/' + "/admin/v1/ad",
 		'method' : method,
 		'Content-Type': 'application/json',
@@ -127,7 +128,11 @@ function __post(req,rsp,emit_result){
 	}
 	emit_result = false;
 	return;
-}	
+}
+function __options(req,rsp,emit_result){
+	emit_result = false;
+	return;
+}
 
 var __instance = new AdInstance();
 
@@ -135,7 +140,7 @@ __instance.on('DELETT',__delete);
 __instance.on('POST',__post);
 __instance.on('PATCH',__post);
 __instance.on('USAGE',__usage);
-__instance.on('OPTIONS',__usage);
+__instance.on('OPTIONS',__options);
 
 exports.Instance = function(){
 	return __instance;
