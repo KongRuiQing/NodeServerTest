@@ -15,6 +15,7 @@ class AdCacheManager{
 	checkModified(req){
 		let headers = req.headers;
 		let query = url.parse(req.url,true).query;
+		
 		if('position' in query){
 			let position = Number(query['position']);
 			if(!(key in headers)){

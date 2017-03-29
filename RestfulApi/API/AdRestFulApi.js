@@ -14,6 +14,14 @@ util.inherits(AdInstance, events.EventEmitter);
 
 function __delete(req,rsp){
 
+	if(!('position' in req.body)){
+		__usage("DELETT",rsp,"position is undefined");
+		return;
+	}
+	if(!('index' in req.body)){
+		__usage("DELETT",rsp,"index is undefined");
+		return;
+	}
 	let position = Number(req.body['position']);
 	let index = Number(req.body['index']);
 	
@@ -110,7 +118,7 @@ function __post(req,rsp){
 		'index' : index,
 		'image' : image,
 		'url' : url,
-	},true);
+	});
 
 	let error = 0;
 	if('error' in result){

@@ -223,7 +223,7 @@ exports.removeAd = function(removeAdJson){
 
 }
 
-DbCacheManager.prototype.changeAd = function(addAdJson,isAdd){
+DbCacheManager.prototype.changeAd = function(addAdJson){
 	var findItem = false;
 	var position = Number(addAdJson['position']);
 	if(position in g_db_cache['ad_image']){
@@ -231,29 +231,15 @@ DbCacheManager.prototype.changeAd = function(addAdJson,isAdd){
 			var adBean = g_db_cache['ad_image'][position][key];
 			if(adBean.getIndex() == addAdJson['index']){
 				findItem = true;
-				if(isAdd){
-					break;
-				}
+				
 				adBean.setImage(addAdJson['image']);
 				break;
 			}
 		}
 	}
-	if(isAdd && findItem){
-		return {
-			'error' : 100001,
-			'error_msg':'添加已经存在的广告'
-		};
-	}
-	if(!isAdd && !findItem){
-		return {
-			'error' : 100002,
-			'error_msg' : '更新的广告并没有找到',
-		}
-
-	}
-
-	if(isAdd && !findItem){
+	
+	
+	if(!findItem){
 		if(position in g_db_cache['ad_image']){
 			g_db_cache['ad_image'][position].push(new AdBean(addAdJson));
 		}else{
