@@ -28,7 +28,8 @@ function handle_route(request,response,next){
 	var method = request.method.toUpperCase();
 	logger.log("INFO",'pathname:',pathname," method:",method);
 	if(pathname in http_obj){
-		let result = http_obj[pathname].emit(method,request,response);
+		let result = false;
+		http_obj[pathname].emit(method,request,response,result);
 		logger.log("INFO",pathname,' result = ',result);
 		if(result == true){
 			return;

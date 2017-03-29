@@ -68,23 +68,27 @@ function __usage(method,rsp){
 
 
 
-function __post(req,rsp){
+function __post(req,rsp,emit_result){
 
 	if(!('position' in req.body)){
-		logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
-		return false;
+		//logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
+		emit_result = false;
+		return;
 	}
 	if(!('index' in req.body)){
-		logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
-		return false;
+		//logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
+		emit_result = false;
+		return;
 	}
 	if(!('image' in req.body)){
-		logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
-		return false;
+		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
+		emit_result = false;
+		return;
 	}
 	if(!('url' in req.body)){
-		logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
-		return false;
+		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
+		emit_result = false;
+		return;
 	}
 	
 
@@ -99,6 +103,7 @@ function __post(req,rsp){
 		'image' : image,
 		'url' : url,
 	},true);
+
 	let error = 0;
 	if('error' in result){
 		error = Number(result['error']);
@@ -112,10 +117,11 @@ function __post(req,rsp){
 			'image' : image,
 			'url' : url,
 		}));
-
-		return true;
+		emit_result = true;
+		return;
 	}
-	return false;
+	emit_result = false;
+	return;
 }	
 
 var __instance = new AdInstance();
