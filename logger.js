@@ -34,9 +34,12 @@ log4js.configure({
   
 });
 
-
+var logger = null;
 exports.logger = function(string){
-  var logger = log4js.getLogger('normal');
-  logger.setLevel('INFO');
+  if(logger == null){
+    logger = log4js.getLogger('normal');
+    logger.setLevel('INFO');
+  }
+  
   return logger;
 }
