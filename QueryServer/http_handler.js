@@ -146,7 +146,7 @@ exports.getShopDetail = function(headers, query,callback)
 exports.getAdImage = function(headers, query,callback){
 	
 	var position = Number(query['position']);
-	var json_result = DbCache.getShopAd(position);
+	var json_result = DbCache.getInstance().getShopAd(position);
 	var json_value = {
 		'position' : position,
 		'ad_image' : json_result
@@ -347,7 +347,7 @@ exports.getCategory = function(headers,query,callback){
 
 exports.getShopArea = function(headers,query,callback){
 	logger.log("HTTP_HANDER","start getShopArea");
-	var json_result = DbCache.getShopArea();
+	var json_result = DbCache.getInstance().getShopArea();
 	callback(0,json_result);
 
 }
