@@ -27,7 +27,7 @@ class AdCacheManager{
 				}
 			}else{
 				console.log(headers[key]);
-				let since_moment = moment(headers[key]);
+				let since_moment = moment(headers[key],'ddd,DD MMM YYYY HH:mm:ss ZZ');
 				if(position in this.__map){
 					if(since_moment.isBefore(this.__map[position],'millisecond')){
 						return this.__map[position].format('YYYY-MM-DD HH:mm:ss.SSS');
