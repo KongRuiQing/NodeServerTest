@@ -12,6 +12,8 @@ console.log("require","cache/DbCache.js");
 
 function DbCacheManager(){
 
+	logger.log("INFO","DbCacheManager init only once");
+
 	this.area_menu = {};
 	this.city_info = {};
 	this.category_menu = {
@@ -22,10 +24,12 @@ function DbCacheManager(){
 }
 
 
-var g_db_cache = new DbCacheManager();
+var g_db_cache = null;
 
 exports.getInstance = function(){
-
+	if(g_db_cache == null){
+		g_db_cache = new DbCacheManager();;
+	}
 	return g_db_cache;
 }
 
@@ -112,6 +116,17 @@ DbCacheManager.prototype.getAreaMenuFromCache = function(city){
 	
 }
 
+exports.getInstance.getShopArea = function(){
+	return {
+		'list':[{
+			'province' : 9,
+			'city' : 167,
+			'name' : '测试代码区',
+			'code' : 167001
+		}]
+	};
+}
+
 DbCacheManager.prototype.getAreaMenu = function(Last_Modified,city){
 	
 	
@@ -156,19 +171,9 @@ DbCacheManager.prototype.getItemCategory = function(){
 	return list;
 }
 
-exports.getShopArea = function(){
-	return {
-		'list':[{
-			'province' : 9,
-			'city' : 167,
-			'name' : '测试代码区',
-			'code' : 167001
-		}]
-	};
-}
 
 
-exports.getShopAd = function(position){
+DbCacheManager.prototype.getShopAd = function(position){
 	logger.log("INFO","ad_image :",util.inspect(g_db_cache['ad_image'],{depth : null}));
 
 	if(position in g_db_cache['ad_image']){
@@ -198,7 +203,7 @@ exports.getShopAd = function(position){
 	return [];
 }
 
-exports.removeAd = function(removeAdJson){
+DbCacheManager.prototype.removeAd = function(removeAdJson){
 	let find = false;
 	let position = Number(removeAdJson['position']);
 	if(position in g_db_cache['ad_image']){
@@ -268,7 +273,7 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 }
 
 
-exports.modifyArea = function(param){
+DbCacheManager.prototype.modifyArea = function(param){
 	let city = param['city'];
 	if(city in g_db_cache['area_menu']){
 		for(var k in g_db_cache['area_menu'][city]['list']){
@@ -286,7 +291,7 @@ exports.modifyArea = function(param){
 	};
 }
 
-exports.addArea = function(param){
+DbCacheManager.prototype.addArea = function(param){
 	let city = param['city'];
 
 	if(!(city in g_db_cache['area_menu'])){
@@ -313,7 +318,7 @@ exports.addArea = function(param){
 
 }
 
-exports.removeArea = function(city,code){
+DbCacheManager.prototype.removeArea = function(city,code){
 	if(!(city in g_db_cache['area_menu'])){
 		return {
 			'error' : 2,
