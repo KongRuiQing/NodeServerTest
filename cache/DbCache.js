@@ -21,6 +21,9 @@ function DbCacheManager(){
 		'item' : {},
 	};
 	this.ad_image = {};
+	this.query_cache = {
+		'ad_image' : {},
+	}
 }
 
 
@@ -33,9 +36,6 @@ exports.getInstance = function(){
 	return g_db_cache;
 }
 
-var g_db_query_cache = {
-	'ad_image' : {}
-};
 
 
 
@@ -178,27 +178,27 @@ DbCacheManager.prototype.getShopAd = function(position){
 
 	if(position in g_db_cache['ad_image']){
 
-		if(position in g_db_query_cache['ad_image'] && g_db_query_cache['ad_image'][position]['dirty'] == false){
-			return g_db_query_cache['ad_image'][position]['result'];
+		if(position in this.query_cache['ad_image'] && this.query_cache['ad_image'][position]['dirty'] == false){
+			return this.query_cache['ad_image'][position]['result'];
 		}
 		
-		if(position in g_db_query_cache['ad_image']){
-			g_db_query_cache['ad_image'][position]['result'].splice(0,g_db_query_cache['ad_image'][position]['result'].length);
+		if(position in this.query_cache['ad_image']){
+			this.query_cache['ad_image'][position]['result'].splice(0,this.query_cache['ad_image'][position]['result'].length);
 		}else{
-			g_db_query_cache['ad_image'][position] = {
+			this.query_cache['ad_image'][position] = {
 				'dirty' : false,
 				'result' : []
 			};
 		}
 		for(var key in g_db_cache['ad_image'][position]){
-			g_db_query_cache['ad_image'][position]['result'].push(g_db_cache['ad_image'][position][key].getJsonValue());
+			this.query_cache['ad_image'][position]['result'].push(g_db_cache['ad_image'][position][key].getJsonValue());
 		}
-		g_db_query_cache['ad_image'][position]['result'].sort(function(a,b){
+		this.query_cache['ad_image'][position]['result'].sort(function(a,b){
 			return a['index'] - b['index'];
 		});
-		g_db_query_cache['ad_image'][position]['dirty'] = false;
+		this.query_cache['ad_image'][position]['dirty'] = false;
 
-		return g_db_query_cache['ad_image'][position]['result'];
+		return this.query_cache['ad_image'][position]['result'];
 	}
 	return [];
 }
@@ -217,8 +217,8 @@ DbCacheManager.prototype.removeAd = function(removeAdJson){
 		}
 	}
 	if(find){
-		if(position in g_db_query_cache['ad_image']){
-			g_db_query_cache['ad_image'][position]['dirty'] = true;
+		if(position in this.query_cache['ad_image']){
+			this.query_cache['ad_image'][position]['dirty'] = true;
 		}
 		HeadInstance.getInstance().emit('/admin/v1/ad',position);
 		return {
@@ -234,9 +234,9 @@ DbCacheManager.prototype.removeAd = function(removeAdJson){
 DbCacheManager.prototype.changeAd = function(addAdJson){
 	var findItem = false;
 	var position = Number(addAdJson['position']);
-	if(position in g_db_cache['ad_image']){
-		for(var key in g_db_cache['ad_image'][position]){
-			var adBean = g_db_cache['ad_image'][position][key];
+	if(position in this['ad_image']){
+		for(var key in this['ad_image'][position]){
+			var adBean = this['ad_image'][position][key];
 			if(adBean.getIndex() == addAdJson['index']){
 				findItem = true;
 				adBean.setImage(addAdJson['image']);
@@ -247,23 +247,24 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 	logger.log("INFO","findItem:",findItem,'position:',position);
 	
 	if(!findItem){
-		if(position in g_db_cache['ad_image']){
-			g_db_cache['ad_image'][position].push(new AdBean(addAdJson));
+		if(position in this['ad_image']){
+			this['ad_image'][position].push(new AdBean(addAdJson));
 		}else{
-			g_db_cache['ad_image'][position] = [new AdBean(addAdJson)];
+			this['ad_image'][position] = [new AdBean(addAdJson)];
 		}
 	}
 
-	logger.log("INFO","item:",util.inspect(g_db_cache['ad_image'],{depth:null}));
+	logger.log("INFO","all ad :",util.inspect(this['ad_image'],{depth:null}));
 
-	if(!(position in g_db_query_cache['ad_image'])){
-		g_db_query_cache['ad_image'][position] = {
+	if(!(position in this.query_cache['ad_image'])){
+		this['ad_image'][position] = {
 			'dirty' : true,
 			'result' : []
 		};
 	}else{
-		g_db_query_cache['ad_image'][position]['dirty'] = true;
+		this.query_cache['ad_image'][position]['dirty'] = true;
 	}
+	logger.log("INFO","query_cache:",util.inspect(this.query_cache['ad_image']));
 	HeadInstance.getInstance().emit('/admin/v1/ad',position);
 
 	return {
