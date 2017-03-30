@@ -20,12 +20,13 @@ class AdCacheManager{
 			let position = Number(query['position']);
 			if(!(key in headers)){
 				if(position in this.__map && this.__map[position] != undefined){
-					console.log(typeof this.__map[position]);
+					
 					return this.__map[key].format('YYYY-MM-DD HH:mm:ss.SSS');
 				}else{
 					return this.__defaultTime.format('YYYY-MM-DD HH:mm:ss.SSS'); 
 				}
 			}else{
+				console.log(headers[key]);
 				let since_moment = moment(headers[key]);
 				if(position in this.__map){
 					if(since_moment.isBefore(this.__map[position],'millisecond')){
