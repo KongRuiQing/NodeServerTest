@@ -249,7 +249,7 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 		}
 	}
 
-	logger.log("INFO","item:",util.inspect(g_db_cache['ad_image'][position],{depth:null}));
+	logger.log("INFO","item:",util.inspect(g_db_cache['ad_image'],{depth:null}));
 
 	if(!(position in g_db_query_cache['ad_image'])){
 		g_db_query_cache['ad_image'][position] = {
