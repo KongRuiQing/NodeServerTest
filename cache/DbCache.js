@@ -170,7 +170,7 @@ exports.getShopArea = function(){
 
 exports.getShopAd = function(position){
 	logger.log("INFO","ad_image :",util.inspect(g_db_cache['ad_image'],{depth : null}));
-	
+
 	if(position in g_db_cache['ad_image']){
 
 		if(position in g_db_query_cache['ad_image'] && g_db_query_cache['ad_image'][position]['dirty'] == false){
@@ -234,13 +234,12 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 			var adBean = g_db_cache['ad_image'][position][key];
 			if(adBean.getIndex() == addAdJson['index']){
 				findItem = true;
-				
 				adBean.setImage(addAdJson['image']);
 				break;
 			}
 		}
 	}
-	
+	logger.log("INFO","findItem:",findItem,'position:',position);
 	
 	if(!findItem){
 		if(position in g_db_cache['ad_image']){
@@ -249,6 +248,8 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 			g_db_cache['ad_image'][position] = [new AdBean(addAdJson)];
 		}
 	}
+
+	logger.log("INFO","item:",util.inspect(g_db_cache['ad_image'][position],{depth:null}));
 
 	if(!(position in g_db_query_cache['ad_image'])){
 		g_db_query_cache['ad_image'][position] = {
