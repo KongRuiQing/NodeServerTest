@@ -169,7 +169,10 @@ exports.getShopArea = function(){
 
 
 exports.getShopAd = function(position){
+	logger.log("INFO","ad_image :",util.inspect(g_db_cache['ad_image'],{depth : null}));
+	
 	if(position in g_db_cache['ad_image']){
+
 		if(position in g_db_query_cache['ad_image'] && g_db_query_cache['ad_image'][position]['dirty'] == false){
 			return g_db_query_cache['ad_image'][position]['result'];
 		}
@@ -256,6 +259,7 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 		g_db_query_cache['ad_image'][position]['dirty'] = true;
 	}
 	HeadInstance.getInstance().emit('/admin/v1/ad',position);
+
 	return {
 		'error' : 0,
 	};
