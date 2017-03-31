@@ -53,7 +53,8 @@ function handle_route(request,response,next){
 			}else{
 				logger.error("INFO","Error pathname:" + pathname + " error_code = " + error_code);
 				response.writeHead(200, {
-					'Content-Type': http_header[200]
+					'Content-Type': http_header[200],
+					'Cache-Control' : 'max-age=600'
 				});
 				var json_content = {};
 				json_content['error'] = error_code;
