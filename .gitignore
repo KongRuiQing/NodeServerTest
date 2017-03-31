@@ -88,5 +88,6 @@ $RECYCLE.BIN/
 #config
 /config
 db_sequelize/model/TestModel.js
-test,js
-*.js
+test.js
+Test/a.js
+Test/b.js
