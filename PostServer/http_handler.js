@@ -9,7 +9,7 @@ var ShopProxy = require("../cache/shopCache.js");
 var path=require('path');
 var moment = require('moment');
 
-let BASE_SHOP_IMAGE = "../Image";
+let BASE_SHOP_IMAGE = "../../www/SaySystemWeb/Files";
 
 let db_sequelize = require("../db_sequelize");
 

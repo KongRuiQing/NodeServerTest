@@ -41,7 +41,7 @@ exports.start = function(Host,Port)
 
 			var fileName = path.normalize(pathname.replace(/\.\./g, ""));
 			//logger.log('IMAGE_SERVER',"fileName: " + fileName);
-			var realPath = path.join("../Image", fileName);
+			var realPath = path.join("../../www/SaySystemWeb/Files", fileName);
 
 			var ext = path.extname(realPath);
 			ext = ext ? ext.slice(1) : 'unknown';
