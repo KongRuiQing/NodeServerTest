@@ -21,5 +21,9 @@ CategoryMenuBean.prototype.getCode = function(){
 CategoryMenuBean.prototype.getParentCode = function(){
 	return this.__parent;
 }
+CategoryMenuBean.prototype.changeValue = function(parent,name){
+	this.__parent = parent;
+	this.__name = name;
+}
 
 module.exports = CategoryMenuBean;

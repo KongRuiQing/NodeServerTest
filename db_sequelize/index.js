@@ -117,3 +117,20 @@ exports.insertClaimInfo = function(jsonObject,callback){
 		callback(null,dbRow);
 	});
 }
+
+exports.uploadShopBigImage = function(shop_id,image,callback){
+	let jsonObject = {
+		'big_image' : image,
+	};
+	ShopModel.update(jsonObject,{
+		'where' : {
+			'id' : shop_id,
+		}
+	}).then(function(affected_numbers,result){
+		if(affected_numbers == 1){
+			callback(null);
+		}else{
+			callback("数据库操作失败");
+		}
+	});
+}

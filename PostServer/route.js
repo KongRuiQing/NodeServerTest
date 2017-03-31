@@ -1,5 +1,6 @@
 
 var http_handler = require("./http_handler");
+var http_handler_upload = require("./handle_upload");
 var http_notify = require("./http_notify");
 var handle_http = {};
 
@@ -29,6 +30,7 @@ handle_http['/remove_shop_from_schedule'] = http_handler.removeShopFromSchedule;
 handle_http['/add_shop_item_image'] = http_handler.setShopItemImage;
 handle_http['/relogin'] = http_handler.reLogin;
 handle_http['/claim_shop'] = http_handler.claimShop;
+handle_http['/upload_image'] = http_handler_upload.uploadImage;
 
 handle_http['/admin/v1/ad'] = http_notify.changeAdImage;
 handle_http['/admin/v1/shop'] = http_notify.shopCallback;

@@ -154,7 +154,12 @@ module.exports = function (sequelize, DataTypes) {
       type : DataTypes.STRING,
       allowNull : false,
       defaultValue : '',
-    }
+    },
+    'big_image' : {
+        type:DataTypes.STRING,
+        allowNull : false,
+        defaultValue : '',
+    },
 
   },{
     'tableName' : 'shop',
