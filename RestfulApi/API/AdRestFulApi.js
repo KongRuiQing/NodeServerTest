@@ -1,9 +1,11 @@
 'use strict';
 
+console.log("load AdRestFulApi.js");
 var events = require('events');
 var util = require('util');
 var logger = require('../../logger').logger();
-var DbCacheManager = require("../../Cache/DbCache.js");
+
+var DbCacheManager = require("../../cache/DbCache.js");
 
 function AdInstance(){
 	console.log('create AdInstance');

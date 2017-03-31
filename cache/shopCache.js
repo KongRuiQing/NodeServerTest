@@ -1,4 +1,6 @@
 'use strict';
+
+console.log("load ShopCache.js");
 var util = require('util');
 var logger = require('../logger').logger();
 var PlayerProxy = require("../playerList");
@@ -8,7 +10,8 @@ var FindUtil = require("../FindUtil.js");
 var ActivityBean = require("../bean/ActivityBean");
 var events = require('events');
 var ShopComment = require("../bean/ShopComment.js");
-var DbCache = require("./DbCache.js")
+
+var DbCache = require("../cache/DbCache.js")
 
 
 

@@ -8,7 +8,7 @@ var formidable = require('formidable');
 var util = require('util');
 var logger = require('../logger').logger();
 var bodyParser = require('body-parser');
-
+var AdInstance = require('./API/AdRestFulApi.js');
 var server = null;
 
 var connect = require('connect');
@@ -20,7 +20,7 @@ http_header[500] = 'text/plain';
 
 var http_obj = {};
 
-http_obj['/admin/v1/ad'] = require('./API/AdRestFulApi.js').Instance();
+http_obj['/admin/v1/ad'] = AdInstance.Instance();
 
 let PORT = 0;
 function handle_route(request,response,next){
