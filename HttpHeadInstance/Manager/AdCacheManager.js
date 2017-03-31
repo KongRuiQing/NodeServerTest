@@ -9,7 +9,7 @@ class AdCacheManager{
 		this.__map = {};
 		this.__defaultTime = defaultTime;
 	}
-	changeAd(position){
+	changed(position){
 		this.__map[position] = moment(Date.now());
 	}
 	checkModified(req){

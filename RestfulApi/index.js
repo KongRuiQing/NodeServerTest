@@ -9,6 +9,7 @@ var util = require('util');
 var logger = require('../logger').logger();
 var bodyParser = require('body-parser');
 var AdInstance = require('./API/AdRestFulApi.js');
+var CategoryInstance = require("./API/CategoryRestFulApi.js");
 var server = null;
 
 var connect = require('connect');
@@ -21,6 +22,7 @@ http_header[500] = 'text/plain';
 var http_obj = {};
 
 http_obj['/admin/v1/ad'] = AdInstance.Instance();
+http_obj['/admin/v1/category'] = CategoryInstance.Instance();
 
 let PORT = 0;
 function handle_route(request,response,next){

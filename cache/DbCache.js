@@ -16,7 +16,7 @@ function DbCacheManager(){
 
 	this.area_menu = {};
 	this.city_info = {};
-	this.category_menu = {
+	this.__CategoryMenu = {
 		'shop' : {},
 		'item' : {},
 	};
@@ -62,19 +62,21 @@ DbCacheManager.prototype.InitFromDb = function(db_list_result){
 	}
 
 	var list_category_code = db_list_result[1];
-	//logger.log("DB_CACHE","category_menu:" + util.inspect(list_category_code));
+	//logger.log("DB_CACHE","__CategoryMenu:" + util.inspect(list_category_code));
 	for(var i in list_category_code){
-		var class_id = Number(list_category_code[i]['class']);
-		var name = list_category_code[i]['name'];
-		var code = Number(list_category_code[i]['code']);
+		let parent = Number(list_category_code[i]['parent']);
+		let name = list_category_code[i]['name'];
+		let code = Number(list_category_code[i]['id']);
 		let type = Number(list_category_code[i]['type']);
 		if(type == 1){
-			this.category_menu['shop'][code] = new CategoryMenuBean(class_id,name,code);
+			this.__CategoryMenu['shop'][code] = new CategoryMenuBean(parent,name,code);
 		}else if(type ==2){
-			this.category_menu['item'][code] = new CategoryMenuBean(class_id,name,code);
+			this.__CategoryMenu['item'][code] = new CategoryMenuBean(parent,name,code);
+		}else{
+			logger.log("INFO","[DbCache][initFromDbRow] list_category_code[i] = ", util.inspect(list_category_code[i]));
 		}
 	}
-	//logger.log("DB_CACHE","category_menu" + util.inspect(this.category_menu));
+	//logger.log("DB_CACHE","__CategoryMenu" + util.inspect(this.__CategoryMenu));
 
 	//logger.log("DB_CACHE","[Init][init shop_ad] db:" + util.inspect(db_list_result[2]));
 	var list_all_ad_info = db_list_result[2];
@@ -156,8 +158,9 @@ DbCacheManager.prototype.getAreaMenu = function(Last_Modified,city){
 DbCacheManager.prototype.getShopCategory = function(){
 
 	var list = [];
-	for(var i in g_db_cache['category_menu']["shop"]){
-		list.push(g_db_cache['category_menu']["shop"][i].getJsonValue());
+
+	for(var i in this.__CategoryMenu["shop"]){
+		list.push(this.__CategoryMenu["shop"][i].getJsonValue());
 	}
 	return list;
 }
@@ -165,8 +168,8 @@ DbCacheManager.prototype.getShopCategory = function(){
 DbCacheManager.prototype.getItemCategory = function(){
 
 	var list = [];
-	for(var i in g_db_cache['category_menu']["item"]){
-		list.push(g_db_cache['category_menu']["item"][i].getJsonValue());
+	for(var i in this.__CategoryMenu["item"]){
+		list.push(this.__CategoryMenu["item"][i].getJsonValue());
 	}
 	return list;
 }
@@ -228,8 +231,76 @@ DbCacheManager.prototype.removeAd = function(removeAdJson){
 	return {
 		'error' : 1,
 	};
-
 }
+
+DbCacheManager.prototype.addCategory = function(json){
+	let changed = false;
+	if(json['type'] == 1){
+		if(!(json['code'] in this.__CategoryMenu['shop'])){
+			this.__CategoryMenu['shop'][json['code']] = new CategoryMenuBean(json['parent'],json['name'],json['code']);
+			changed = true;
+		}
+	}else if(json['type'] == 2){
+		if(!(json['code'] in this.__CategoryMenu['item'])){
+			this.__CategoryMenu['item'][json['code']] = new CategoryMenuBean(json['parent'],json['name'],json['code']);
+			changed = true;
+		}
+	}
+	if(changed){
+		HeadInstance.getInstance().emit("category",json['type']);
+	}
+	return {
+		'error' : changed?0:1,
+	};
+}
+
+DbCacheManager.prototype.updateCategory = function(json){
+	let changed = false;
+	if(json['type'] == 1){
+		if(code in this.__CategoryMenu['shop']){
+			this.__CategoryMenu['shop'][code].changeValue(json['parent'],json['name']);
+			changed = true;
+		}
+	}else if(json['type'] == 2){
+		if(code in this.__CategoryMenu['item']){
+			this.__CategoryMenu['item'][code].changeValue(json['parent'],json['name']);
+			changed = true;
+		}
+	}
+	if(changed){
+		HeadInstance.getInstance().emit("category",json['type']);
+	}
+	return {
+		'error' : changed?0:1,
+	};
+}
+
+DbCacheManager.prototype.removeCategory = function(json){
+
+	let changed = false;
+	if(json['type'] == 1){
+		if(json['code'] in this.__CategoryMenu['shop']){
+			this.__CategoryMenu['shop'][json['code']] = null;
+			delete this.__CategoryMenu['shop'][json['code']];
+			changed = true;
+		}
+	}else if(json['type'] == 2){
+		if(json['code'] in this.__CategoryMenu['item']){
+			this.__CategoryMenu['item'][json['code']] = null;
+			delete this.__CategoryMenu['item'][json['code']];
+			changed = true;
+ 		}
+	}
+
+	if(changed){
+		HeadInstance.getInstance().emit("category",json['type']);
+	}
+
+	return {
+		'error' : changed?0:1,
+	};
+}
+
 
 DbCacheManager.prototype.changeAd = function(addAdJson){
 	var findItem = false;
@@ -272,6 +343,7 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 	};
 	
 }
+
 
 
 DbCacheManager.prototype.modifyArea = function(param){
@@ -346,8 +418,8 @@ DbCacheManager.prototype.removeArea = function(city,code){
 
 DbCacheManager.prototype.matchCategor = function(parent_code,child_code,type){
 	
-	if(!(type in this.category_menu)){
-		logger.log("DB_CACHE","can't find type = ",type,' in this.category_menu');
+	if(!(type in this.__CategoryMenu)){
+		logger.log("DB_CACHE","can't find type = ",type,' in this.__CategoryMenu');
 		return false;
 	}
 
@@ -361,20 +433,20 @@ DbCacheManager.prototype.matchCategor = function(parent_code,child_code,type){
 		return true;
 	}
 
-	if(!(child_code in this.category_menu[type])){
+	if(!(child_code in this.__CategoryMenu[type])){
 		//console.log("NO :" + util.inspect(this));
 		return false;
 	}
 
-	let child_parent_code = this.category_menu[type][child_code].getParentCode();
+	let child_parent_code = this.__CategoryMenu[type][child_code].getParentCode();
 	//console.log("child_parent_code : " + child_parent_code);
 	while(child_parent_code != parent_code){
 		
-		if(!(child_parent_code in this.category_menu[type])){
+		if(!(child_parent_code in this.__CategoryMenu[type])){
 			//console.log("NO Whild " , util.inspect(this));
 			break;
 		}
-		child_parent_code = this.category_menu[type][child_parent_code].getParentCode();
+		child_parent_code = this.__CategoryMenu[type][child_parent_code].getParentCode();
 		//console.log("child_parent_code : " + child_parent_code);
 	}
 

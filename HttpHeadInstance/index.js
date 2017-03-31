@@ -2,9 +2,12 @@
 var moment = require('moment');
 var events = require('events');
 var util = require('util');
+var logger = require("../logger.js").logger();
+
 var key = "if-modified-since";
 var url=require('url');
 var AdCacheManager = require('./Manager/AdCacheManager.js');
+var CategoryCacheManager = require('./Manager/CategoryCacheManager.js');
 
 class ReadyBeSellerDataMoniter{
 	constructor(defaultTime){
@@ -12,7 +15,7 @@ class ReadyBeSellerDataMoniter{
 		this.__defaultTime = defaultTime;
 	};
 	checkModified(req){
-		return moment(Date.now()).format('YYYY-MM-DD HH:mm:ss.SSS');
+		return moment().format('YYYY-MM-DD HH:mm:ss.SSS');
 	} 
 }
 
@@ -21,7 +24,7 @@ class ShopListDataMoniter{
 		this.__defaultTime = defaultTime;
 	}
 	checkModified(req){
-		return moment(Date.now()).format('YYYY-MM-DD HH:mm:ss.SSS');
+		return moment().format('YYYY-MM-DD HH:mm:ss.SSS');
 	}
 };
 
@@ -30,12 +33,13 @@ class ShopListDataMoniter{
 
 function HeadInstance(){
 
-	this.defaultTime = moment(Date.now());
+	this.defaultTime = moment();
 
 	this.__custom_map = {
 		'/get_ready_be_seller_data' : new ReadyBeSellerDataMoniter(this.defaultTime),
 		'/shop_list' : new ShopListDataMoniter(this.defaultTime),
 		'/ad_image' : AdCacheManager(this.defaultTime),
+		'/category' : CategoryCacheManager(this.defaultTime),
 	};
 	this.map = {};
 
@@ -52,6 +56,7 @@ HeadInstance.prototype.checkModified = function(req){
 	let request_url = url.parse(req.url,true);
 	let pathname = request_url.pathname;
 	var headers = req.headers;
+	logger.log("INFO","headers:",util.inspect(headers));
 
 	if(pathname in this.__custom_map){
 		return this.__custom_map[pathname].checkModified(req);
@@ -93,7 +98,13 @@ var instnce = new HeadInstance();
 instnce.on('/admin/v1/ad',function(position){
 	let obj = instnce.getObj('/ad_image');
 	if(obj != null){
-		obj.changeAd(position);
+		obj.changed(position);
+	}
+});
+instnce.on('/category',function(type){
+	let obj = instnce.getObj('/category');
+	if(obj != null){
+		obj.changed(type);
 	}
 });
 
