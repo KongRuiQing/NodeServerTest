@@ -10,7 +10,7 @@ class AdCacheManager{
 		this.__defaultTime = defaultTime;
 	}
 	changed(position){
-		this.__map[position] = moment(Date.now());
+		this.__map[position] = moment();
 	}
 	checkModified(req){
 		let headers = req.headers;
@@ -19,14 +19,14 @@ class AdCacheManager{
 			let position = Number(query['position']);
 			if(!(key in headers)){
 				if(position in this.__map && this.__map[position] != undefined){
-					
-					return this.__map[key].format('YYYY-MM-DD HH:mm:ss.SSS');
+					return this.__map[position].format('YYYY-MM-DD HH:mm:ss.SSS');
 				}else{
 					return this.__defaultTime.format('YYYY-MM-DD HH:mm:ss.SSS'); 
 				}
 			}else{
 				
 				let since_moment = moment(headers[key],'YYYY-MM-DD HH:mm:ss.SSS');
+
 				if(position in this.__map){
 					if(since_moment.isBefore(this.__map[position],'millisecond')){
 						return this.__map[position].format('YYYY-MM-DD HH:mm:ss.SSS');
