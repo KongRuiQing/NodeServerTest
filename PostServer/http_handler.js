@@ -38,7 +38,7 @@ function upload_file_to_json(files,map,result){
 			let virtual_file_name = path.join(map[file_key],path.basename(upload_file.path));
 			let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
-			result[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
+			result[file_key] = path.join('Files',virtual_file_name).replace(/\\/g,"\\\\");
 		}
 	} 
 }

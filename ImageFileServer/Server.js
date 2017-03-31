@@ -40,16 +40,16 @@ exports.start = function(Host,Port)
 		if(request.method.toLowerCase() === 'get'){
 
 			var fileName = path.normalize(pathname.replace(/\.\./g, ""));
-			//logger.log('IMAGE_SERVER',"fileName: " + fileName);
-			var realPath = path.join("../../www/SaySystemWeb/Files", fileName);
-
+			
+			var realPath = path.join("../../www/SaySystemWeb/", fileName);
+			
 			var ext = path.extname(realPath);
 			ext = ext ? ext.slice(1) : 'unknown';
 
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
 
-					logger.log("IMAGE","can find image in server");
+					logger.log("INFO","can find image in server",realPath);
 
 					response.writeHead(404, {
 						'Content-Type': 'text/plain'

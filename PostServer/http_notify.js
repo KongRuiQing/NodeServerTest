@@ -262,7 +262,7 @@ function checkParam(fields,check){
  	
  	let code = Number(fields['code']);
  	if(type == 0){
- 		DbCache.removeArea(province,city,code);
+ 		DbCache.getInstance().removeArea(province,city,code);
  	}else{
  		check_result = checkParam(fields,['name']);
  		if(check_result != null){
@@ -278,9 +278,9 @@ function checkParam(fields,check){
  		};
  		let result = null;
  		if(type == 1){
- 			result = DbCache.modifyArea(param);
+ 			result = DbCache.getInstance().modifyArea(param);
  		}else{
- 			result = DbCache.addArea(param)
+ 			result = DbCache.getInstance().addArea(param)
  		}
  		if(result == null){
  			callback(true,{
