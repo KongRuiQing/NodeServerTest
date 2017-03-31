@@ -72,7 +72,7 @@ function checkParam(fields,check){
  * @apiName /v1/shop
  * @apiGroup Shop
  * @apiVersion 0.0.0
- * @apiDescription 	shop.
+ * @apiDescription 	shop. (修改中)
  * @apiParam {Number} type 0:删除指定ID的商铺;1:修改指定ID的商铺,2:添加商铺
  * @apiParam {Number} id 对应商铺的id,参见上面参数对应的意义 [shop.id]
  * @apiParam {String} name 对应商铺的名字.[shop.name]
@@ -210,7 +210,7 @@ function checkParam(fields,check){
  * @apiName /v1/area
  * @apiGroup Area
  * @apiVersion 0.0.1
- * @apiDescription 通知区域发生变化
+ * @apiDescription 通知区域发生变化(正在改)
  * @apiParam {Number} type 操作类型 0 表示删除,1表示修改,2表示添加
  * @apiParam {Number} province 省份 [area_menu.province]
  * @apiParam {Number} city 城市代码 [area_menu.city]
@@ -295,24 +295,19 @@ function checkParam(fields,check){
  }
 
  /**
- * @api {post} /v1/category/  Category
- * @apiName /v1/category
+ * @api {post,delete,patch} admin/v1/category/  Category
+ * @apiName admin/v1/category
  * @apiGroup Category
  * @apiVersion 0.0.1
  * @apiDescription 通知分类发生变化
- * @apiParam {Number} class 上一级菜单 [category_menu.class]
- * @apiParam {String} name 菜单名字 [category_menu.name]
- * @apiParam {Number} code 菜单代码
+ * @apiParam {Number} parent [category_code.parent]
+ * @apiParam {String} name [category_code.name]
+ * @apiParam {Number} code [category_code.id]
+ * @apiParam {Number} type [category_code.type]
  * @apiExample {http} usage:
  	http://139.224.227.82:9891/admin/v1/category
- * @apiParamExample {json} Request-Example:
- * {
-	class:1,
-	name:'餐饮',
-	code:167001
- * }
- * @apiSuccess {Number} error 错误号,返回0表示没有错误 
- * @apiSuccess {String} error_msg 错误详细信息
+ * @apiSuccess {Number} error 错误号,返回0表示没有错误,其它表示错误 
+
  * @apiSuccessExample {json} Response-Example-1
  * {
 	 error:0
@@ -320,48 +315,11 @@ function checkParam(fields,check){
  * @apiSuccessExample {json} Response-Example-2
  * {
 	 error:1
-	 error_msg:'name',
  * }
  */
 
  exports.notifyCategory = function(fields,files,callback){
- 	let check_result = checkParam(fields,['type','class','code']);
- 	if(check_result != null){
- 		callback(true,check_result);
- 		return;
- 	}
- 	let type = Number(fields['type']);
- 	let code = Number(fields['code'])
- 	if(type == 0){
- 		DbCache.removeCategory(code);
- 	}else{
- 		check_result = checkParam(fields,['name']);
- 		if(check_result != null){
- 			callback(true,check_result);
- 			return;
- 		}
- 		let param = {
- 			'class' : _class,
- 			'code' : code,
- 			'name' : name,
- 		};
- 		let result = null;
- 		if(type == 1){
- 			result = DbCache.modieyCategory(param);
- 		}else if(type == 2){
- 			result = DbCache.addCategory(param);
- 		}
- 		if(result != null){
- 			callback(true,result);
- 			return;
- 		}else{
- 			callback(true,{
- 				'error' : 0
- 			});
- 			return;
- 		}
-
- 	}
+ 	
  }
 
  
@@ -370,8 +328,8 @@ function checkParam(fields,check){
  * @api {post} /v1/shop_item/ shop_item
  * @apiName /v1/shop_item
  * @apiGroup Shop
- * @apiVersion 0.0.1
- * @apiDescription 修改或添加商铺物品
+ * @apiVersion 0.0.0 
+ * @apiDescription 修改或添加商铺物品 (修改中)
  * @apiParam {Number} type 0:删除指定ID; 1:修改指定ID; 2:添加,没有id;
  * @apiParam {Number} id 商铺id [shop_item.id]
  * @apiParam {String} name 物品的名字 [shop_item.name]
