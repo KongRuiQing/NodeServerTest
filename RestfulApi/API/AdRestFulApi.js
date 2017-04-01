@@ -17,11 +17,11 @@ util.inherits(AdInstance, events.EventEmitter);
 function __delete(req,rsp){
 
 	if(!('position' in req.body)){
-		__usage("DELETT",rsp,"position is undefined");
+		__usage("DELETE",rsp,"position is undefined");
 		return;
 	}
 	if(!('index' in req.body)){
-		__usage("DELETT",rsp,"index is undefined");
+		__usage("DELETE",rsp,"index is undefined");
 		return;
 	}
 	let position = Number(req.body['position']);
@@ -63,7 +63,7 @@ function __usage(method,rsp,error_msg){
 			'image' : '[String]',
 			'url' : '[String]',
 		};
-	}else if(method === 'DELETT'){
+	}else if(method === 'DELETE'){
 		usage['body'] = {
 			'position' : '[Number]',
 			'index' : '[Number]',
@@ -76,6 +76,8 @@ function __usage(method,rsp,error_msg){
 			'url' : '[String]',
 		};
 	}
+	logger.log('WARN','[AdRestFulApi][__usage]',
+		'result:',util.inspect(usage));
 
 	rsp.end(JSON.stringify(usage));
 	return;
