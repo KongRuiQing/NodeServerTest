@@ -19,7 +19,7 @@ function __delete(req,rsp){
 	if(!('position' in req.body)){
 		logger.log("WARN","[AdRestFulApi][__delete] ",
 			'error_msg:','position is undefined',
-			'req.body' : util.inspect(req.body,{depth:4}));
+			'req.body' , util.inspect(req.body,{depth:4}));
 
 		__usage("DELETE",rsp,"position is undefined");
 		return;
@@ -27,7 +27,7 @@ function __delete(req,rsp){
 	if(!('index' in req.body)){
 		logger.log("WARN","[AdRestFulApi][__delete] ",
 			'error_msg:','index is undefined',
-			'req.body' : util.inspect(req.body,{depth:4}));
+			'req.body' , util.inspect(req.body,{depth:4}));
 		__usage("DELETE",rsp,"index is undefined");
 		return;
 	}
