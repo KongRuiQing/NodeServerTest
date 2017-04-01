@@ -171,7 +171,8 @@ function __patch(req,rsp){
 		__usage('PATCH',rsp,'parent is undefined');
 		return;
 	}
-	
+	logger.log("INFO",'[CategoryRestFulApi][__patch]',
+		'req.body:',util.inspect(req.body));
 	
 	let type = Number(req.body['type']);
 	let code = Number(req.body['code']);
