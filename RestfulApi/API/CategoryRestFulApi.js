@@ -145,6 +145,64 @@ function __post(req,rsp){
 	}
 
 }
+
+function __patch(req,rsp){
+	if(!('type' in req.body)){
+		//logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
+		logger.log("WARN","req.body(type):",util.inspect(req.body));
+		__usage('PATCH',rsp,"type is undefined");
+		return;
+	}
+	if(!('code' in req.body)){
+		//logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
+		logger.log("WARN","req.body(code):",util.inspect(req.body));
+		__usage('PATCH',rsp,"code in undefined");
+		return;
+	}
+	if(!('name' in req.body)){
+		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
+		logger.log("WARN","req.body(name):",util.inspect(req.body));
+		__usage('PATCH',rsp,'name is undefined');
+		return;
+	}
+	if(!('parent' in req.body)){
+		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
+		logger.log("WARN","req.body(parent):",util.inspect(req.body));
+		__usage('PATCH',rsp,'parent is undefined');
+		return;
+	}
+	
+	
+	let type = Number(req.body['type']);
+	let code = Number(req.body['code']);
+	let name = req.body['name'];
+	let parent = Number(req.body['parent']);
+	
+	let result = DbCacheManager.getInstance().updateCategory({
+		'type' : type,
+		'code' : code,
+		'name' : name,
+		'parent' : parent,
+	});
+
+	let error = 0;
+	if('error' in result){
+		error = Number(result['error']);
+	}
+	if(error == 0){
+		rsp.writeHead(200, {'content-type': 'text/html'});
+		rsp.end(JSON.stringify({
+			'error' : 0,
+			'type' : type,
+			'code' : code,
+			'name' : name,
+			'parent' : parent,
+		}));
+	}else{
+		__usage('PATCH',rsp,'error is '+ error);
+	}
+}
+
 function __options(req,rsp){
 	__usage('OPTIONS',rsp);
 	return;
@@ -154,7 +212,7 @@ var __instance = new CategoryInstance();
 
 __instance.on('DELETT',__delete);
 __instance.on('POST',__post);
-__instance.on('PATCH',__post);
+__instance.on('PATCH',__patch);
 __instance.on('OPTIONS',__options);
 
 exports.Instance = function(){
