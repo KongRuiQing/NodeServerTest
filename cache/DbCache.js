@@ -271,6 +271,9 @@ DbCacheManager.prototype.updateCategory = function(json){
 	if(changed){
 		HeadInstance.getInstance().emit("/category",json['type']);
 	}
+	logger.log("INFO","[DbCache][OBJ][updateCategory] result:",
+		'changed:',changed,
+		'param:',util.inspect(json));
 	return {
 		'error' : changed?0:1,
 	};
