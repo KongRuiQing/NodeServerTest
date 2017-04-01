@@ -213,13 +213,16 @@ DbCacheManager.prototype.removeAd = function(removeAdJson){
 	if(position in g_db_cache['ad_image']){
 		for(var key in g_db_cache['ad_image'][position]){
 			var adBean = g_db_cache['ad_image'][position][key];
-			if(adBean.getIndex() == removeAdJson['index']){
-				g_db_cache['ad_image'][position].splice(key,1);
+			if(adBean != null && adBean.getIndex() == removeAdJson['index']){
+				delete g_db_cache['ad_image'][position][key];
 				find = true;
 				break;
 			}
 		}
 	}
+	logger.log('INFO','[DbCache][removeAd]',
+		'find:',find,
+		'removeAdJson:',util.inspect(removeAdJson));
 	if(find){
 		if(position in this.query_cache['ad_image']){
 			this.query_cache['ad_image'][position]['dirty'] = true;
@@ -309,17 +312,22 @@ DbCacheManager.prototype.removeCategory = function(json){
 DbCacheManager.prototype.changeAd = function(addAdJson){
 	var findItem = false;
 	var position = Number(addAdJson['position']);
+	logger.log("INFO",'[DbCache][changeAd]',
+		'position:',position,
+		'this.ad_image[position]:',util.inspect(this.ad_image[position]));
 	if(position in this['ad_image']){
 		for(var key in this['ad_image'][position]){
 			var adBean = this['ad_image'][position][key];
-			if(adBean.getIndex() == addAdJson['index']){
+			if(adBean != null && adBean.getIndex() == addAdJson['index']){
 				findItem = true;
 				adBean.setImage(addAdJson['image']);
 				break;
 			}
 		}
 	}
-	logger.log("INFO","findItem:",findItem,'position:',position);
+	logger.log("INFO",'[DbCache][changeAd]',
+		"findItem:",findItem,
+		'position:',position);
 	
 	if(!findItem){
 		if(position in this['ad_image']){

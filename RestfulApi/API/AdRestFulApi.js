@@ -26,7 +26,9 @@ function __delete(req,rsp){
 	}
 	let position = Number(req.body['position']);
 	let index = Number(req.body['index']);
-	
+	logger.log('INFO','[AdRestFulApi][__delete]',
+		'position:',position,
+		'index:',index);
 	let result = DbCacheManager.getInstance().removeAd({
 		'position' : position,
 		'index' : index,
@@ -151,6 +153,7 @@ __instance.on('DELETT',__delete);
 __instance.on('POST',__post);
 __instance.on('PATCH',__post);
 __instance.on('OPTIONS',__options);
+__instance.on('GET',__options);
 
 exports.Instance = function(){
 	return __instance;
