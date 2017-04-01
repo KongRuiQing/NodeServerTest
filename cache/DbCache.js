@@ -258,13 +258,13 @@ DbCacheManager.prototype.addCategory = function(json){
 DbCacheManager.prototype.updateCategory = function(json){
 	let changed = false;
 	if(json['type'] == 1){
-		if(code in this.__CategoryMenu['shop']){
-			this.__CategoryMenu['shop'][code].changeValue(json['parent'],json['name']);
+		if(json['code'] in this.__CategoryMenu['shop']){
+			this.__CategoryMenu['shop'][json['code']].changeValue(json['parent'],json['name']);
 			changed = true;
 		}
 	}else if(json['type'] == 2){
-		if(code in this.__CategoryMenu['item']){
-			this.__CategoryMenu['item'][code].changeValue(json['parent'],json['name']);
+		if(json['code'] in this.__CategoryMenu['item']){
+			this.__CategoryMenu['item'][json['code']].changeValue(json['parent'],json['name']);
 			changed = true;
 		}
 	}
