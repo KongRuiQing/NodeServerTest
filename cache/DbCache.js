@@ -177,9 +177,10 @@ DbCacheManager.prototype.getItemCategory = function(){
 
 
 DbCacheManager.prototype.getShopAd = function(position){
-	logger.log("INFO","ad_image :",util.inspect(g_db_cache['ad_image'],{depth : null}));
+	
+	logger.log("INFO","ad_image :",util.inspect(this.ad_image,{depth : null}));
 
-	if(position in g_db_cache['ad_image']){
+	if(position in this.ad_image){
 
 		if(position in this.query_cache['ad_image'] && this.query_cache['ad_image'][position]['dirty'] == false){
 			return this.query_cache['ad_image'][position]['result'];
@@ -193,8 +194,8 @@ DbCacheManager.prototype.getShopAd = function(position){
 				'result' : []
 			};
 		}
-		for(var key in g_db_cache['ad_image'][position]){
-			this.query_cache['ad_image'][position]['result'].push(g_db_cache['ad_image'][position][key].getJsonValue());
+		for(var key in this.ad_image[position]){
+			this.query_cache['ad_image'][position]['result'].push(this.ad_image[position][key].getJsonValue());
 		}
 		this.query_cache['ad_image'][position]['result'].sort(function(a,b){
 			return a['index'] - b['index'];
