@@ -55,7 +55,7 @@ function handle_Error(err, req, res, next){
 function handle_head(req,rsp,next){
 	rsp.setHeader("Access-Control-Allow-Origin", "*");
 	rsp.setHeader("Access-Control-Allow-Headers", "X-Requested-With");
-	rsp.setHeader("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+	rsp.setHeader("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,PATCH,OPTIONS");
 	rsp.setHeader("Content-Type", "application/json;charset=utf-8");
 	next()
 }

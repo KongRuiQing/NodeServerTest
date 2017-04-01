@@ -1,7 +1,7 @@
 "use strict";
 var FindUtil = require("../FindUtil.js");
 var DbCache = require("../cache/DbCache");
-
+var logger = require("../logger.js").logger();
 console.log("require shopBean.js");
 
 var ShopBean = function(){
@@ -325,7 +325,7 @@ ShopBean.prototype.matchFilter = function(city_no,area_code,category_code){
 		return false;
 	}
 
-	console.log(category_code,this.category_code1,this.category_code2,this.category_code3);
+	
 	if(category_code != 0){
 		if(DbCache.getInstance().matchCategor(category_code,this.category_code1,'shop')){
 			return true;
