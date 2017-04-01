@@ -340,7 +340,7 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 	logger.log("INFO","all ad :",util.inspect(this['ad_image'],{depth:null}));
 
 	if(!(position in this.query_cache['ad_image'])){
-		this['ad_image'][position] = {
+		this['query_cache'][position] = {
 			'dirty' : true,
 			'result' : []
 		};
