@@ -211,7 +211,7 @@ function __options(req,rsp){
 
 var __instance = new CategoryInstance();
 
-__instance.on('DELETT',__delete);
+__instance.on('DELETE',__delete);
 __instance.on('POST',__post);
 __instance.on('PATCH',__patch);
 __instance.on('OPTIONS',__options);
