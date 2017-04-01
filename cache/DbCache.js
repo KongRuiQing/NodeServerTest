@@ -84,10 +84,10 @@ DbCacheManager.prototype.InitFromDb = function(db_list_result){
 		var ad_position = Number(list_all_ad_info[key]['position']);
 		var bean = new AdBean(list_all_ad_info[key]);
 
-		if(ad_position in g_db_cache['ad_image']){
-			g_db_cache['ad_image'][ad_position].push(bean);
+		if(ad_position in this['ad_image']){
+			this['ad_image'][ad_position].push(bean);
 		}else{
-			g_db_cache['ad_image'][ad_position] = [bean];
+			this['ad_image'][ad_position] = [bean];
 		}
 	}
 	//logger.log("DB_CACHE","[Init][ad_image]:" + util.inspect(g_db_cache['ad_image'],{depth:null}));
@@ -207,35 +207,7 @@ DbCacheManager.prototype.getShopAd = function(position){
 	return [];
 }
 
-DbCacheManager.prototype.removeAd = function(removeAdJson){
-	let find = false;
-	let position = Number(removeAdJson['position']);
-	if(position in g_db_cache['ad_image']){
-		for(var key in g_db_cache['ad_image'][position]){
-			var adBean = g_db_cache['ad_image'][position][key];
-			if(adBean != null && adBean.getIndex() == removeAdJson['index']){
-				delete g_db_cache['ad_image'][position][key];
-				find = true;
-				break;
-			}
-		}
-	}
-	logger.log('INFO','[DbCache][removeAd]',
-		'find:',find,
-		'removeAdJson:',util.inspect(removeAdJson));
-	if(find){
-		if(position in this.query_cache['ad_image']){
-			this.query_cache['ad_image'][position]['dirty'] = true;
-		}
-		HeadInstance.getInstance().emit('/admin/v1/ad',position);
-		return {
-			'error' : 0,
-		}
-	}
-	return {
-		'error' : 1,
-	};
-}
+
 
 DbCacheManager.prototype.addCategory = function(json){
 	let changed = false;
@@ -296,7 +268,7 @@ DbCacheManager.prototype.removeCategory = function(json){
 			this.__CategoryMenu['item'][json['code']] = null;
 			delete this.__CategoryMenu['item'][json['code']];
 			changed = true;
- 		}
+		}
 	}
 
 	if(changed){
@@ -310,12 +282,13 @@ DbCacheManager.prototype.removeCategory = function(json){
 
 
 DbCacheManager.prototype.changeAd = function(addAdJson){
-	var findItem = false;
-	var position = Number(addAdJson['position']);
+	let findItem = false;
+	let position = Number(addAdJson['position']);
+	
 	logger.log("INFO",'[DbCache][changeAd]',
 		'position:',position,
 		'this.ad_image[position]:',util.inspect(this.ad_image[position]));
-	if(position in this['ad_image']){
+	if(position in this.ad_image){
 		for(var key in this['ad_image'][position]){
 			var adBean = this['ad_image'][position][key];
 			if(adBean != null && adBean.getIndex() == addAdJson['index']){
@@ -325,19 +298,23 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 			}
 		}
 	}
+	
 	logger.log("INFO",'[DbCache][changeAd]',
-		"findItem:",findItem,
-		'position:',position);
+		"findItem:",findItem);
 	
 	if(!findItem){
-		if(position in this['ad_image']){
-			this['ad_image'][position].push(new AdBean(addAdJson));
+		if(position in this['ad_image'] ){
+			if('id' in addAdJson){
+				this['ad_image'][position].push(new AdBean(addAdJson));
+			}
+			
 		}else{
 			this['ad_image'][position] = [new AdBean(addAdJson)];
 		}
 	}
 
-	logger.log("INFO","all ad :",util.inspect(this['ad_image'],{depth:null}));
+	logger.log("INFO"
+		,"all ad :",util.inspect(this['ad_image'],{depth:2}));
 
 	if(!(position in this.query_cache['ad_image'])){
 		this['query_cache'][position] = {
@@ -348,12 +325,52 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 		this.query_cache['ad_image'][position]['dirty'] = true;
 	}
 	logger.log("INFO","query_cache:",util.inspect(this.query_cache['ad_image']));
+
 	HeadInstance.getInstance().emit('/admin/v1/ad',position);
 
 	return {
 		'error' : 0,
 	};
 	
+}
+
+DbCacheManager.prototype.removeAd = function(removeAdJson){
+	let find = false;
+	let position = 0;
+
+	for(var ad_key in this['ad_image']){
+		for(var ad_index in this['ad_image'][ad_key]){
+			var adBean = this['ad_image'][ad_key][ad_index];
+			if(adBean != null && adBean.getId() == removeAdJson['id']){
+				position = adBean.getPosition();
+				delete  this['ad_image'][ad_key][ad_index];
+				find = true;
+				break;
+			}
+		}
+		if(find){
+			break;
+		}
+	}
+
+	logger.log('INFO','[DbCache][removeAd]',
+		'find:',find,
+		'position',position,
+		'removeAdJson:',util.inspect(removeAdJson),
+		'result:',util.inspect(this['ad_image'],{depth:3}));
+	
+	if(find){
+		if(position in this.query_cache['ad_image']){
+			this.query_cache['ad_image'][position]['dirty'] = true;
+		}
+		HeadInstance.getInstance().emit('/admin/v1/ad',position);
+		return {
+			'error' : 0,
+		}
+	}
+	return {
+		'error' : 1,
+	};
 }
 
 

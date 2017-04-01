@@ -1,6 +1,7 @@
 "use strict";
 
 var AdBean = function(DbRow){
+	this.__id = Number(DbRow['id']);
 	this.position = Number(DbRow['position']);
 	this.index = Number(DbRow['index']);
 	this.image = DbRow['image'];
@@ -24,6 +25,9 @@ AdBean.prototype.getIndex = function(){
 
 AdBean.prototype.getPosition = function(){
 	return this.position;
+}
+AdBean.prototype.getId = function(){
+	return this.__id;
 }
 
 AdBean.prototype.setImage = function(image){

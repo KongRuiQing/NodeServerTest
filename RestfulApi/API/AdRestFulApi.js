@@ -16,36 +16,24 @@ util.inherits(AdInstance, events.EventEmitter);
 
 function __delete(req,rsp){
 
-	if(!('position' in req.body)){
+	if(!('id' in req.body)){
 		logger.log("WARN","[AdRestFulApi][__delete] ",
 			'error_msg:','position is undefined',
 			'req.body' , util.inspect(req.body,{depth:4}));
-
-		__usage("DELETE",rsp,"position is undefined");
+		__usage("DELETE",rsp,"id is undefined");
 		return;
 	}
-	if(!('index' in req.body)){
-		logger.log("WARN","[AdRestFulApi][__delete] ",
-			'error_msg:','index is undefined',
-			'req.body' , util.inspect(req.body,{depth:4}));
-		__usage("DELETE",rsp,"index is undefined");
-		return;
-	}
-	let position = Number(req.body['position']);
-	let index = Number(req.body['index']);
+	let id = Number(req.body['id']);
 	logger.log('INFO','[AdRestFulApi][__delete]',
-		'position:',position,
-		'index:',index);
+		'id:',id);
 	let result = DbCacheManager.getInstance().removeAd({
-		'position' : position,
-		'index' : index,
+		'id' : id,
 	});
 
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	rsp.end(JSON.stringify({
 		'error' : result['error'],
-		'position' : position,
-		'index' : index,
+		'id' : id,
 	}));
 
 	return true;
@@ -95,38 +83,41 @@ function __usage(method,rsp,error_msg){
 
 function __post(req,rsp){
 
+	logger.log("INFO"
+		,'[DbCache][__post]'
+		,"req.body:",util.inspect(req.body));
+
 	if(!('position' in req.body)){
 		//logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
-		logger.log("INFO","req.body(position):",util.inspect(req.body));
+		
 		__usage('POST',rsp,"position is undefined");
 		return;
 	}
 	if(!('index' in req.body)){
 		//logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
-		logger.log("INFO","req.body(index):",util.inspect(req.body));
+		
 		__usage('POST',rsp,"index in undefined");
 		return;
 	}
 	if(!('image' in req.body)){
 		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
-		logger.log("INFO","req.body(image):",util.inspect(req.body));
+		
 		__usage('POST',rsp,'image is undefined');
 		return;
 	}
 	if(!('url' in req.body)){
 		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
-		logger.log("INFO","req.body(url):",util.inspect(req.body));
 		__usage('POST',rsp,'url is undefined');
 		return;
 	}
-	logger.log("INFO","success parse");
 	
 	let position = Number(req.body['position']);
 	let index = Number(req.body['index']);
 	let image = req.body['image'];
 	let url = req.body['url'];
-	
+	let id = ('id' in req.body)?Number(req.body['id']):0;
 	let result = DbCacheManager.getInstance().changeAd({
+		'id' : id,
 		'position' : position,
 		'index' : index,
 		'image' : image,
