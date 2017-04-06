@@ -42,7 +42,7 @@ function handle_route(request,response,next){
 
 		route[pathname](headers,request_url.query,function(error_code,content){
 
-			logger.log("INFO","QUERY RESULT: \n" + util.inspect(content,{depth:null}) + "\n");
+			logger.log("INFO","[",pathname,']:',"QUERY RESULT: \n" + util.inspect(content,{depth:null}) + "\n");
 
 			if(error_code == 0){
 				let status_code = 200;
