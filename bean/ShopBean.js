@@ -645,6 +645,7 @@ ShopBean.prototype.getSheduleInfo = function(){
 	};
 }
 ShopBean.prototype.calcDistance = function(longitude,latitude,distance){
+	
 	return FindUtil.getFlatternDistance(longitude,latitude,this.__longitude,this.__latitude)
 }
 

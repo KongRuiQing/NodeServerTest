@@ -8,7 +8,7 @@ var key = "if-modified-since";
 var url=require('url');
 var AdCacheManager = require('./Manager/AdCacheManager.js');
 var CategoryCacheManager = require('./Manager/CategoryCacheManager.js');
-
+var MyShopItemDetail = require("./Manager/MyShopItemDetailManager.js")
 class ReadyBeSellerDataMoniter{
 	constructor(defaultTime){
 		this.__map = {};
@@ -40,6 +40,7 @@ function HeadInstance(){
 		'/shop_list' : new ShopListDataMoniter(this.defaultTime),
 		'/ad_image' : AdCacheManager(this.defaultTime),
 		'/category' : CategoryCacheManager(this.defaultTime),
+		'/get_my_shop_item_detail' : MyShopItemDetail(this.defaultTime)
 	};
 	this.map = {};
 
@@ -56,7 +57,7 @@ HeadInstance.prototype.checkModified = function(req){
 	let request_url = url.parse(req.url,true);
 	let pathname = request_url.pathname;
 	var headers = req.headers;
-	logger.log("INFO","headers:",util.inspect(headers));
+	//logger.log("INFO","headers:",util.inspect(headers));
 
 	if(pathname in this.__custom_map){
 		return this.__custom_map[pathname].checkModified(req);
@@ -107,6 +108,12 @@ instnce.on('/category',function(type){
 		obj.changed(type);
 	}
 });
+instnce.on('/get_my_shop_item_detail',function(item_id){
+	let obj = instnce.getObj('/get_my_shop_item_detail');
+	if(obj != null){
+		obj.changed(item_id);
+	}
+})
 
 exports.getInstance = function(){
 	return instnce;

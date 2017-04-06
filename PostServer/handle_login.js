@@ -15,7 +15,7 @@ var handle_login = function(req,rsp,next){
 			headers['uid'] = 0;
 		}
 	}else{
-		console.log("headers:" + headers);
+		//console.log("headers:" + headers);
 	}
 	next();
 }

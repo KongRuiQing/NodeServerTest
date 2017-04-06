@@ -397,37 +397,97 @@ exports.addShopItem = function(header,fields,files,callback){
 
 	if(shop_id > 0){
 
-		var uploadFileKey = {
-			"show_image_1" : "shop/item/",
-			"show_image_2" : "shop/item/",
-			"show_image_3" : "shop/item/",
-			"show_image_4" : "shop/item/",
-			"detail_image_1" : "shop/item/",
-			"detail_image_2" : "shop/item/",
-			"detail_image_3" : "shop/item/",
-			"detail_image_4" : "shop/item/",
-		};
-		
-		var json_value = {};
-		upload_file_to_json(files,uploadFileKey,json_value);
-	
+		let dest_dir = "shop/item/";
+		check_dir([dest_dir]);
+		let json_image = [];
+		for(var key = 1; key <= 4; ++key){
+			let upload_file_key = "show_image_" + key;
+			if(upload_file_key in files){
+				let upload_file = files[upload_file_key];
+				let virtual_file_name = path.join(dest_dir,path.basename(upload_file.path));
+				let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
+				fs.renameSync(upload_file.path, newPath);
+				json_image.push({
+					'image_type' : 1,
+					'index' : key - 1,
+					'image' : path.join("Files",virtual_file_name).replace(/\\/g,"\\\\")
+				});
+			}else if(upload_file_key in fields){
+				json_image.push({
+					'image_type' : 1,
+					'index' : key - 1,
+					'image' : ""
+				});
+			}
+		}
+		for(var key = 1; key <= 4; ++key){
+			let upload_file_key = "detail_image_" + key;
+			if(upload_file_key in files){
+				let upload_file = files[upload_file_key];
+				let virtual_file_name = path.join(dest_dir,path.basename(upload_file.path));
+				let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
+				fs.renameSync(upload_file.path, newPath);
+				json_image.push({
+					'image_type' : 3,
+					'index' : key - 1,
+					'image' : path.join('Files',virtual_file_name).replace(/\\/g,"\\\\")
+				});
+			}else if(upload_file_key in fields){
+				json_image.push({
+					'image_type' : 1,
+					'index' : key - 1,
+					'image' : ""
+				});
+			}
+		}
+		logger.log("INFO","[HTTP_HANDLER][addShopItem] json_image : ", util.inspect(json_image));
 
+		let category_code = Number(fields['category_code']);
 		var price = Number(fields['price']);
 		var show_price = Number(fields['show_price']);
 		let item_name = fields['name'];
+		let link = fields['link'];
+		let group_index = Number(fields['group_index']);
+
+		let json_value = {};
+		json_value['category_code'] = category_code;
 		json_value['price'] = price;
 		json_value['show_price'] = show_price;
 		json_value['name'] = item_name;
 		json_value['shop_id'] = shop_id;
-		//logger.log("HTTP_HANDLER","addShopItem: \n" + util.inspect(json_value));
-		db.addShopItem(json_value,function(err,result){
+		json_value['link'] = link;
+		json_value['group_index'] = group_index;
+
+		let json_propertys = [];
+		for(var index = 0; index < 8; ++index){
+			let property_type_key = "item_property_type_" + index;
+			let property_value_key = "item_property_value_" + index;
+			if(property_value_key in fields && property_value_key in fields){
+				json_propertys.push({
+					'property_type' : fields[property_type_key],
+					'property_value' : fields[property_value_key],
+					'is_show' : 1,
+					'index' : index,
+				});
+			}
+		}
+
+		db_sequelize.addShopItem(json_value,json_image,json_propertys,function(err,add_item_id){
 			if(err){
-				callback(true,err);
+				logger.log("WARN","[HTTP_HANDLER][addShopItem] json_value:",util.inspect(json_value));
+				callback(true,{
+					'error' : 2,
+					'error_msg' : err,
+				});
 				return;
 			}else{
-				logger.log("HTTP_HANDLER","addShopItem: \n" + util.inspect(result));
-				ShopProxy.getInstance().addShopItemByAPI(result);
-				let shop_item_info = ShopProxy.getInstance().getMyShopItemInfo(result['id']);
+				logger.log("INFO",'[HTTP_HANDLER][addShopItem]'
+					,'add_item_id:',add_item_id);
+
+				json_value['id'] = add_item_id;
+				ShopProxy.getInstance().addShopItem(json_value,json_image,json_propertys);
+				let shop_item_info = ShopProxy.getInstance().getMyShopItemInfo(add_item_id);
+
 				if(shop_item_info != null){
 					callback(true,{
 						'error' : 0,
@@ -439,7 +499,6 @@ exports.addShopItem = function(header,fields,files,callback){
 						'error_msg' : "添加商品失败",
 					});
 				}
-				
 			}
 		});
 		return;
@@ -666,7 +725,8 @@ exports.saveSellerInfo = function(header,fields,files,callback){
 
 exports.saveShopItem = function(header,fields,files,callback){
 
-	logger.log("HTTP_HANDLER",util.inspect(fields));
+	let Tag = '[HTTP_HANDLER][saveShopItem]';
+	logger.log("INFO",Tag,'fields:',util.inspect(fields));
 
 	let json_result = {};
 
@@ -674,6 +734,7 @@ exports.saveShopItem = function(header,fields,files,callback){
 	var shop_id = PlayerProxy.getInstance().getMyShopId(header['uid']);
 
 	if(shop_id <= 0){
+		logger.log("WARN",Tag,'find shop error','uid',header['uid']);
 		callback(true,{
 			'error':1,
 			'error_msg' : '没有找到商铺信息',
@@ -681,96 +742,127 @@ exports.saveShopItem = function(header,fields,files,callback){
 		return;
 	}
 
-	var params = {};
+	let item_id = Number(fields['id']);
 
-	var params_type = {
-		'id':'INT',
-		'price' : 'FLOAT',
-		'name' : 'STRING',
-		'show_price' : 'FLOAT',
-		'property_value_0' : 'STRING',
-		'property_value_1' : 'STRING',
-		'property_value_2' : 'STRING',
-		'property_value_3' : 'STRING',
-		'property_value_4' : 'STRING',
-		'property_value_5' : 'STRING',
-		'property_value_6' : 'STRING',
-		'property_value_7' : 'STRING',
-		'property_value_8' : 'STRING',
-		'property_value_9' : 'STRING',
-		'property_name_0' : 'STRING',
-		'property_name_1' : 'STRING',
-		'property_name_2' : 'STRING',
-		'property_name_3' : 'STRING',
-		'property_name_4' : 'STRING',
-		'property_name_5' : 'STRING',
-		'property_name_6' : 'STRING',
-		'property_name_7' : 'STRING',
-		'property_name_8' : 'STRING',
-		'property_name_9' : 'STRING',
+	let dest_dir = "shop/item/";
 
-	};
-
-	var uploadFileKey = {
-		'show_image_1' : 'shop/image/',
-		'show_image_2' : 'shop/image/',
-		'show_image_3' : 'shop/image/',
-		'show_image_4' : 'shop/image/',
-		'detail_image_1' : 'shop/image/',
-		'detail_image_2' : 'shop/image/',
-		'detail_image_3' : 'shop/image/',
-		'detail_image_4' : 'shop/image/',	
-	}
-
-	check_dir();
-
-	for(var key in params_type){
-		if(key in fields){
-			if(params_type[key] == 'INT'){
-				params[key] = Number(fields[key]);
-			}else if(params_type[key] == 'FLOAT'){
-				params[key] = parseFloat(fields[key]);
-			}else{
-				params[key] = fields[key];
-			}
-		}
-	}
-
-	check_dir(uploadFileKey);
-	for(var key in uploadFileKey){
-		if(key in files){
-			var upload_file = files[key];
-			var parse_result = path.parse(upload_file.path);
-
-			var virtual_file_name = path.join(uploadFileKey[key],parse_result['base']);
-			var newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
-			
+	check_dir([dest_dir]);
+	let json_image = [];
+	for(var key = 1; key <= 4; ++key){
+		let upload_file_key = "show_image_" + key;
+		if(upload_file_key in files){
+			let upload_file = files[upload_file_key];
+			let virtual_file_name = path.join(dest_dir,path.basename(upload_file.path));
+			let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
-			params[key] = virtual_file_name.replace(/\\/g,"\\\\");
-		}else {
-			if('remove' in fields){
-				if(key in fields['remove']){
-					params[key] = "";
-				}else{
-					params[key] = null;
-				}
-			}else{
-				params[key] = null;
-			}
+			json_image.push({
+				'image_type' : 1,
+				'index' : key - 1,
+				'image' : path.join("Files",virtual_file_name).replace(/\\/g,"\\\\"),
+				'item_id' : item_id,
+			});
+		}else if(upload_file_key in fields){
+			json_image.push({
+				'image_type' : 1,
+				'index' : key - 1,
+				'image' : "",
+				'item_id' : item_id,
+			});
+		}
+	}
+	for(var key = 1; key <= 4; ++key){
+		let upload_file_key = "detail_image_" + key;
+		if(upload_file_key in files){
+			let upload_file = files[upload_file_key];
+			let virtual_file_name = path.join(dest_dir,path.basename(upload_file.path));
+			let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
+			fs.renameSync(upload_file.path, newPath);
+			json_image.push({
+				'image_type' : 3,
+				'index' : key - 1,
+				'image' : path.join('Files',virtual_file_name).replace(/\\/g,"\\\\"),
+				'item_id' : item_id,
+			});
+		}else if(upload_file_key in fields){
+			json_image.push({
+				'image_type' : 1,
+				'index' : key - 1,
+				'image' : "",
+				'item_id' : item_id,
+			});
+		}
+	}
+	logger.log("INFO",Tag," json_image : ", util.inspect(json_image));
+
+	let category_code = Number(fields['category_code']);
+	var price = Number(fields['price']);
+	var show_price = Number(fields['show_price']);
+	let item_name = fields['name'];
+	let link = fields['link'];
+	
+
+	let json_value = {};
+	json_value['category_code'] = category_code;
+	json_value['price'] = price;
+	json_value['show_price'] = show_price;
+	json_value['name'] = item_name;
+	json_value['shop_id'] = shop_id;
+	json_value['link'] = link;
+	
+	let json_propertys = [];
+	for(var index = 0; index < 8; ++index){
+		let property_type_key = "item_property_type_" + index;
+		let property_value_key = "item_property_value_" + index;
+		if(property_value_key in fields && property_value_key in fields){
+			json_propertys.push({
+				'property_type' : fields[property_type_key],
+				'property_value' : fields[property_value_key],
+				'is_show' : 1,
+				'index' : index,
+				'item_id' : item_id,
+			});
 		}
 	}
 
-	params['shop_id'] = shop_id;
-	db.saveShopItem(params,function(err,result){
-		ShopProxy.getInstance().updateShopItem(result);
-		let json_result = {
-			'error' : 0,
-			'item_info' : ShopProxy.getInstance().getMyShopItemInfo(result['id']),
-		};
-		callback(true,json_result);
-		return;
-	});
+	json_value['shop_id'] = shop_id;
+	json_value['id'] = item_id;
 
+	db_sequelize.saveShopItem(json_value,json_image,json_propertys,function(err){
+		
+		if(err != null){
+			logger.log("WARN",Tag,"db error:",err);
+			callback(true,{});
+			return;
+		}else{
+			logger.log("INFO",Tag,"aaaaa");
+			try{
+				ShopProxy.getInstance().saveShopItem(json_value,json_image,json_propertys);
+
+				let shop_item_info = ShopProxy.getInstance().getMyShopItemInfo(item_id);
+				
+				if(shop_item_info != null){
+					callback(true,{
+						'error' : 0,
+						'item_info' : shop_item_info,
+					});
+				}else{
+					callback(true,{
+						'error' : 1,
+						'error_msg' : "更新商品信息",
+					});
+				}
+			}catch(err){
+				logger.log("WARN",Tag,err);
+				callback(true,{
+					'error' : 3,
+					'error_msg' : '服务器内部错误'
+				});
+			}
+			
+			return;
+
+		}
+	})
 	return;
 
 }

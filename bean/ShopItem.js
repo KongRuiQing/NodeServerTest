@@ -1,3 +1,5 @@
+'use strict';
+
 var util = require('util');
 var ShopItem = function(){
 	// db row
@@ -13,13 +15,14 @@ var ShopItem = function(){
 	// other db
 	this.attentions = [];
 
-	this.item_propertys = [];
+	this.__item_propertys = [];
 
 	this.__show_images = [];
 	this.__detail_images = [];
-	this.__category_code = [];
 
+	this.__category_code = 0;
 
+	this.__link = "";
 }
 
 ShopItem.prototype.getId = function(){
@@ -48,7 +51,12 @@ var ShopItemProperty = function(){
 }
 
 ShopItemProperty.prototype.initFromDb = function(db_row){
-	this.id = Number(db_row['id']);
+	if('id' in db_row){
+		this.id = Number(db_row['id']);
+	}else{
+		this.id = 0;
+	}
+	
 	this.item_id = Number(db_row['item_id']);
 	this.property_type = db_row['property_type'];
 	this.property_value = db_row['property_value'];
@@ -100,10 +108,11 @@ ShopItem.prototype.initFromDb = function(db_row){
 	this.price = parseFloat(db_row['price']);
 	this.show_price = parseFloat(db_row['show_price']);
 	this.is_show = Number(db_row['is_show']) == 1;
-	this.__category_code.push(Number(db_row['category_code1']));
-	this.__category_code.push(Number(db_row['category_code2']));
-	this.__category_code.push(Number(db_row['category_code3']));
-	this.__groupIndex = Number(db_row['group_index']);
+	this.__category_code = Number(db_row['category_code']);
+	if('group_index' in db_row){
+		this.__groupIndex = Number(db_row['group_index']);
+	}
+	this.__link = db_row['link'];
 }
 
 
@@ -141,7 +150,7 @@ ShopItem.prototype.isSpreadItem = function(){
 ShopItem.prototype.addItemProperty = function(db_row){
 	var itemProperty = new ShopItemProperty();
 	itemProperty.initFromDb(db_row);
-	this.item_propertys.push(itemProperty);
+	this.__item_propertys.push(itemProperty);
 }
 
 ShopItem.prototype.getSpreadJsonItem = function(){
@@ -157,8 +166,21 @@ ShopItem.prototype.getSpreadJsonItem = function(){
 }
 
 ShopItem.prototype.getItemBasicInfo = function(){
+	
+	let image = this.__spread_image;
+	
+	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
+		image = this.__detail_images[0];
+	}
+
+	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
+		image = "";
+	}
+
+	
+
 	return {
-		'image': this.__spread_image,
+		'image': image,
 		'item_name':this.name,
 		'item_price':this.price,
 		'item_show_price' : this.show_price,
@@ -170,21 +192,31 @@ ShopItem.prototype.getItemBasicInfo = function(){
 }
 
 ShopItem.prototype.getMyShopItemInfo = function(){
+	
+	let image = this.__spread_image;
+	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
+		image = this.__detail_images[0];
+	}
+	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
+		image = "";
+	}
+
 	return {
-		'image' : this.__spread_image,
+		'image' : image,
 		'item_name' : this.name,
 		'item_price':this.price,
 		'item_show_price' : this.show_price,
 		'item_attention': this.attentions.length,
 		'item_id' : this.id,
 		'shop_id' : this.shop_id,
+		'group_index' : this.__groupIndex,
 	};
 }
 
 ShopItem.prototype.getItemPropertys = function(){
 	var result = [];
-	for(var key in this.item_propertys){
-		result.push(this.item_propertys[key].getJsonValue())
+	for(var key in this.__item_propertys){
+		result.push(this.__item_propertys[key].getJsonValue())
 	}
 	return result;
 }
@@ -206,8 +238,8 @@ ShopItem.prototype.getDetailJsonItem = function(){
 		'item_attention' : 0,
 		'item_property' : [],
 	};
-	for(var i in this.item_propertys){
-		item_detail['item_property'].push(this.item_propertys[i].getJsonValue());
+	for(var i in this.__item_propertys){
+		item_detail['item_property'].push(this.__item_propertys[i].getJsonValue());
 	}
 
 	return item_detail;
@@ -221,10 +253,11 @@ ShopItem.prototype.getDetailJsonItemInMyShop = function(){
 		'item_id' : this.id,
 		'detail_image' : this.__detail_images,
 		'show_image' : this.__show_images,
+		'link' : this.__link,
 		'item_property' : []
 	};
-	for(var i in this.item_propertys){
-		item_detail['item_property'].push(this.item_propertys[i].getJsonValue());
+	for(var i in this.__item_propertys){
+		item_detail['item_property'].push(this.__item_propertys[i].getJsonValue());
 	}
 
 	return item_detail;
@@ -274,11 +307,11 @@ ShopItem.prototype.saveShopItem = function(json_value){
 
 		if((name_key in json_value) && (value_key in json_value)){
 			
-			while(i >= this.item_propertys.length){
-				this.item_propertys.push(new ShopItemProperty());
+			while(i >= this.__item_propertys.length){
+				this.__item_propertys.push(new ShopItemProperty());
 			}
 
-			this.item_propertys[i].setItemProperty(json_value[name_key],json_value[value_key]);
+			this.__item_propertys[i].setItemProperty(json_value[name_key],json_value[value_key]);
 		}
 	}
 	return true;
@@ -287,8 +320,8 @@ ShopItem.prototype.saveShopItem = function(json_value){
 ShopItem.prototype.getDbParams = function(){
 
 	var item_propertys = [];
-	for(var key in this.item_propertys){
-		item_propertys.push(this.item_propertys[key].getDbParams());
+	for(var key in this.__item_propertys){
+		item_propertys.push(this.__item_propertys[key].getDbParams());
 	}
 
 	return {
@@ -327,4 +360,40 @@ ShopItem.prototype.getCategoryCode = function(){
 ShopItem.prototype.getShopId = function(){
 	return this.shop_id;
 }
+
+ShopItem.prototype.updateImage = function(json_image){
+	if('image_type' in json_image){
+		if(json_image['image_type'] == 1){
+			if(json_image['image'] != null){
+				this.__show_images[json_image['index']] = json_image['image'];
+				return true;
+			}
+
+		}else if(json_image['image_type'] == 2){
+			if(json_image['image'] != null){
+				this.__spread_image = json_image['image'];
+				return true;
+			}
+		}else if(json_image['image_type'] == 3){
+			if(json_image['image'] != null){
+				this.__detail_images[json_image['index']] = json_image['image'];
+				return true;
+			}
+		}
+
+	}
+	return false;
+}
+
+ShopItem.prototype.updateProperty = function(json_property){
+	if('index' in json_property){
+		let index = Number(json_property['index']);
+		while(index >= this.__item_propertys.length){
+			this.__item_propertys.push(new ShopItemProperty());
+		}
+		this.__item_propertys[index].initFromDb(json_property);
+
+	}
+}
+
 module.exports = ShopItem;

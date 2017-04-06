@@ -159,13 +159,21 @@ exports.getAdImage = function(headers, query,callback){
 
 exports.getShopSpread = function(headers, query,callback){
 
-	var city_no = query['city_no'] || "";
-	var area_code = query['area_code'] || '';
+	var city_no = 167;
+	var area_code = 0; //query['area_code'] || '';
 	var cate_code = query['category'] || '';
 	var sort_code = query['sortby'] || '';
 	let distance = Number(query['distance'] || "0");
-	let longitude = parseFloat(headers['longitude']);
-	let latitude = parseFloat(headers['latitude']);
+	
+	let longitude = 0.0;
+	if('longitude' in headers && !Number.isNaN(headers['longitude'])){
+		longitude = parseFloat(headers['longitude']);
+	}
+	let latitude = 0.0;
+	if('latitude' in headers && !Number.isNaN(headers['latitude'])){
+		latitude = parseFloat(headers['latitude']);
+	}
+	
 
 	
 	let last_distance = Number(query['last_distance']);

@@ -34,7 +34,8 @@ module.exports = function (sequelize, DataTypes) {
       allowNull : true,
       defaultValue : 0,
       'comment' : '经度',
-    }
+    },
+    
   },{
     'tableName' : 'userLogin',
   });

@@ -1,7 +1,7 @@
 'use strict';
 
 var Sequelize = require("sequelize");
-
+var util = require("util");
 var sequelize = new Sequelize('find', 'eplus-find', 'eplus-find', {
 	host: '139.224.227.82',
 	port:3306,
@@ -12,9 +12,21 @@ var UserLogin = sequelize.import("./model/user_login.js");
 var ShopModel = sequelize.import("./model/ShopModel.js");
 //var TestModel = sequelize.import("./model/TestModel.js");
 var UserModel = sequelize.import("./model/UserModel.js");
-var ClaimModel = sequelize.import("./model/ClaimModel.js")
+var ClaimModel = sequelize.import("./model/ClaimModel.js");
+var ItemModel = sequelize.import("./model/ItemModel.js");
+var ItemImageModel = sequelize.import("./model/ItemImageModel.js");
+var ItemPropertyModel = sequelize.import("./model/ItemPropertyModel.js");
+
 exports.TestFindOrCreate = function(name){
 	
+}
+
+
+exports.testUpdate = function(itemImages){
+	
+	Promise.all([updateItemImageModel({'image' : 'a','id' : 38}),updateItemImageModel({'image' : 'b','id' : 39})]).then(function(result){
+		console.log(result);
+	})
 }
 
 exports.updateUserLogin = function(id,longitude,latitude){
@@ -30,6 +42,7 @@ exports.updateUserLogin = function(id,longitude,latitude){
 		console.log(result1);
 	});
 }
+
 
 exports.insertRequestBeSeller = function(jsonObject,callback){
 	ShopModel.findOrCreate({
@@ -132,5 +145,106 @@ exports.uploadShopBigImage = function(shop_id,image,callback){
 		}else{
 			callback("数据库操作失败");
 		}
+	});
+}
+
+function updateManyItemImage(item_image){
+	return new Promise(function(resolve, reject){
+		console.log('item_image',item_image);
+		ItemImageModel.upsert(item_image,{
+			'where' : {
+				'item_id' : item_image['item_id'],
+				'image_type' : item_image['image_type'],
+				'index' : item_image['index'],
+			}
+		}).then(function(affectedCount, affectedRows){
+			resolve(affectedCount);
+		})
+	});
+}
+
+function updateManyItemProperty(item_property){
+	return new Promise(function(resolve,reject){
+		ItemPropertyModel.upsert(item_property,{
+			'where' : {
+				'item_id' : item_property['item_id'],
+				'index' : item_property['index'],
+			}
+		}).then(function(affectedCount,affectedRows){
+			resolve(affectedCount);
+		});
+	});
+}
+
+exports.saveShopItem = function(jsonItem,jsonImages,jsonPropertys,callback){
+	Promise.resolve(true)
+	.then(function(){
+		return new Promise(function(resolve, reject){
+			ItemModel.update(jsonItem,{
+				'where' : {
+					'id' : jsonItem['id'],
+				}
+			}).then(function(affectedCount){
+				console.log(affectedCount);
+				if(affectedCount[0] == 1){
+					resolve();
+				}else{
+					reject();
+				}
+			});
+		});
+	})
+	.then(function(){
+		let array_Promise = [];
+		jsonImages.forEach(function(image){
+			array_Promise.push(updateManyItemImage(image));
+
+		});
+		
+		return Promise.all(array_Promise);
+	})
+	.then(function(){
+		
+		let array_property_Promise = [];
+		jsonPropertys.forEach(function(property){
+			array_property_Promise.push(updateManyItemProperty(property));
+		});
+
+		return Promise.all(array_property_Promise);
+		
+	}).then(function(){
+
+		callback(null);
+	});
+}
+
+exports.addShopItem = function(jsonItem,jsonImages,jsonPropertys,callback){
+	ItemModel.findOrCreate({
+		'defaults' : jsonItem,
+		'where' : {
+			'id' : null,
+		}
+	}).then(function(dbResult){
+		
+		if(dbResult[1]){
+			let dbRow = dbResult[0]['dataValues'];
+			let id = dbRow['id'];
+			for(var key in jsonImages){
+				jsonImages[key]['item_id'] = id;
+			}
+			
+			ItemImageModel.bulkCreate(jsonImages).then(function(){
+				for(var key in jsonPropertys){
+					jsonPropertys[key]['item_id'] = id;
+				}
+				ItemPropertyModel.bulkCreate(jsonPropertys).then(function(){
+					callback(null,id);
+				});
+			});
+			return;
+		}else{
+			callback("create failed");
+		}
+		
 	});
 }
