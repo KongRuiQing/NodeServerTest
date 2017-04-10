@@ -208,6 +208,16 @@ exports.becomeSeller = function(header,fields,files,callback){
 	
 	
 	if(uid > 0){
+
+		let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+		if(shop_id != 0){
+			logger.log("WARN",'uid:',uid,' request be seller where shop_id:',shop_id);
+			callback(true,{
+				'error' : 1,
+				'error_msg' : '用户已经有商铺了,不能再申请',
+			});
+			return;
+		}
 		shopInfo['uid'] = uid;
 		
 		db_sequelize.insertRequestBeSeller(shopInfo,function(err,db_row){
