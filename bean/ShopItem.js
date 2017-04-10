@@ -253,6 +253,7 @@ ShopItem.prototype.getDetailJsonItemInMyShop = function(){
 		'item_id' : this.id,
 		'detail_image' : this.__detail_images,
 		'show_image' : this.__show_images,
+		'category_code' : this.__category_code,
 		'link' : this.__link,
 		'item_property' : []
 	};
