@@ -39,16 +39,19 @@ function handle_route(request,response,next){
 			try{
 				if(pathname in handle_http){
 					logger.log("POST_SERVER",util.inspect(headers,{depth:null}));
-					
-					handle_http[pathname](headers,fields,files,function(success,json_result){
+					setImmediate(function(){
+						handle_http[pathname](headers,fields,files,function(success,json_result){
 
-						logger.log("POST_SERVER","response:\n" + util.inspect(json_result));
+							logger.log("POST_SERVER","response:\n" + util.inspect(json_result));
 
-						response.writeHead(200, {'content-type': 'text/html'});
+							response.writeHead(200, {'content-type': 'text/html'});
 
-						response.end(JSON.stringify(json_result));
+							response.end(JSON.stringify(json_result));
+						});
+
 					});
 					return;
+					
 				}
 				else{
 					next(new Error(pathname + " no in handle_http"));

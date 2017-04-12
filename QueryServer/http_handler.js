@@ -115,7 +115,7 @@ exports.getShopList = function(headers, query,callback){
 
 exports.getShopDetail = function(headers, query,callback)
 {
-	var uid = query['uid'] || 0;
+	var uid = headers['uid'] || 0;
 	
 	var shop_id = Number(query['shop_id']);
 

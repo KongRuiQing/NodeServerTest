@@ -545,45 +545,49 @@ PlayerManager.prototype.SetUserShopId = function(uid,shop_id,shop_state){
 	};
 	
 }
+PlayerManager.prototype.getPlayerAttentionShopInfo = function(uid,shop_id){
+	let player = this.getPlayer(uid);
+	if(player != null){
+		let list = player.getMyAttention();
+		
+		let findAttentionIndex = list.findIndex(function(item){
+			return item['shop_id'] == shop_id;
+		});
+		let result = {};
 
-
-exports.attentionShop = function(guid,shop_id){
-
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null || uid == 0){
-		logger.error("PLAYER_LIST","[attentionShop] No guid find in guid: " + guid);
-		return null;
+		result['is_attention'] = findAttentionIndex>=0?1:0;
+		list = null;
+		return result;
 	}
-	var player_info = g_playerlist['playerCache'][uid];
+	return {
+		'error' : 2,
+		'error_msg' : '没有找到用户'
+	};
+}
+
+PlayerManager.prototype.getPlayer = function(uid){
+	if(uid in this.playerCache){
+		return this.playerCache[uid];
+	}
+	return null;
+}
+
+
+PlayerManager.prototype.attentionShop = function(uid,shop_id,is_attention){
+
+	
+	var player_info = this.getPlayer(uid);
 	if(player_info == null){
 		logger.error("PLAYER_LIST","[attentionShop] No player info find uid: " + uid);
 		return null;
 	}
-	var find_attention_shop = false;
-	for(var i in player_info['attention_shop']){
-		if(player_info['attention_shop'][i]['shop_id'] == shop_id){
-			find_attention_shop = true;
-			break;
-		}
-	}
-
-	if(!find_attention_shop){
-
-		var now_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+	if(is_attention){
+		let now_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss SSS');
 		player_info.attentionShop(shop_id,now_time,"");
-
-		logger.log("PLAYER_LIST","[playerList][attentionShop] all attention list:" + util.inspect(player_info.getMyAttention()));
-
-		return {
-			'error' : 0,
-			'uid' : uid,
-			'attention_time' : now_time
-		};
-		
 	}else{
-
-		return {'error' : 1005};
+		player_info.cancelAttentionShop(shop_id);
 	}
+	
 }
 
 exports.getUid = function(guid){

@@ -266,37 +266,71 @@ exports.changeShopState = function(header,fields,files,callback){
 }
 
 exports.attentionShop = function(header,fields,files,callback){
-	logger.log("HTTP_HANDLER","[attentionShop][params] fields:" + util.inspect(fields));
-	if(! 'guid' in fields){
+	logger.log("INFO","[attentionShop][params] fields:" + util.inspect(fields));
+	
+
+	let uid = header['uid'];
+
+	var shop_id = Number(fields['shop_id']);
+	let is_attention = Number(fields['is_attention']);
+
+	var player_attention_shop_info = PlayerProxy.getInstance().getPlayerAttentionShopInfo(uid,shop_id);
+	
+	if(player_attention_shop_info != null){
+		if('error' in player_attention_shop_info && player_attention_shop_info['error'] > 0){
+			callback(true,{
+				'error' : player_attention_shop_info['error'],
+				'error_msg' : player_attention_shop_info['error_msg'] || '操作失败,error_msg = ""',
+			});
+			return;
+		}
+		if(player_attention_shop_info['is_attention'] == is_attention){
+			callback(true,{
+				'error' : 1,
+				'error_msg' : '操作重复',
+			});
+			return;
+		}
+		let json_value = {
+			'uid' : uid,
+			'shop_id' : shop_id,
+		};
+		db_sequelize.playerAttentionShop(json_value,is_attention,function(err){
+			if(err){
+				logger.log("WARN",err);
+				callback(true,{
+					'error' : 2,
+					'error_msg' : '数据库失败',
+				});
+				return;
+			}else{
+				if(is_attention){
+					PlayerProxy.getInstance()
+				}
+				PlayerProxy.getInstance().attentionShop(uid,shop_id,is_attention);
+				ShopProxy.getInstance().addAttention(uid,shop_id);
+
+				let result = ShopProxy.getInstance().getShopAttentionInfo(uid,shop_id);
+
+				callback(true,{
+					'error' : 0,
+					'shop_info' : {
+						'shop_id' : json_value['shop_id'],
+						'is_attention' : is_attention,
+						'attention_num' : result['attention_num'],
+					}
+				});
+				return;
+			}
+		});
+
+	}else{
 		callback(true,{
-			'error' : 1001
+			'error' : 1,
+			'error_msg' : '没有获取到关注信息',
 		});
 		return;
 	}
-
-	var guid = fields['guid'];
-	var shop_id = Number(fields['shop_id']);
-
-	var player_attention_shop_info = PlayerProxy.attentionShop(guid,shop_id);
-	
-	var json_result = {};
-
-	if(player_attention_shop_info != null && player_attention_shop_info['error'] == 0){
-		var result = ShopProxy.attentionShop(player_attention_shop_info['uid'],shop_id);
-		if(result != null){
-			db.attentionShop(player_attention_shop_info['uid'],shop_id,1,player_attention_shop_info['attention_time']);
-			json_result['shop_info'] = result;
-			json_result['error'] = 0;
-		}else{
-			json_result['error'] = 1004;
-		}
-	}else if(player_attention_shop_info == null){
-		json_result['error'] = 1001;
-	}else{
-		json_result['error'] = player_attention_shop_info['error'];
-	}
-	//这里应该返回关注商铺的基本信息
-	callback(true,json_result);
 }
 
 exports.addToFavorites = function(header,fields,files,callback){

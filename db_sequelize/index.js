@@ -16,6 +16,7 @@ var ClaimModel = sequelize.import("./model/ClaimModel.js");
 var ItemModel = sequelize.import("./model/ItemModel.js");
 var ItemImageModel = sequelize.import("./model/ItemImageModel.js");
 var ItemPropertyModel = sequelize.import("./model/ItemPropertyModel.js");
+var UserAttentionModel = sequelize.import("./model/UserAttentionModel.js");
 
 exports.TestFindOrCreate = function(name){
 	
@@ -247,4 +248,19 @@ exports.addShopItem = function(jsonItem,jsonImages,jsonPropertys,callback){
 		}
 		
 	});
+}
+
+exports.playerAttentionShop = function(jsonAttention,is_attention,callback){
+	if(is_attention){
+		UserAttentionModel.upsert(jsonAttention)
+		.then(function(created){
+			callback(null,created);
+		});
+	}else{
+		UserAttentionModel.destroy({
+			'where' : jsonAttention
+		}).then(function(num){
+			callback(null,num);
+		});
+	}
 }

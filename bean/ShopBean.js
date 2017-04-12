@@ -279,35 +279,29 @@ ShopBean.prototype.addAttention = function(uid){
 	if(typeof uid != 'number'){
 		uid = Number(uid);
 	}
-	this.attentions.push(uid);
+	let index = this.attentions.indexOf(uid);
+	if(index < 0){
+		this.attentions.push(uid);
+		
+	}
+}
+ShopBean.prototype.ownAttention = function(uid){
+	return this.attentions.indexOf(uid) >= 0;
 }
 
 ShopBean.prototype.cancelAttention = function(uid){
-	var index = this.attentions.indexOf(uid);
+	let index = this.attentions.indexOf(uid);
 	if(index >= 0){
 		this.attentions.splice(index,1);
 	}
 }
 
-ShopBean.prototype.ownAttention = function(uid){
-
+ShopBean.prototype.getAttentionNum = function(){
 	if(this.attentions == null){
-		return false;
+		return 0;
 	}
-	if(typeof uid != 'number'){
-		uid = Number(uid);
-	}
-	//var num_uid = Number(uid);
 
-	if(uid <= 0) {
-		return false;
-	}
-	for(var key in this.attentions){
-		if(this.attentions[key] == uid){
-			return true;
-		}
-	}
-	return false;
+	return this.attentions.length;
 }
 
 ShopBean.prototype.addItemToShop = function(item_id){

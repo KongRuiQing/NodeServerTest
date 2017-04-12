@@ -135,16 +135,24 @@ Player.prototype.login = function(guid){
 }
 
 Player.prototype.attentionShop = function(shop_id,attention_time,remark){
-	var info = new PlayerAttentionShopInfo(shop_id,attention_time,remark);
-	this.attention_shop.push(info);
+	let findAttentionIndex = this.attention_shop.findIndex(function(attention){
+		return attention['shop_id'] == shop_id;
+	});
+	if(findAttentionIndex >= 0){
+		//this.attention_shop[findAttentionIndex]
+	}else{
+		var info = new PlayerAttentionShopInfo(shop_id,attention_time,remark);
+		this.attention_shop.push(info);
+	}
+
 }
 
 Player.prototype.cancelAttentionShop = function(shop_id){
-	for(var i = 0; i < this.attention_shop.length; ++i){
-		if(this.attention_shop[i].getShopId() == shop_id){
-			this.attention_shop.splice(i,1);
-			break;
-		}
+	let findAttentionIndex = this.attention_shop.findIndex(function(attention){
+		return attention['shop_id'] == shop_id;
+	});
+	if(findAttentionIndex >= 0){
+		this.attention_shop.splice(findAttentionIndex,1);
 	}
 }
 
