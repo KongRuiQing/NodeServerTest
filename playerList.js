@@ -487,19 +487,18 @@ exports.getMyFavoritesItems = function(guid,page){
 	return [];
 }
 
-exports.getMyAttention = function(guid){
+PlayerManager.prototype.getMyAttention = function(uid){
 
-	var uid = g_playerlist['guid_to_uid'][guid];
+	
 
 	if(uid == null){
-		logger.warn("PLAYER_LIST","getMyAttention:uid = 1,guid:" + guid);
-		logger.log("PLAYER_LIST","All guid is:");
-		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
+		logger.log("WARN","getMyAttention:uid = null");
+		
 		return [];
 	}
 	//logger.log("PLAYER_LIST","[getMyAttention] uid: " + uid);
 
-	var player_info = g_playerlist['playerCache'][uid];
+	var player_info = this.getPlayer(uid);
 
 	if(player_info != null){
 		return player_info.getMyAttention();

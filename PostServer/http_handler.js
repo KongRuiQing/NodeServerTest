@@ -311,7 +311,7 @@ exports.attentionShop = function(header,fields,files,callback){
 				ShopProxy.getInstance().addAttention(uid,shop_id);
 
 				let result = ShopProxy.getInstance().getShopAttentionInfo(uid,shop_id);
-
+				HeadInstance.getInstance().emit('/shop_attention',uid,shop_id);
 				callback(true,{
 					'error' : 0,
 					'shop_info' : {

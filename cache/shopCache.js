@@ -534,17 +534,17 @@ exports.getMyFavoritesItems = function(items){
 	return item_list;
 }
 
-exports.getMyAttentionShopInfo = function(shop_id_list){
+ShopManager.prototype.getMyAttentionShopInfo = function(shop_id_list){
 	var list = [];
 
 	for(var i in shop_id_list){
 		var shop_id = shop_id_list[i]['shop_id'];
-		var shop_info = g_shop_cache['dict'][shop_id];
+		var shop_info = this.getShop(shop_id);
 		if(shop_info != null){
 			list.push(shop_info.getShopAttentionInfo());
 		}
 	}
-	//logger.log("SHOP_CACHE",util.inspect(list));
+	
 	return list;
 }
 
@@ -1001,5 +1001,28 @@ ShopManager.prototype.getShopClaimState = function(shop_id){
 	}
 	json_result['area_name'] = DbCache.getInstance().getAreaName(json_result['city_no'],json_result['area_code']);
 	return json_result;
+}
 
+ShopManager.prototype.addShop = function(db_row){
+	let TAG = "[ShopManager][addShop]";
+	var shop_id = Number(db_row['Id']);
+	if(shop_id in this.dict){
+		logger.log("WARN",TAG,'error_msg:',shop_id,'is in this.dict');
+		return {
+			'error' : 1,
+			'error_msg' : `${shop_id} is find in this.dict`,
+		};
+	}
+	this.dict[shop_id] = new ShopBean();
+
+	this.dict[shop_id].initFromDbRow(db_row);
+
+	let uid = Number(shop_list[i]['uid']);
+	let state = Number(shop_list[i]['state']);
+	if(state == 0 || state == 1){
+		PlayerProxy.getInstance().SetUserShopId(uid,shop_id,state);
+	}
+
+	this.max_shop_id = Math.max(shop_id,g_shop_cache['max_shop_id']);
+	return null;
 }

@@ -321,17 +321,15 @@ exports.getApkVersion = function(headers, query,callback){
 
 exports.getMyAttention = function(headers, query,callback){
 
-	//logger.log("HTTP_HANDER","start getMyAttention ");
-	//logger.log("HTTP_HANDER","headers :" + util.inspect(headers));
 
-	var guid = headers['guid'];
-	
-	var list = PlayerCache.getMyAttention(guid);
+	let uid = headers['uid'];
+
+	var list = PlayerCache.getInstance().getMyAttention(uid);
 	
 
 	var json_result = {
 		'page' : query['page'],
-		'list' : ShopCache.getMyAttentionShopInfo(list)
+		'list' : ShopCache.getInstance().getMyAttentionShopInfo(list)
 	};
 
 	callback(0,json_result);
