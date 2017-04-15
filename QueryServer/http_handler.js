@@ -323,25 +323,22 @@ exports.getMyAttention = function(headers, query,callback){
 
 
 	let uid = headers['uid'];
-	let page = 1;
+	
+	let start_index = 0;
 	if('page' in query){
-		page = Number(query['page']);
+		start_index = Number(query['page']);
 	}
-	if(Number.isNaN(page)){
-		page = 1;
+	if(Number.isNaN(start_index)){
+		start_index = 0;
 	}
 	var list = PlayerCache.getInstance().getMyAttention(uid);
 	let page_size = 20;
-	let start_index = (page-1) * page_size;
-	if(start_index <0) { 
-		start_index = 0;
-	}
 	let slice_list = list.slice(start_index,start_index + page_size);
-
+	let attention_info_list = ShopCache.getInstance().getMyAttentionShopInfo(slice_list);
 	var json_result = {
-		'page' : query['page'],
-		'list' : ShopCache.getInstance().getMyAttentionShopInfo(slice_list),
-		'count' : list.length,
+		'page' : start_index,
+		'list' : attention_info_list,
+		'count' : attention_info_list.length,
 	};
 
 	callback(0,json_result);
