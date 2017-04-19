@@ -63,6 +63,13 @@ PlayerManager.prototype.setClaimShop = function(uid,shop_id){
 	}
 }
 
+PlayerManager.prototype.removeClaimShop = function(uid){
+	let player = this.getPlayer(uid);
+	if(player != null){
+		player.setClaim(0);
+	}
+}
+
 exports.getInstance = function(){
 	return g_playerlist;
 }

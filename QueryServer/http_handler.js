@@ -441,20 +441,20 @@ exports.getShopAttentionBoard = function(headers,query,callback){
 
 	var area_code = Number(query['area_code'] || 0);
 	var city = Number(query['city_no'] || 0);
-	var guid = headers['guid'];
+	
 	var search_key = query['search_key'] || "";
 
 	var category = Number(query['cate_code'] || 0) ;
 
-	var uid = PlayerCache.getUid(guid);
-	var page = Number(query['page'] || 1);
+	let uid = headers['uid'];
+	var start_index = Number(query['page'] || 0);
 	var page_size = 15;
-	var json_value = ShopCache.getShopAttentionBoard(uid,city,area_code,category,search_key);
+	var json_value = ShopCache.getInstance().getShopAttentionBoard(uid,city,area_code,category,search_key);
 
 	var json_result = {
 		'count' : json_value.length,
-		'page' : page,
-		'list':json_value.slice((page - 1) * page_size,page * page_size),
+		'page' : start_index,
+		'list':json_value.slice(start_index,start_index + 15),
 	}
 	
 	callback(0,json_result);

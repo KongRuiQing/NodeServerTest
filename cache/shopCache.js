@@ -16,7 +16,7 @@ var HeadInstance = require("../HttpHeadInstance");
 
 
 function ShopManager(){
-	this.dict = {};
+	this.dict = new Map();
 	this.item_property_name = {};
 	this.shop_item_property = {};
 	this.shop_items = {};
@@ -47,8 +47,8 @@ ShopManager.prototype.removeShopItem = function(param){
 				break;
 			}
 		}
-		if(shop_id in this.dict){
-			let shopBean = this.dict[shop_id];
+		if(this.dict.has(shop_id)){
+			let shopBean = this.getShop(shop_id);
 			shopBean.removeShopItem(item_id);
 		}
 	}
@@ -65,7 +65,7 @@ ShopManager.prototype.saveShopItem = function(json_item,json_image,json_property
 		,'json_item:',util.inspect(json_item)
 		,'json_image:',util.inspect(json_image));
 
-	if(!(shop_id in this.dict)){
+	if(!(this.dict.has(shop_id))){
 		logger.log("WARN","[ShopCache][addShopItem]"
 			,'shop_id:',shop_id);
 		return {
@@ -141,7 +141,7 @@ ShopManager.prototype.addShopItem= function(json_value,json_image,json_propertys
 
 	if(!(item_id in this.shop_items)){
 
-		if(!(shop_id in this.dict)){
+		if(!(this.dict.has(shop_id))){
 			logger.log("WARN","[ShopCache][addShopItem]"
 				,'shop_id:',shop_id);
 			return {
@@ -155,7 +155,7 @@ ShopManager.prototype.addShopItem= function(json_value,json_image,json_propertys
 		this.refreshShopItem(itemBean,json_value,json_image,json_propertys);
 		this.shop_items[item_id] = itemBean;
 		
-		let shopBean = this.dict[shop_id];
+		let shopBean = this.getShop(shop_id);
 		shopBean.addItemToShop(item_id);
 		HeadInstance.getInstance().emit("/get_my_shop_item_detail",item_id);
 	}else{
@@ -186,15 +186,15 @@ exports.InitFromDb = function(
 	shop_item_images,
 	shop_claims){
 	
-	g_shop_cache['dict'] = {};
+	g_shop_cache['dict'].clear();
 	g_shop_cache['max_shop_id'] = 0;
 
 	for(var i in shop_list){
-		var shop_id = parseInt(shop_list[i]['Id']);
+		var shop_id = Number(shop_list[i]['Id']);
 		
-		g_shop_cache['dict'][shop_id] = new ShopBean();
+		g_shop_cache['dict'].set(shop_id,new ShopBean());
 
-		g_shop_cache['dict'][shop_id].initFromDbRow(shop_list[i]);
+		g_shop_cache['dict'].get(shop_id).initFromDbRow(shop_list[i]);
 		let uid = Number(shop_list[i]['uid']);
 		let state = Number(shop_list[i]['state']);
 		if(state == 0 || state == 1){
@@ -221,7 +221,7 @@ exports.InitFromDb = function(
 		var item = shop_item[i];
 		var shop_id = item['shop_id'];
 
-		var shop_info = g_shop_cache['dict'][shop_id];
+		var shop_info = g_shop_cache['dict'].get(shop_id);
 		
 		if(shop_info != null){
 
@@ -258,9 +258,9 @@ exports.InitFromDb = function(
 	}
 	logger.log("INFO",shop_attention);
 	for(var i in shop_attention){
-		var shop_id = shop_attention[i]['shop_id'];
-		if(shop_id in g_shop_cache['dict']){
-			g_shop_cache['dict'][shop_id].addAttention(shop_attention[i]['uid']);
+		var shop_id = Number(shop_attention[i]['shop_id']);
+		if(g_shop_cache['dict'].has(shop_id)){
+			g_shop_cache['dict'].get(shop_id).addAttention(shop_attention[i]['uid']);
 		}
 		
 	}
@@ -298,8 +298,8 @@ exports.InitFromDb = function(
 	for(var i in shop_claims){
 		let uid = Number(shop_claims[i]['uid']);
 		let shop_id = Number(shop_claims[i]['shop_id']);
-		if(shop_id in g_shop_cache['dict']){
-			g_shop_cache['dict'][shop_id].setClaim(uid);
+		if(g_shop_cache['dict'].has(shop_id)){
+			g_shop_cache['dict'].get(shop_id).setClaim(uid);
 		}
 		
 	}
@@ -308,12 +308,12 @@ exports.InitFromDb = function(
 
 ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last_distance,page_size,search_key,longitude,latitude,distance){
 	var all_list = [];
-	console.log("last_distance:" + last_distance)
-	for(var i in g_shop_cache['dict']){
+	
 
-		var shop_info = g_shop_cache['dict'][i];
+	this.dict.forEach(function(shop_info,key){
+
 		var dis = shop_info.calcDistance(longitude,latitude);
-		//console.log("dis:" + dis)
+		
 		if(dis > last_distance){
 			if(distance <= 0 || dis < distance){
 				if(shop_info && shop_info.matchFilter(city_no,area_code,category)){
@@ -324,12 +324,11 @@ ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last
 					}else{
 						all_list.push(shop_info.getShopBasicInfo(uid,longitude,latitude));
 					}
-
 				}
 			}
 		}
-		
-	}
+	})
+	
 	all_list.sort(function(a,b){
 		return a['distance'] - b['distance'];
 	});
@@ -361,8 +360,8 @@ exports.GetNearShopList = function(type,long,late,page,size){
 }
 
 exports.getShopDetail = function(uid,shop_id){
-	
-	var shop_info = g_shop_cache['dict'][shop_id];
+	shop_id = Number(shop_id);
+	var shop_info = g_shop_cache['dict'].get(shop_id);
 	if(shop_info == null){
 		return {
 			'error' : 1,
@@ -392,8 +391,14 @@ exports.getShopDetail = function(uid,shop_id){
 }
 
 ShopManager.prototype.getShop = function(shop_id){
-	if(shop_id in this.dict){
-		return this.dict[shop_id];
+	if(!Number.isInteger(shop_id)){
+		shop_id = Number.parseInt(shop_id,10);
+	}
+	if(Number.isNaN(shop_id)){
+		return null;
+	}
+	if(this.dict.has(shop_id)){
+		return this.dict.get(shop_id);
 	}
 	return null;
 }
@@ -516,7 +521,7 @@ exports.getMyFavoritesItems = function(items){
 		//logger.log("SHOP_CACHE",util.inspect(shop_item));
 		if(shop_item != null){
 			var shop_id = shop_item['shop_id'];
-			var shop = g_shop_cache['dict'][shop_id];
+			var shop = g_shop_cache['dict'].get(shop_id);
 
 			if(shop != null){
 				var shop_basic_info = shop.getShopBasicInfo(0);
@@ -548,21 +553,6 @@ ShopManager.prototype.getMyAttentionShopInfo = function(shop_id_list){
 	return list;
 }
 
-
-
-
-
-ShopManager.prototype.InsertBecomeSeller = function(uid,shop_info){
-
-	var shop_id = g_shop_cache['max_shop_id'] + 1;
-	g_shop_cache['max_shop_id'] = shop_id;
-	shop_info['id'] = shop_id;
-	g_shop_cache['dict'][shop_id] = new ShopBean();
-	g_shop_cache['dict'][shop_id].newShopBean(shop_info);
-	//logger.log('SHOP_CACHE','new Shop bean:' + util.inspect(g_shop_cache['dict'][shop_id]));
-	
-	return g_shop_cache['dict'][shop_id].getMyShopInfo();
-}
 
 
 exports.getShopActivityList = function(page,page_size){
@@ -605,43 +595,26 @@ ShopManager.prototype.getShopAttentionInfo = function(shop_id){
 	
 }
 
-exports.CheckHasItem = function(shop_id,item_id){
-	var shop_info = g_shop_cache['dict'][shop_id];	
+ShopManager.prototype.CheckHasItem = function(shop_id,item_id){
+	var shop_info = this.getShop(shop_id);	
 	if(shop_info != null && shop_info.hasItem(item_id)){
 		return true;
 	}
 	return false;
 }
 
-exports.FindShopInfo = function(shop_id){
-	if(shop_id in g_shop_cache['dict']){
+ShopManager.prototype.FindShopInfo = function(shop_id){
+	let shop_info = this.getShop(shop_id);
+
+	if(shop_info != null){
 		return{
-			'state' : g_shop_cache['dict'][shop_id].getShopState()
+			'state' : shop_info.getShopState()
 		}
 		
 	}
 	return null;
 }
 
-exports.addShopItem = function(shop_id,name,price,show_price,image){
-
-	
-	if(!shop_id in g_shop_cache['dict']){
-		logger.error("SHOP_CACHE","can't find shop in g_shop_cache['dict'] shop_id:" + shop_id);
-		return 0;
-	}
-
-	var shop_item = new ShopItem();
-	var item_id = g_shop_cache['max_shop_item_id'] + 1;
-	g_shop_cache['max_shop_item_id'] = g_shop_cache['max_shop_item_id'] + 1;
-
-	shop_item.newShopItem(item_id,shop_id,image,name,price,show_price);
-
-	g_shop_cache['shop_items'][item_id] = shop_item;
-
-	g_shop_cache['dict'][shop_id].addItemToShop(item_id);
-	return g_shop_cache['shop_items'][item_id].getJsonValue();
-}
 
 ShopManager.prototype.getMyShopBasicInfo = function(uid,withItem){
 	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
@@ -725,32 +698,11 @@ ShopManager.prototype.saveShopBasicInfo = function(shop_id,db_row){
 }
 
 exports.addShopSpreadItem = function(guid,item,image,months){
-	var shop_id = PlayerProxy.getShopId(guid);
-	if(shop_id > 0){
-		var shop_info = g_shop_cache['dict'][shop_id];
-		if(shop_info != null){
-			var json_result = shop_info.addShopSpreadItem(item,image,months);
-
-			return json_result;
-		}
-	}
-	return null;
+	
 }
 
 exports.addShopActivity = function(guid,name,discard,image){
-	var shop_id = PlayerProxy.getShopId(guid);
-	if(shop_id > 0){
-		var shop_info = g_shop_cache['dict'][shop_id];
-		var activity_bean = g_shop_cache['activity_list'][shop_id];
-		if(shop_info != null && activity_bean != null){
-
-			activity_bean.setActivityInfo(name,discard,image);
-			
-			return activity_bean.getJsonValue();
-		}
-	}
-
-	return {};
+	
 }
 
 exports.getMyActivity = function(json_value){
@@ -790,33 +742,7 @@ ShopManager.prototype.updateSellerInfo = function(db_row){
 	return null;
 }
 
-exports.saveShopItem = function(json_value){
-	//logger.log("SHOP_CACHE","[saveShopItem][param]:" + util.inspect(json_value));
 
-	var shop_info = g_shop_cache['dict'][json_value['shop_id']];
-
-	if(shop_info == null){
-		logger.log("SHOP_CACHE","[saveShopItem][error]:" + "no find shop");
-		return null;
-	}
-
-	if(!shop_info.containsItem(json_value['id'])){
-		logger.log("SHOP_CACHE","[saveShopItem][error]:" + "no find item id in shop id:" + json_value['id']);
-		return null;
-	}
-
-	var shop_item_info = g_shop_cache['shop_items'][json_value['id']];
-
-	if(shop_item_info != null){
-		var result = shop_item_info.saveShopItem(json_value);
-
-		if(result === true){
-			return shop_item_info.getMyShopItemInfo();
-		}
-	}
-
-	return null;
-}
 
 exports.getMyShopItemDbParams = function(item_id){
 	var shop_item_info = g_shop_cache['shop_items'][item_id];
@@ -843,12 +769,12 @@ exports.getGameShopList = function(uid,city,area_code,category_code,page_size)
 	return list.slice(0,page_size);
 }
 
-exports.getShopAttentionBoard = function(uid,city,area_code,category_code,search_key){
+ShopManager.prototype.getShopAttentionBoard = function(uid,city,area_code,category_code,search_key){
 
 	var list = [];
 
-	for(var key in g_shop_cache['dict']){
-		var shop_info = g_shop_cache['dict'][key];
+	this.dict.forEach(function(shop_info,shop_id){
+		
 		if(shop_info != null){
 			if(shop_info.matchFilter(city,area_code,category_code)){
 				if(search_key.length > 0){
@@ -860,93 +786,37 @@ exports.getShopAttentionBoard = function(uid,city,area_code,category_code,search
 				}
 			}
 		}
-	}
-
+	});
+	
 	return list.sort(function(a,b){
 		return b['attention_num'] - a['attention_num']
 	});
 }
 exports.fillScheduleShopInfo = function(json_value){
 	
-	for(var i in json_value['list']){
-		var schedule_info = json_value['list'][i];
-		
-		for(var j in schedule_info['schedule_info']){
-			var shop_id = schedule_info['schedule_info'][j]['shop_id'];
-			
-			var shop_info = g_shop_cache['dict'][shop_id];
-			if(shop_info != null){
-				schedule_info['schedule_info'][j]['shop_info'] = shop_info.getSheduleInfo();
-			}
-		}
-	}	
+	
 }
 
 exports.getShopScheduleInfo = function(shop_id){
-	var shop_info = g_shop_cache['dict'][shop_id];
-	if(shop_info != null){
-		return shop_info.getSheduleInfo();
-	}
+	
 }
 
 exports.addFavoritesUser = function(shop_id,item_id,uid){
-	if(item_id in g_shop_cache['shop_items']){
-		g_shop_cache['shop_items'][item_id].addAttention(uid);
-	}
+	
 }	
 
 exports.setShopItemImage = function(item_id,index,image){
-	if(item_id in g_shop_cache['shop_items']){
-		g_shop_cache['shop_items'][item_id].setItemImage(index,image);
-
-		return {
-			'item_id' : item_id,
-			'index' : index,
-			'image' : image
-		};
-	}
-
-	return null;
+	
 }
 
 exports.removeShopByShopId = function(shop_id){
-	if(shop_id in g_shop_cache['dict']){
-		delete g_shop_cache['dict'][shop_id];
-
-		return null;
-	}
-
-	return {
-		'error' : 10005,
-		'error_msg' : '删除不存在的商铺',
-	};
+	
 
 }
 
 
 exports.ModifyShopByShopId = function(isAdd,shop_id,shopParams){
-	if(isAdd){
-		if(shop_id in g_shop_cache['dict']){
-			return {
-				'error' : 10003,
-				'error_msg' : '添加商铺时有重复id'
-			};
-		}
-		let shopBean = new ShopBean();
-		shopBean.initFromDbRow(shopParams);
-		g_shop_cache['dict'][shop_id] = shopBean;
-		logger.log("SHOP_CACHE","all_list:" + util.inspect(g_shop_cache['dict']));
-	}else{
-		if(shop_id in g_shop_cache['dict']){
-			let shopBean = g_shop_cache['dict'][shop_id];
-			shopBean.initFromDbRow(shopParams);
-		}else{
-			return {
-				'error':10004,
-				'error_msg':'修改商铺时,指定的商铺id不存在',
-			};
-		}
-	}
+	
 }
 
 ShopManager.prototype.getMyShopSellerInfo = function(shop_id){
@@ -976,6 +846,14 @@ ShopManager.prototype.setClaimShop = function(uid,shop_id){
 	if(shopBean != null){
 		shopBean.setClaim(uid);
 	}
+}
+
+ShopManager.prototype.removeClaimShop = function(shop_id){
+	let shopBean = this.getShop(shop_id);
+	if(shopBean != null){
+		shopBean.setClaim(0);
+	}
+
 }
 
 ShopManager.prototype.getShopClaimState = function(shop_id){
