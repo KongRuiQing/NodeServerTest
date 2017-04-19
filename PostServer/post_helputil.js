@@ -4,7 +4,7 @@ var path=require('path');
 const fs = require('fs');
 var util = require('util');
 var logger = require('../logger').logger();
-
+let BASE_SHOP_IMAGE = "../../www/SaySystemWeb/Files";
 function check_dir(dirs){
 	for(var key in dirs){
 		var dir_name = path.join(BASE_SHOP_IMAGE,dirs[key]);
