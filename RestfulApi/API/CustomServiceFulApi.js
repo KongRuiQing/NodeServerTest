@@ -145,7 +145,7 @@ function __patch(req,rsp){
 	}));
 }
 
-var __instance = new AdInstance();
+var __instance = new CustomServiceInstance();
 
 __instance.on('DELETE',__delete);
 __instance.on('POST',__post);
