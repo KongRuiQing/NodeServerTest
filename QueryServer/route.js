@@ -1,4 +1,5 @@
 var http_handler = require("./http_handler");
+var http_config = require("./logic/http_config.js");
 
 var handle_http = {};
 handle_http['/shop_spread'] = http_handler.getShopSpread;
@@ -25,4 +26,5 @@ handle_http['/attention_board_list'] = http_handler.getShopAttentionBoard;
 handle_http['/get_my_schedule_route_info'] = http_handler.getMyScheduleRouteInfo;
 handle_http['/get_ready_be_seller_data'] = http_handler.getBeSellerData;
 handle_http['/shop_claim_state'] = http_handler.getShopClaimState;
+handle_http['/custom_service'] = http_config.getCustomService;
 module.exports = handle_http;

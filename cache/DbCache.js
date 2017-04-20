@@ -23,7 +23,9 @@ function DbCacheManager(){
 	this.ad_image = {};
 	this.query_cache = {
 		'ad_image' : {},
-	}
+	};
+	this.__custom_service = new Map();
+
 }
 
 
@@ -89,6 +91,18 @@ DbCacheManager.prototype.InitFromDb = function(db_list_result){
 		}else{
 			this['ad_image'][ad_position] = [bean];
 		}
+	}
+	var list_all_custom_service = db_list_result[3];
+	for(var key in list_all_custom_service){
+		let area_code = Number.parseInt(list_all_custom_service[key]['area_code']);
+		if(!this.__custom_service.has(area_code)){
+			this.__custom_service.set(area_code,[]);
+		}
+		this.__custom_service.get(area_code).push({
+			'code' : list_all_custom_service[key]['id'],
+			'title' : list_all_custom_service[key]['title'],
+		});
+
 	}
 	//logger.log("DB_CACHE","[Init][ad_image]:" + util.inspect(g_db_cache['ad_image'],{depth:null}));
 }
@@ -492,4 +506,81 @@ DbCacheManager.prototype.getAreaName = function(city_no,area_code){
 		}
 	}
 	return "";
+}
+DbCacheManager.prototype.getCustomService = function(area_code){
+	if(this.__custom_service.has(area_code)){
+		let result = this.__custom_service.get(area_code);
+		return result;
+	}else{
+		return [];
+	}
+	
+}
+
+DbCacheManager.prototype.removeCustomService = function(json_delete){
+	let area_code = json_delete['area_code'];
+	if(this.__custom_service.has(area_code)){
+		let list = this.__custom_service.get(area_code);
+		let find_index = list.findIndex(function(item){
+			return item['code'] === json_delete['id'];
+		});
+		if(find_index >= 0){
+			list.splice(find_index,1);
+			return {
+				'error' : 0,
+			};
+		}else{
+			return {
+				'error' : 2,
+				'error_msg' : '没有找到id,id= ' + id,
+			};
+		}
+	}else{
+		return {
+			'error' : 2,
+			'error_msg' : '没有找到area_code,area_code =' + area_code,
+		}
+	}
+}
+
+DbCacheManager.prototype.addCustomService = function(json_add){
+	let area_code = json_add['area_code'];
+	if(!this.__custom_service.has(area_code)){
+		this.__custom_service.set(area_code,[]);
+	}
+	this.__custom_service.get(area_code).push({
+		'code' : json_add['id'],
+		'title' : json_add['title'],
+	});
+	return {
+		'error' : 0
+	};
+}
+
+DbCacheManager.prototype.updateCustomService = function(json_update){
+	let area_code = json_update['area_code'];
+	if(this.__custom_service.has(area_code)){
+		let list = this.__custom_service.get(area_code);
+		let find_index = list.findIndex(function(item){
+			return item['code'] == json_update['id'];
+		});
+		if(find_index >= 0){
+			list[find_index]['title'] = json_update['title'];
+			return {
+				'error' : 0
+			};
+		}else{
+			return {
+				'error' : 3,
+				'error_msg' : '没有找到指定id的客服信息'
+			}
+		}
+		
+
+	}else{
+		return {
+			'error' : 3,
+			'error_msg' : '没有找到指定area_code的客服信息'
+		};
+	}
 }

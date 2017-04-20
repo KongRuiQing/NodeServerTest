@@ -208,7 +208,7 @@ function checkParam(fields,check){
 /**
  * @api {post} /v1/area/ Area 
  * @apiName /v1/area
- * @apiGroup Area
+ * @apiGroup Database
  * @apiVersion 0.0.1
  * @apiDescription 通知区域发生变化(正在改)
  * @apiParam {Number} type 操作类型 0 表示删除,1表示修改,2表示添加
@@ -248,56 +248,13 @@ function checkParam(fields,check){
 
 
  exports.notifyArea = function(fields,files,callback){
- 	let check_result = checkParam(fields,['type','province','city','code']);
-
- 	if(check_result != null){
- 		callback(true,check_result);
- 		return;
- 	}
-
-
- 	let type = Number[fields['type']];
- 	let province = Number(fields['province']);
- 	let city = Number(fields['city']);
  	
- 	let code = Number(fields['code']);
- 	if(type == 0){
- 		DbCache.getInstance().removeArea(province,city,code);
- 	}else{
- 		check_result = checkParam(fields,['name']);
- 		if(check_result != null){
- 			callback(true,check_result);
- 			return;
- 		}
- 		let name = fields['name'];
- 		let param = {
- 			'province' : province,
- 			'city' : city,
- 			'code' : code,
- 			'name' : name,
- 		};
- 		let result = null;
- 		if(type == 1){
- 			result = DbCache.getInstance().modifyArea(param);
- 		}else{
- 			result = DbCache.getInstance().addArea(param)
- 		}
- 		if(result == null){
- 			callback(true,{
- 				'error' : 0
- 			});
- 		}else{
- 			callback(true,result);
- 		}
- 		
- 		return;
- 	}
  }
 
  /**
  * @api {post,delete,patch} admin/v1/category/  Category
  * @apiName admin/v1/category
- * @apiGroup Category
+ * @apiGroup Database
  * @apiVersion 0.0.1
  * @apiDescription 通知分类发生变化
  * @apiParam {Number} parent [category_code.parent]
@@ -322,104 +279,33 @@ function checkParam(fields,check){
  	
  }
 
- 
 
- /**
- * @api {post} /v1/shop_item/ shop_item
- * @apiName /v1/shop_item
- * @apiGroup Shop
- * @apiVersion 0.0.0 
- * @apiDescription 修改或添加商铺物品 (修改中)
- * @apiParam {Number} type 0:删除指定ID; 1:修改指定ID; 2:添加,没有id;
- * @apiParam {Number} id 商铺id [shop_item.id]
- * @apiParam {String} name 物品的名字 [shop_item.name]
- * @apiParam {Number} price 物品的价格 [shop_item.price]
- * @apiParam {Number} show_price 物品打拆后的价格 [shop_item.show_price]
- * @apiParam {Number} is_show 如果是1的话,表示是一店优品,要展示在前台首页 [shop_item.is_show]
- * @apiParam {String} spread_image 显示在app首页里的图片,推广图片.shop_item_image.image ->[shop_item_image.image_type = 1]
- * @apiParam {String} show_image 列表,展示图片 [shop_item_image.image] ->[shop_item_image.image_type = 2]
- * @apiParam {String} detail_image 列表,细节图片 [shop_item_image.image] ->[shop_item_image.image_type = 3]
- * @apiParam {String} link_url 直达链接
+/**
+ * @api {post,delete,patch} admin/v1/shop_cs/  shop_cs
+ * @apiName admin/v1/shop_cs
+ * @apiGroup Database
+ * @apiVersion 0.0.1
+ * @apiDescription 通知客服发生变化
+ * @apiParam {Number} id [shop_cs.id]
+ * @apiParam {String} title [shop_cs.title]
+ * @apiParam {Number} area_code [shop_cs.area_code]
 
  * @apiExample {http} usage:
- 	http://139.224.227.82:9891/admin/v1/shop_item
- * @apiParamExample {json} Request-Example:
+ 	http://139.224.227.82:9891//admin/v1/shop_cs/
+ * @apiSuccess {Number} error 错误号,返回0表示没有错误,其它表示错误 
+ * @apiSuccessExample {json} Response-Example-1
  * {
- 	type:0
- 	id:2
+	 error:0
  * }
- * 添加物品
- * @apiParamExample {json} Request-Example:
+ * @apiSuccessExample {json} Response-Example-2
  * {
- 	type:1
- 	id:2
-	name:'商品1',
-	price:100,
-	show_price:80,
-	is_show:false,
-	images:[
-		'shop/item/1.png',
-		'shop/item/2.png'
-	],
-	show_image:[
-		'shop/spread/1.png',
-	],
-	detail_image:[
-		'shop/item/1.png',
-		'shop/item/2.png',
-	],
-	link_url:'www.baidu.com'
+	 error:2,
+	 'error_msg' : '错误信息'
  * }
- */
-
- exports.notifyShopItem = function(fields,files,callback){
- 	let check_result = checkParam(fields,['type','id','shop_id']);
- 	let type = Number(fields['type']);
-
- 	if(type == 0){
- 		let param = {
- 			'id' : Number(fields['id']),
- 			'shop_id':Number(fields['shop_id'])
- 		}
-		//ShopCache.removeShopItem(param);
-		var result = ShopCache.getInstance().removeShopItem(param);
-		
-	}else{
-		check_result = checkParam(fields,['name','price','show_price','is_show','spread_image','show_images','detail_images','link_url']);
-		if(check_result != null){
-			callback(true,check_result);
-			return;
-		}
-		let param = {
-			'id' : Number(fields['id']),
-			'shop_id':Number(fields['shop_id']),
-			'name' : fields['name'],
-			'price' : fields['price'],
-			'show_price' : fields['show_price'],
-			'is_show' : Number(fields['is_show']),
-			'spread_image' : fields['spread_image'],
-			'show_images' : fields['show_images'],
-			'detail_images' : fields['detail_images'],
-			'link_url' : fields['link_url'],
-		};
-		let result = null;
-		if(type == 1){
-			result = ShopCache.getInstance().updateShopItem(param);
-		}else if(type == 2){
-			result = ShopCache.getInstance().addShopItemByAPI(param);
-		}
-		logger.log("HTTP_NOTIFY","All Shop Item :" + ShopCache.getInstance().getDebugAllItemString());
-		if(result == null){
-			callback(true,{
-				'error' : 0,
-			});
-			return;
-		}else{
-			callback(true,result);
-			return;
-		}
-	}
-}
+**/
+exports.notifyKF = function(fields,files,callback){
+ 	
+ }
 
 
 
