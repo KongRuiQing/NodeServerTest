@@ -15,7 +15,7 @@ function DbCacheManager(){
 	logger.log("INFO","DbCacheManager init only once");
 
 	this.area_menu = {};
-	this.city_info = {};
+	
 	this.__CategoryMenu = {
 		'shop' : {},
 		'item' : {},
@@ -48,7 +48,7 @@ DbCacheManager.prototype.InitFromDb = function(db_list_result){
 
 		var area = list_area_menu[i];
 		var city = Number(area['city']);
-		var code = Number(area['code']);
+		var code = Number(area['id']);
 
 		if(g_db_cache['area_menu'][city] == null){
 			g_db_cache['area_menu'][city] = {

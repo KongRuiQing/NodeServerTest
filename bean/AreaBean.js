@@ -11,7 +11,7 @@ AreaBean.prototype.initFromDbRow = function(param) {
 	this.province = Number(param['province']);
 	this.city = Number(param['city']);
 	this.name = param['name'];
-	this.code = Number(param['code']);
+	this.code = Number(param['id']);
 };
 
 AreaBean.prototype.getJsonValue = function(){
