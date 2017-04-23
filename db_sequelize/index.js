@@ -63,6 +63,7 @@ exports.insertRequestBeSeller = function(jsonObject,callback){
 			'user_name':jsonObject['user_name'],
 			'card_num' : jsonObject['card_num'],
 			'card_image' : jsonObject['card_image'],
+			'cs_id' : jsonObject['cs'],
 			'state' : 1,
 		},
 		'where':{

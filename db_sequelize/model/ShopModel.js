@@ -160,6 +160,12 @@ module.exports = function (sequelize, DataTypes) {
         allowNull : false,
         defaultValue : '',
     },
+    'cs_id' : {
+      type:DataTypes.BIGINT(11),
+      allowNull:false,
+      defaultValue:0,
+      comment : '客服',
+    }
 
   },{
     'tableName' : 'shop',

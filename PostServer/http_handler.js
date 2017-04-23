@@ -175,6 +175,10 @@ exports.becomeSeller = function(header,fields,files,callback){
 		'card_number' : {
 			'name' : 'card_number',
 			'type' : 'string'
+		},
+		'cs' : {
+			'name' : 'cs',
+			'type' : 'int',
 		}
 	}
 	var shopInfo = {};
@@ -1282,12 +1286,12 @@ exports.claimShop = function(header,fields,files,cb){
 		return;
 	}
 
-
 	let json_param = {
 		'name' : fields['name'],
 		'telephone' : fields['telephone'],
-		'uid' : header['uid'],
-		'shop_id' : fields['shop_id'],
+		'uid' : Number.parseInt(header['uid']),
+		'shop_id' : Number.parseInt(fields['shop_id']),
+		'cs' : Number(fields['cs']),
 	};
 
 	db_sequelize.insertClaimInfo(json_param,function(err,db_row){

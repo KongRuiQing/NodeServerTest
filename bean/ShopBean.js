@@ -46,6 +46,7 @@ var ShopBean = function(){
 	this.__claim = 0; // shop_state == 2 时,代表认领人的信息
 	//events.EventEmitter.call(this);
 
+	this.__cs = 0;
 
 }
 
@@ -122,6 +123,8 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.__itemGroup.push(db_row['groupName3']);
 	this.__fix_telephone = db_row['fix_telephone'];
 	this.__business = db_row['business'];
+
+	this.__cs = Number(db_row['cs_id']);
 }
 
 ShopBean.prototype.newShopBean = function(shop_info){
