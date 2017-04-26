@@ -214,7 +214,7 @@ exports.becomeSeller = function(header,fields,files,callback){
 	if(uid > 0){
 
 		let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
-		if(shop_id != 0){
+		if((!Number.isNaN(shop_id)) && (shop_id != 0)){
 			logger.log("WARN",'uid:',uid,' request be seller where shop_id:',shop_id);
 			callback(true,{
 				'error' : 1,
@@ -234,7 +234,7 @@ exports.becomeSeller = function(header,fields,files,callback){
 				return;
 			}
 
-			ShopProxy.getInstance().InsertBecomeSeller(uid,db_row);
+			ShopProxy.getInstance().addShop(db_row);
 
 			PlayerProxy.getInstance().SetUserShopId(uid,db_row['Id'],db_row['state']);
 

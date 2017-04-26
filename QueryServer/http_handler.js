@@ -92,13 +92,14 @@ exports.getShopList = function(headers, query,callback){
 	if('last_distance' in query){
 		last_distance = Number(query['last_distance']);
 	}
-	logger.log("HTTP_HANDER","getShopList param: category = ", category,'city='
-		,city,'page_size='
-		,page_size,'search_key=,'
-		,search_key,'longitude='
-		,longitude,'latitude'
-		,latitude,'latitude'
-		,last_distance,'last_distance'
+	logger.log("HTTP_HANDER","getShopList param: category = ", category
+		,'city=',city
+		,'page_size=',page_size
+		,'search_key=,',search_key,
+		'longitude=',longitude,
+		'latitude=',latitude,
+		'last_distance=',last_distance,
+		'area_code=',zone
 		);
 
 	var shop_list = ShopCache.getInstance().getShopList(uid,city,zone,category,last_distance,page_size,search_key,longitude,latitude,distance);

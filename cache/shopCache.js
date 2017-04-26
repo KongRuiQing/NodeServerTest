@@ -23,7 +23,7 @@ function ShopManager(){
 	this.show_items = [];
 	this.activity_list = {};
 	this.max_shop_item_id = 0;
-	this.max_shop_id = 0;
+	
 	this.max_activity_id = 0;
 
 	//events.EventEmitter.call(this);
@@ -187,7 +187,6 @@ exports.InitFromDb = function(
 	shop_claims){
 	
 	g_shop_cache['dict'].clear();
-	g_shop_cache['max_shop_id'] = 0;
 
 	for(var i in shop_list){
 		var shop_id = Number(shop_list[i]['Id']);
@@ -201,8 +200,6 @@ exports.InitFromDb = function(
 			PlayerProxy.getInstance().SetUserShopId(uid,shop_id,state);
 		}
 		
-
-		g_shop_cache['max_shop_id'] = Math.max(parseInt(shop_id),g_shop_cache['max_shop_id']);
 	}
 
 	for(var i in shop_comment){
@@ -307,13 +304,14 @@ exports.InitFromDb = function(
 }
 
 ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last_distance,page_size,search_key,longitude,latitude,distance){
+	let TAG = "[ShopCache][getShopList]";
 	var all_list = [];
 	
 
 	this.dict.forEach(function(shop_info,key){
 
 		var dis = shop_info.calcDistance(longitude,latitude);
-		
+		//logger.log("INFO",TAG,"dis=",dis,'last_distance=',last_distance,'distance=',distance);
 		if(dis > last_distance){
 			if(distance <= 0 || dis < distance){
 				if(shop_info && shop_info.matchFilter(city_no,area_code,category)){
@@ -327,7 +325,8 @@ ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last
 				}
 			}
 		}
-	})
+	});
+	logger.log("INFO",TAG,'all_list:',all_list);
 	
 	all_list.sort(function(a,b){
 		return a['distance'] - b['distance'];
@@ -895,12 +894,6 @@ ShopManager.prototype.addShop = function(db_row){
 
 	this.dict[shop_id].initFromDbRow(db_row);
 
-	let uid = Number(shop_list[i]['uid']);
-	let state = Number(shop_list[i]['state']);
-	if(state == 0 || state == 1){
-		PlayerProxy.getInstance().SetUserShopId(uid,shop_id,state);
-	}
 
-	this.max_shop_id = Math.max(shop_id,g_shop_cache['max_shop_id']);
 	return null;
 }
