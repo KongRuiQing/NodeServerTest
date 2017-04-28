@@ -307,5 +307,28 @@ exports.notifyKF = function(fields,files,callback){
  	
  }
 
+ /**
+ * @api {patch} admin/v1/shop_state/  shop_state
+ * @apiName admin/v1/shop_state
+ * @apiGroup SHOP
+ * @apiVersion 0.0.1
+ * @apiDescription 通知商铺状态发生变化 
+ * @apiParam {Number} shop_id [shop.Id]
+ * @apiParam {Number} state [shop.state]
+
+ * @apiExample {http} usage:
+ 	http://139.224.227.82:9891//admin/v1/shop_state/
+ * @apiSuccess {Number} error 错误号,返回0表示没有错误,其它表示错误 
+ * @apiSuccessExample {json} Response-Example-1
+ * {
+	 error:0
+ * }
+ * @apiSuccessExample {json} Response-Example-2
+ * {
+	 error:2,
+	 'error_msg' : '错误信息'
+ * }
+**/
+
 
 

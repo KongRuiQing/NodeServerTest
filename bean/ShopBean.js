@@ -318,7 +318,7 @@ ShopBean.prototype.matchFilter = function(city_no,area_code,category_code){
 	if(area_code != 0 && area_code != this.area_code){
 		return false;
 	}
-	if(this.state == 1){
+	if(this.state == 0 || this.state == 2){
 		return false;
 	}
 
@@ -642,7 +642,7 @@ ShopBean.prototype.getSheduleInfo = function(){
 	};
 }
 ShopBean.prototype.calcDistance = function(longitude,latitude,distance){
-	
+	//logger.log("INFO","shopBean:",longitude,latitude,this.__longitude,this.__latitude);
 	return FindUtil.getFlatternDistance(longitude,latitude,this.__longitude,this.__latitude)
 }
 
@@ -656,5 +656,7 @@ ShopBean.prototype.getClaimState = function(){
 		'claim' : this.__claim,
 	};
 }
-
+ShopBean.prototype.updateState = function(state){
+	this.state = state;
+}
 module.exports = ShopBean;

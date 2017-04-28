@@ -37,8 +37,11 @@ exports.getFlatternDistance = function(lat1,lng1,lat2,lng2){
 	d = 2*w*a;
 	h1 = (3*r -1)/2/c;
 	h2 = (3*r +1)/2/s;
-
-	return d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg));
+	var dis = d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg));
+	if(Number.isNaN(dis)){
+		dis = -1;
+	}
+	return dis;
 }
 
 exports.randVertifyCode = function(){

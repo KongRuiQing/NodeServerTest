@@ -17,6 +17,12 @@ var handle_login = function(req,rsp,next){
 		console.log('guid is null');
 		headers['uid'] = 0;
 	}
+	if(!('longitude' in headers)){
+		headers['longitude'] = 0;
+	}
+	if(!('latitude' in headers)){
+		headers['latitude'] = 0;
+	}
 	next();
 }
 

@@ -14,8 +14,25 @@ function ShopInstance(){
 
 util.inherits(ShopInstance, events.EventEmitter);
 
+function __error(rsp,error){
+	rsp.writeHead(error['error'], {'content-type': 'text/html'});
+	rsp.end(JSON.stringify(json_result));
+}
+
 function __delete(req,rsp){
 
+	if(!('id' in req.body)){
+		__error(rsp,{'error' : 400,'error_msg' : '没有传入id参数'});
+		return;
+	}
+	let shop_id = Number.parseInt(req.body['id']);
+	if(Number.isNaN(shop_id)){
+		__error(rsp,{'error' : 406,'error_msg' : 'id参数只能是数字'});
+		return;
+	}
+
+	ShopCache.getInstance().deleteShopByApi(shop_id);
+	
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	rsp.end("");
 	return true;

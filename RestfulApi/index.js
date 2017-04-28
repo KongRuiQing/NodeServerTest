@@ -13,6 +13,7 @@ var CategoryInstance = require("./API/CategoryRestFulApi.js");
 var ShopInstance = require("./API/ShopRestFulApi.js");
 var ShopClaimInstance = require("./API/ShopClaimFulApi.js");
 var CustomServiceInstance = require("./API/CustomServiceFulApi.js");
+var ShopStateInstance = require("./API/ShopStateFulApi.js");
 var server = null;
 
 var connect = require('connect');
@@ -29,6 +30,7 @@ http_obj['/admin/v1/category'] = CategoryInstance.Instance();
 http_obj['/admin/v1/shop'] = ShopInstance.Instance();
 http_obj['/admin/v1/claim'] = ShopClaimInstance.Instance();
 http_obj['/admin/v1/shop_cs'] = CustomServiceInstance.Instance();
+http_obj['/admin/v1/shop_state'] = ShopStateInstance.Instance();
 
 let PORT = 0;
 function handle_route(request,response,next){

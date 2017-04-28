@@ -69,7 +69,7 @@ exports.getShopList = function(headers, query,callback){
 
 	var page_size = 10;
 	if('page_size' in query){
-		page_size = Number(query['page_size'] || 0);
+		page_size = Number(query['page_size'] || 10);
 	}
 	var search_key = "";
 	if('search_key' in query){
@@ -121,18 +121,26 @@ exports.getShopDetail = function(headers, query,callback)
 	var shop_id = Number(query['shop_id']);
 
 	var json_result = null;
-
+	logger.log('INFO','[getShopDetail]','shop_id:',shop_id);
 	if(shop_id > 0){
 		json_result = ShopCache.getShopDetail(uid,shop_id);
+		let error = 0;
+		if(json_result == null){
+			error = 1004;
+		}else{
+			if('error' in json_result){
+				error = json_result['error'];
+			}
+		}
 
-		if(json_result != null){
-			json_result['error'] = 0;
+		if(error == 0){
 			callback(0,json_result);
 			return;
 		}else{
 			callback(0,{
-				'error' : 1004
+				'error' : error
 			});
+			return;
 		}
 	}else{
 		callback(0,{
