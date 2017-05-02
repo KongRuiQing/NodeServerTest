@@ -28,7 +28,7 @@ function handler_Error(error){
 function handler_ping(){
 	this.pong('pong');
 }
-function handler_close(){
+function handler_close(code,reason){
 	console.log('code:' ,code,'reason:',reason);
 	let uid = this.uid;
 	console.log('uid:',uid,'onClose');

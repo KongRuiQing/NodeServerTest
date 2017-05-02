@@ -134,8 +134,6 @@ exports.InitFromDb = function(
 		}
 	}
 	
-
-	logger.log(PLAYER_LIST,util.inspect(shop_claims));
 	for(var i in shop_claims){
 		let uid = Number(shop_claims[i]['uid']);
 		let shop_id = Number(shop_claims[i]['shop_id']);

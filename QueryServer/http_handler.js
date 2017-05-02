@@ -279,8 +279,8 @@ exports.getMyShopItemDetail = function(headers,query,callback){
 
 exports.getShopItemDetail = function(headers, query,callback){
 	var uid = headers['uid'];
-	var shop_id = query['shop_id'];
-	var item_id = query['item_id'];
+	var shop_id = Number(query['shop_id']);
+	var item_id = Number(query['item_id']);
 
 	var shop_item_detail = ShopCache.getInstance().getShopItemDetail(uid,shop_id,item_id);
 	if('error' in shop_item_detail && Number(shop_item_detail['error']) != 0){

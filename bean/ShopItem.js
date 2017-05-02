@@ -237,6 +237,7 @@ ShopItem.prototype.getDetailJsonItem = function(){
 		'shop_id' : this.shop_id,
 		'item_attention' : 0,
 		'item_property' : [],
+		'link':this.__link,
 	};
 	for(var i in this.__item_propertys){
 		item_detail['item_property'].push(this.__item_propertys[i].getJsonValue());

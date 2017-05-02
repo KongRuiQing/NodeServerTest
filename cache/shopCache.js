@@ -13,7 +13,7 @@ var ShopComment = require("../bean/ShopComment.js");
 
 var DbCache = require("../cache/DbCache.js")
 var HeadInstance = require("../HttpHeadInstance");
-
+let TAG = "[ShopCache]"
 
 const INIT_SHOP_STATE = 0;
 const PASS_SHOP_STATE = 1;
@@ -162,7 +162,7 @@ exports.getInstance = function(){
 exports.InitFromDb = function(
 	shop_list,
 	shop_comment,
-	shop_item,
+	shop_item_list,
 	shop_item_property,
 	shop_attention,
 	activity_list,
@@ -196,9 +196,9 @@ exports.InitFromDb = function(
 		
 	}
 
-	for(var i in shop_item){
+	for(var i in shop_item_list){
 
-		var item = shop_item[i];
+		var item = shop_item_list[i];
 		var shop_id = item['shop_id'];
 
 		var shop_info = g_shop_cache['dict'].get(shop_id);
@@ -207,19 +207,21 @@ exports.InitFromDb = function(
 
 			var item_id = Number(item['id']);
 			shop_info.addItemToShop(item_id);
-			
-			g_shop_cache['shop_items'].set(item_id,new ShopItem);
+			let shop_item = new ShopItem();
+			shop_item.initFromDb(shop_item_list[i]);
+			g_shop_cache['shop_items'].set(item_id,shop_item);
 			//logger.log("SHOP_CACHE","[init][shopitem]:" + util.inspect(shop_item[i]))
-			g_shop_cache['shop_items'].get(item_id).initFromDb(shop_item[i]);
-
-			if(g_shop_cache['shop_items'].get(item_id).isSpreadItem()){
+			
+			if(shop_item.isSpreadItem()){
 				g_shop_cache['show_items'].push(item['id']);
 			}
 			
 			g_shop_cache['max_shop_item_id'] = Math.max(g_shop_cache['max_shop_item_id'],parseInt(item['id']));
 		}
-
 	}
+	g_shop_cache['shop_items'].forEach(function(value){
+		logger.log("shop_item:",util.inspect(value));
+	})
 
 	//logger.log("SHOP_CACHE","max_shop_item_id:" + g_shop_cache['max_shop_item_id']);
 
@@ -287,7 +289,7 @@ exports.InitFromDb = function(
 }
 
 ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last_index,page_size,search_key,longitude,latitude,distance){
-	let TAG = "[ShopCache][getShopList]";
+	
 	var all_list = [];
 	
 
@@ -411,14 +413,15 @@ ShopManager.prototype.getMyShopItemDetail = function(uid,shop_id,item_id){
 }
 
 ShopManager.prototype.getShopItemDetail = function(uid,shop_id,shop_item_id) {
-	logger.log("SHOP_CACHE","[getShopItemDetail] params:[ uid:" + uid+ ",shop_id:" + shop_id + ",shop_item_id:" + shop_item_id + "]");
+	logger.log("SHOP_CACHE",TAG,"[getShopItemDetail] params:[ uid:" + uid+ ",shop_id:" + shop_id + ",shop_item_id:" + shop_item_id + "]");
 	var shop_item_detail = {};
 	shop_item_detail['error'] = 0;
 
 	var shop_info = this.getShop(shop_id);
 	
 	if(shop_info != null){
-		var shop_item = this.getItemBean(shop_item_id);
+		var shop_item = this.getItemBean(Number(shop_item_id));
+		logger.log('INFO',TAG,'item:',util.inspect(shop_item));
 		if(shop_item != null){
 			shop_item_detail = shop_item.getDetailJsonItem();
 			shop_item_detail['error'] = 0;
@@ -934,7 +937,6 @@ ShopManager.prototype.getShopClaimState = function(shop_id){
 }
 
 ShopManager.prototype.addShop = function(db_row){
-	let TAG = "[ShopManager][addShop]";
 	var shop_id = Number(db_row['Id']);
 	if(shop_id in this.dict){
 		logger.log("WARN",TAG,'error_msg:',shop_id,'is in this.dict');
