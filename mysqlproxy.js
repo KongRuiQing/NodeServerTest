@@ -1,9 +1,8 @@
 'use strict';
-
+console.log("start mysql");
 var mysql = require('mysql');
 var util = require('util');
-var newsfeed = require('./logic/newsfeed');
-var friend = require('./logic/friend');
+
 var logger = require('./logger').logger();
 var ShopCache = require("./cache/shopCache");
 var DbCache = require("./cache/DbCache");
@@ -34,7 +33,7 @@ function handleInitMysql(err){
 	}
 	initUserInfoFromDB();
 	//initNewsfeedFromDB(newsfeed.init_newsfeed);
-	initFriendRelation(friend.init_friend_relation);
+	
 	initDbCache();
 	initShopCache();
 
@@ -100,10 +99,6 @@ function initNewsfeedFromDB(callback){
 		callback(json_result);
 	});
 	
-}
-
-function initFriendRelation(callback){
-	callback("1");
 }
 
 function initDbCache(){

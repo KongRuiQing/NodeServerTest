@@ -5,7 +5,6 @@ var url=require('url');
 
 var http_test = require("./http_test");
 var logger = require('../logger').logger();
-var server =null;
 var util = require('util');
 var connect = require('connect');
 var favicon = require('serve-favicon');

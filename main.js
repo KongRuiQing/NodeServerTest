@@ -1,3 +1,4 @@
+console.log('Start Server');
 var net = require('net');
 var db = require('./mysqlproxy');
 var iconv = require('iconv-lite');
@@ -8,9 +9,8 @@ var url=require('url');
 var query_server = require("./QueryServer/server");
 var image_file_server = require("./ImageFileServer/Server");
 var post_server = require("./PostServer/Server");
-var down_server = require("./down/server");
 var resutapi_server = require("./RestfulApi");
-
+var webSocket = require("./WebSocketServer");
 var logger = require('./logger').logger();
 var moment = require('moment');
 require("./HttpHeadInstance");
@@ -38,7 +38,7 @@ var PORT = 9888;
 var QUERY_PORT = 9889;
 var IMAGE_FILE_PORT = 9890;
 var POST_SERVER_PORT = 9891;
-var DOWN_SERVER_PORT = 9892;
+var WEB_SOCKET_SERVER = 9892;
 var HTTP_RESTFUL_API_PORT = 12000;
 
 //var chatServer = net.createServer();
@@ -55,5 +55,5 @@ var HTTP_RESTFUL_API_PORT = 12000;
 query_server.start(HOST,QUERY_PORT);
 image_file_server.start(HOST,IMAGE_FILE_PORT);
 post_server.start(HOST,POST_SERVER_PORT);
-down_server.start(HOST,DOWN_SERVER_PORT);
 resutapi_server.start(HOST,HTTP_RESTFUL_API_PORT);
+webSocket.start(HOST,WEB_SOCKET_SERVER);

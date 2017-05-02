@@ -7,7 +7,7 @@ var logger = require('../../logger').logger();
 const Joi = require('joi');
 var DbCacheManager = require("../../cache/DbCache.js");
 var ShopCache = require("../../cache/shopCache.js")
-
+var WebSocketServer = require('../../WebSocketServer');
 const schema = Joi.object().keys({
     'shop_id': Joi.number().integer().min(1).required(),
     'state': Joi.number().integer().min(0).max(3).required(),
@@ -47,7 +47,7 @@ function __post(req,rsp){
 }
 
 function __patch(req,rsp){
-	logger.log("INFO","req.body:",req.body);
+	
 	const result = Joi.validate(req.body, schema);
 	let error = 0;
 	let error_msg = "";
@@ -55,6 +55,10 @@ function __patch(req,rsp){
 		let shop_id = Number(req.body['shop_id']);
 		let state = Number(req.body['state']);
 		ShopCache.getInstance().updateShopState(shop_id,state);
+		let uid = ShopCache.getInstance().getOwner(shop_id);
+		if(uid > 0){
+			WebSocketServer.sendMessage(uid,'update_shop_state',{'state' : state});
+		}
 	}else{
 		error_msg = result.error;
 		error = 1;

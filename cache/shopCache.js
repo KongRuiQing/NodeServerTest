@@ -286,7 +286,7 @@ exports.InitFromDb = function(
 
 }
 
-ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last_distance,page_size,search_key,longitude,latitude,distance){
+ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last_index,page_size,search_key,longitude,latitude,distance){
 	let TAG = "[ShopCache][getShopList]";
 	var all_list = [];
 	
@@ -296,7 +296,7 @@ ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last
 		var dis = shop_info.calcDistance(longitude,latitude);
 		//logger.log("INFO",TAG,"dis=",dis,'last_distance=',last_distance,'distance=',distance);
 		
-		if(dis < 0 || dis > last_distance){
+		if( Number.isNaN(dis) || dis >= 0 ){
 			if(distance <= 0 || dis < distance){
 				if(shop_info && shop_info.matchFilter(city_no,area_code,category)){
 					if(search_key.length > 0){
@@ -310,23 +310,22 @@ ShopManager.prototype.getShopList = function(uid,city_no,area_code,category,last
 			}
 		}
 	});
-	logger.log("INFO",TAG,'all_list:',all_list);
 	
 	all_list.sort(function(a,b){
 		return a['distance'] - b['distance'];
 	});
 	
-
-	if(all_list.length == 0){
+	if(last_index >= all_list.length){
 		return {
 			'list' : [],
-			'last_distance' :  last_distance,
+			'total' : all_list.length,
 		};
 	}else{
-		var list = all_list.slice(0,page_size);
+
+		var list = all_list.slice(last_index,last_index + page_size);
 		return {
 			'list': list,
-			'last_distance' :  list[list.length - 1]['distance'],
+			'total' : all_list.length,
 		};
 	}
 
@@ -435,42 +434,50 @@ ShopManager.prototype.getShopItemDetail = function(uid,shop_id,shop_item_id) {
 
 
 
-ShopManager.prototype.getShopSpread = function(last_distance,longitude,latitude,city_no,area_code,distance,category_code,keyword){
+ShopManager.prototype.getShopSpread = function(last_index,longitude,latitude,city_no,area_code,distance,category_code,keyword){
 	var arr_result = [];
-	//logger.log("INFO","[ShopManager][getShopSpread] this.show_items:",this.show_items);
-	for(var i in this.show_items){
-		var item_id = this.show_items[i];
-
-		var shop_item = this.getItemBean(item_id);
+	logger.log("INFO",'this.show_items:',this.show_items);
+	let that = this;
+	this.show_items.forEach(function(item_id,index){
 		
-		if(shop_item != null){
-			if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
-				let item_category = shop_item.getCategoryCode();
-				//console.log("item_category",util.inspect(item_category));
-				let matchCategory = DbCache.getInstance().matchCategor(category_code,item_category,"item");
-				if(!matchCategory){
-					continue;
-				}
-				//logger.log("INFO",'matchCategory:',matchCategory);
-				var shop_id = shop_item['shop_id'];
+		var shop_item = that.getItemBean(item_id);
+		if(shop_item == null){
+			return;
+		}
 
-				var shop_info = this.getShop(shop_id);
-				if(shop_info != null){
-					var dis = shop_info.calcDistance(longitude,latitude);
-					logger.log("INFO","dis:" + dis );
-					if(dis > last_distance){
-						if(distance <= 0 || dis < distance){
-							if(shop_info.matchFilter(city_no,area_code,0)){
-								arr_result.push(shop_item.getSpreadItemInfo(dis));
-							}
-						}
-						
-					}
+
+		if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
+
+			let item_category = shop_item.getCategoryCode();
+
+			let matchCategory = DbCache.getInstance().matchCategor(category_code,item_category,"item");
+			if(!matchCategory){
+
+				return;
+			}
+			var shop_id = shop_item['shop_id'];
+
+			var shop_info = that.getShop(shop_id);
+			if(shop_info == null){
+				return;
+			}
+
+			
+			let dis = shop_info.calcDistance(longitude,latitude);
+			if(Number.isNaN(dis)){
+				dis = 0;
+			}
+			//logger.log("INFO",'dis:',dis,'distance:',distance,'result:',distance <= 0);
+			if(distance <= 0 || dis < distance){
+				//logger.log("INFO",'city_no:',city_no,'area_code:',area_code);
+				if(shop_info.matchFilter(city_no,area_code,0)){
+					logger.log("INFO","b");
+					arr_result.push(shop_item.getSpreadItemInfo(dis));
 				}
 			}
-			
 		}
-	}
+	});
+	
 
 	if(arr_result.length > 0){
 
@@ -478,17 +485,17 @@ ShopManager.prototype.getShopSpread = function(last_distance,longitude,latitude,
 			return left['distance'] - right['distance'];
 		});
 		var page_size = 30;
-		let arr_list = arr_result.slice(0,page_size);
+		let arr_list = arr_result.slice(last_index,last_index + page_size);
 		return {
 			'list': arr_list,
 			'page_size' : page_size,
-			'last_distance' : arr_list[arr_list.length - 1]['distance'],
+			'total' : arr_result.length,
 		};
 
 	}else{
 		return {
 			'list' : [],
-			'last_distance' : last_distance,
+			'total' : 0,
 		}
 	}
 
@@ -794,9 +801,69 @@ exports.setShopItemImage = function(item_id,index,image){
 	
 }
 
-exports.removeShopByShopId = function(shop_id){
-	
+ShopManager.prototype.removeShopByShopId = function(shop_id){
+	let shop = this.getShop(shop_id);
+	if(shop == null){
+		logger.log("WARN",'用户请求删除的shop不存在');
+		return {'error' : 400,'error_msg' : '用户请求删除的shop不存在'};
+	}
 
+	this.dict.delete(shop_id);
+
+	logger.log("INFO",'删除成功');
+	if(this.dict.has(shop_id)){
+		logger.log("INFO","aaa");
+	}
+	let all_remove_item = [];
+	this.shop_items.forEach(function(itemBean,itemId){
+		if(itemBean.getShopId() == shop_id){
+			all_remove_item.push(itemId);
+		}
+	});
+	logger.log("INFO",'to remove shop_item num',all_remove_item.length);
+	all_remove_item.forEach(function(to_remove_item_id){
+		this.shop_items.delete(to_remove_item_id);
+	});
+	all_remove_item.forEach(function(to_remove_item_id){
+		let find_index = this.show_items.findIndex(function(item_id){
+			return item_id == to_remove_item_id;
+		});
+		if(find_index >= 0){
+			this.show_items.splice(find_index,1);
+		}
+	});
+}
+
+ShopManager.prototype.updateShopByApi = function(json_shop){
+	let shop = this.getShop(json_shop['Id']);
+	if(shop != null){
+		shop.updateShopInfo(json_shop);
+		return {
+			'error' : 0,
+		}
+	}
+
+	return {
+		'error' : 1,
+		'error_msg' : '找不到对应的商铺信息',
+	}
+}
+
+ShopManager.prototype.addShopByApi = function(json_shop){
+	let shop = this.getShop(json_shop['Id']);
+	if(shop == null){
+		shop = new ShopBean();
+		shop.updateShopInfo(json_shop);
+		this.dict.set(json_shop['Id'],shop);
+		return {
+			'error' : 0,
+		}
+	}
+
+	return {
+		'error' : 1,
+		'error_msg' : '添加商铺时,商铺id重复',
+	}
 }
 
 
@@ -884,28 +951,6 @@ ShopManager.prototype.addShop = function(db_row){
 	return null;
 }
 
-ShopManager.prototype.deleteShopByApi = function(shop_id){
-	let shop = this.getShop(shop_id);
-	if(shop == null){
-		logger.log("WARN",'用户请求删除的shop不存在');
-		return {'error' : 400,'error_msg' : '用户请求删除的shop不存在'};
-	}
-	delete this.dict[shop_id];
-	logger.log("INFO",'删除成功');
-
-	let all_remove_item = [];
-	this.shop_items.forEach(function(itemBean,itemId){
-		if(itemBean.getShopId() == shop_id){
-			all_remove_item.push(itemId);
-		}
-	});
-	logger.log("INFO",'to remove shop_item num',all_remove_item.length);
-	all_remove_item.forEach(function(to_remove_item_id){
-		this.shop_items.delete(to_remove_item_id);
-	});
-	
-}
-
 ShopManager.prototype.removeShopItem = function(param){
 	let item_id = param['id'];
 	let itemBean = this.getItemBean(item_id);
@@ -932,4 +977,12 @@ ShopManager.prototype.updateShopState = function(shop_id,shop_state){
 		shop.updateState(shop_state);
 	}
 	return;
+}
+
+ShopManager.prototype.getOwner = function(shop_id){
+	let shop = this.getShop(shop_id);
+	if(shop != null){
+		return shop.getOwner();
+	}
+	return 0;
 }

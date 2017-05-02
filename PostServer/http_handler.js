@@ -44,6 +44,7 @@ function upload_file_to_json(files,map,result){
 }
 
 exports.login = function(header,fields,files,callback){
+	logger.log('INFO','start login');
 	var login_account = fields['account'];
 	var login_password = fields['password'];
 	

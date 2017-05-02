@@ -5,8 +5,6 @@ const fs = require('fs');
 var formidable = require('formidable');
 var util = require('util');
 var logger = require('../logger').logger();
-
-
 var server = null;
 
 var handle_http = require("./route.js");
@@ -21,9 +19,20 @@ function printCostTime(req,rsp,time){
 	logger.log("QUERY_SERVER","COST TIME: " + url.parse(req.url,true).pathname + " : " + time + "ms");
 }
 
+function handle_post(pathname,headers,fields,files,response){
+	handle_http[pathname](headers,fields,files,function(success,json_result){
+
+		logger.log("INFO","response:\n" + util.inspect(json_result));
+
+		response.writeHead(200, {'content-type': 'text/html'});
+
+		response.end(JSON.stringify(json_result));
+	});
+}
+
 function handle_route(request,response,next){
 	var pathname = url.parse(request.url).pathname;
-
+	
 	if(request.method.toLowerCase() === 'post'){
 		var form = new formidable.IncomingForm();
 		form.uploadDir = "assets/upload/";
@@ -38,20 +47,10 @@ function handle_route(request,response,next){
 			}
 			try{
 				if(pathname in handle_http){
-					logger.log("POST_SERVER",util.inspect(headers,{depth:null}));
-					setImmediate(function(){
-						handle_http[pathname](headers,fields,files,function(success,json_result){
+					logger.log('INFO','post:',pathname);
 
-							logger.log("POST_SERVER","response:\n" + util.inspect(json_result));
-
-							response.writeHead(200, {'content-type': 'text/html'});
-
-							response.end(JSON.stringify(json_result));
-						});
-
-					});
+					handle_post(pathname,headers,fields,files,response);
 					return;
-					
 				}
 				else{
 					next(new Error(pathname + " no in handle_http"));

@@ -68,50 +68,24 @@ function checkParam(fields,check){
  }
 
 /**
- * @api {post} /v1/shop/ shop
- * @apiName /v1/shop
- * @apiGroup Shop
+ * @api {post,patch,delete} admin/v1/shop shop
+ * @apiName admin/v1/shop
+ * @apiGroup SHOP
  * @apiVersion 0.0.0
- * @apiDescription 	shop. (修改中)
- * @apiParam {Number} type 0:删除指定ID的商铺;1:修改指定ID的商铺,2:添加商铺
+ * @apiDescription 	shop
  * @apiParam {Number} id 对应商铺的id,参见上面参数对应的意义 [shop.id]
- * @apiParam {String} name 对应商铺的名字.[shop.name]
- * @apiParam {String} city_no 对应商铺的名字.[shop.city_no]
- * @apiParam {Number} area_code 地区代码信息.[shop.area_code] = [area_menu.code]
- * @apiParam {[Number]} category1 商铺的分类.[shop.category_code1] = [category_menu.code]
- * @apiParam {[Number]} category2 商铺的分类.[shop.category_code2] = [category_menu.code]
- * @apiParam {[Number]} category3 商铺的分类.[shop.category_code3] = [category_menu.code]
- * @apiParam {Number} beg 营业的开始时间,计算方式为今天开业的时间以s为单位.[shop.beg]
- * @apiParam {Number} end 营业的结束时间,计算方式为今天开业的时间以s为单位.[shop.end]
- * @apiParam {Number} days 营业的一周内的周几,(1111111:7天全营业;0000001 只有周1) [shop.days]
- * @apiParam {String} telephone 联系电话.[shop.telephone]
- * @apiParam {String} email 电邮地址.[shop.email]
- * @apiParam {String} qq 电邮地址.[shop.qq]
- * @apiParam {String} wx 电邮地址.[shop.wx]
- * @apiParam {Number} longitude 经度.[shop.longitude]
- * @apiParam {Number} latitude 纬度.[shop.latitude]
- * @apiParam {String} address 地址.[shop.address]
- * @apiParam {String} distribution 配送地址.[shop.distribution]
- * @apiParam {String} info 商家介绍.[shop.info]
- * @apiParam {String} qualification 资质认证,营业执照[shop.qualification]
- * @apiParam {String} card_number 身份证号[shop.card_number]
- * @apiParam {String} card_image 本人照片显示 [shop.card_image]
- * @apiParam {String} image 商铺图片 [shop.image]
- * @apiParam {Number} state 0未通过审核，1通过审核
  * @apiExample {http} usage:
  	http://139.224.227.82:9891/admin/v1/shop
  	
- * @apiSuccess {Number} error 错误号,返回0表示没有错误 
- * @apiSuccess {String} error_msg 错误详细信息
+ * @apiSuccess {Number} error 错误号,返回0表示没有错误
 
- * @apiSuccessExample {json} Response-Error-Example:
+ * @apiParamExample {json} delete-request
+ {
+	id:1
+ }
+ * @apiSuccessExample {json} delete-response
  * {
-	 error:1,
-	 error_msg:'没有指定type字段'
- * }
- * @apiSuccessExample {json} Response-Success-Example:
- * {
-	 error:0
+	 error:0,
  * }
  */
 
@@ -308,7 +282,7 @@ exports.notifyKF = function(fields,files,callback){
  }
 
  /**
- * @api {patch} admin/v1/shop_state/  shop_state
+ * @api {patch} admin/v1/shop_state  shop_state
  * @apiName admin/v1/shop_state
  * @apiGroup SHOP
  * @apiVersion 0.0.1
@@ -317,7 +291,7 @@ exports.notifyKF = function(fields,files,callback){
  * @apiParam {Number} state [shop.state]
 
  * @apiExample {http} usage:
- 	http://139.224.227.82:9891//admin/v1/shop_state/
+ 	http://139.224.227.82:9891//admin/v1/shop_state
  * @apiSuccess {Number} error 错误号,返回0表示没有错误,其它表示错误 
  * @apiSuccessExample {json} Response-Example-1
  * {

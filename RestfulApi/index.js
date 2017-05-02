@@ -14,6 +14,7 @@ var ShopInstance = require("./API/ShopRestFulApi.js");
 var ShopClaimInstance = require("./API/ShopClaimFulApi.js");
 var CustomServiceInstance = require("./API/CustomServiceFulApi.js");
 var ShopStateInstance = require("./API/ShopStateFulApi.js");
+var WebSocketServer = require("./API/WebSocketServer.js");
 var server = null;
 
 var connect = require('connect');
@@ -31,7 +32,7 @@ http_obj['/admin/v1/shop'] = ShopInstance.Instance();
 http_obj['/admin/v1/claim'] = ShopClaimInstance.Instance();
 http_obj['/admin/v1/shop_cs'] = CustomServiceInstance.Instance();
 http_obj['/admin/v1/shop_state'] = ShopStateInstance.Instance();
-
+http_obj['/admin/v1/sendMessage'] = WebSocketServer.Instance();
 let PORT = 0;
 function handle_route(request,response,next){
 	var pathname = url.parse(request.url).pathname;
@@ -46,9 +47,6 @@ function handle_route(request,response,next){
 		next(new Error(pathname + " no find in http_obj"));
 	}
 }
-
-
-
 
 function handle_Error(err, req, res, next){
 	logger.error("POST_SERVER",err);
@@ -72,7 +70,7 @@ exports.start = function(Host,Port){
 	PORT = Port;
 	var app = connect()
 	.use(favicon("favicon.ico"))
-	.use(bodyParser.urlencoded({ extended: false }))
+	//.use(bodyParser.urlencoded({ extended: false }))
 	.use(bodyParser.json())
 	.use(handle_head)
 	.use(handle_route)

@@ -35,4 +35,5 @@ handle_http['/upload_image'] = http_handler_upload.uploadImage;
 handle_http['/admin/v1/ad'] = http_notify.changeAdImage;
 handle_http['/admin/v1/shop'] = http_notify.shopCallback;
 handle_http['/admin/v1/shop_item']  = http_notify.notifyShopItem;
+handle_http['/send_message'] = http_handler.sendMessage;
 module.exports = handle_http;

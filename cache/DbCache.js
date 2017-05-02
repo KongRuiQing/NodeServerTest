@@ -286,7 +286,7 @@ DbCacheManager.prototype.removeCategory = function(json){
 	}
 
 	if(changed){
-		HeadInstance.getInstance().emit("category",json['type']);
+		//HeadInstance.getInstance().emit("category",json['type']);
 	}
 
 	return {

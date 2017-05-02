@@ -6,6 +6,7 @@ console.log("require shopBean.js");
 
 var ShopBean = function(){
 	this.id = 0;
+	this.uid = 0;
 	this.name = "";
 	this.beg = 0;
 	this.end = 0;
@@ -31,7 +32,7 @@ var ShopBean = function(){
 	this.card_image = "";
 	this.card_number = "";
 	this.qualification = "";
-	this.state = 0;
+	this.state = -1;
 
 	this.items = [];
 	this.like_me = [];
@@ -89,6 +90,7 @@ ShopSpreadItem.prototype.getJsonInfo = function(){
 
 ShopBean.prototype.initFromDbRow = function(db_row){
 	this.id = Number(db_row['Id']);
+	this.uid = Number(db_row['uid']);
 	this.name = db_row['name'];
 	this.beg = Number(db_row['beg']);
 	this.end = Number(db_row['end']);
@@ -125,6 +127,88 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.__business = db_row['business'];
 
 	this.__cs = Number(db_row['cs_id']);
+}
+
+ShopBean.prototype.updateShopInfo = function(json_value){
+	if(this.id == 0 && 'Id' in json_value){
+		this.id = Number(json_value['Id']);
+	}
+	if(this.state == -1 && 'state' in json_value){
+		this.state = Number(json_value['state']);
+	}
+	if('name' in json_value){
+		this.name = json_value['name'];
+	}
+	if('beg' in json_value){
+		this.beg = Number(json_value['beg']);
+	}
+	if('end' in json_value){
+		this.end = Number(json_value['end']);
+	}
+	if('days' in json_value){
+		this.days = json_value['days'];
+	}
+	if('longitude' in json_value){
+		this.__longitude = parseFloat(json_value['longitude']);
+	}
+	if('latitude' in json_value){
+		this.__latitude = parseFloat(json_value['latitude']);
+	}
+
+	if('city_no' in json_value){
+		this.city_no = Number(json_value['city_no']);
+	}
+	
+	if('area_code' in json_value){
+		this.area_code = Number(json_value['area_code']);
+	}
+	
+	if('address' in json_value){
+		this.address = json_value['address'];
+	}
+	
+	if('category_code1' in json_value){
+		this.category_code1 = Number(json_value['category_code1']);
+	}
+	if('category_code2' in json_value){
+		this.category_code2 = Number(json_value['category_code2']);
+	}
+	if('category_code3' in json_value){
+		this.category_code3 = Number(json_value['category_code3']);
+	}
+
+	if('info' in json_value){
+		this.info = json_value['info'];
+	}
+	if('distribution' in json_value){
+		this.distribution = json_value['distribution'];
+	}
+	if('telephone' in json_value){
+		this.telephone = json_value['telephone'];
+	}
+	if('email' in json_value){
+		this.email = json_value['email'];
+	}
+	if('qq' in json_value){
+		this.qq = json_value['qq'];
+	}
+
+	if('wx' in json_value){
+		this.wx = json_value['wx'];
+	}
+	if('image' in json_value){
+		this.image = json_value['image'];
+	}
+	if('card_number' in json_value){
+		this.card_number = json_value['card_number'];
+	}
+	if('card_image' in json_value){
+		this.card_image = json_value['card_image'];
+	}
+	if('qualification' in json_value){
+		this.qualification = json_value['qualification'];
+	}
+
 }
 
 ShopBean.prototype.newShopBean = function(shop_info){
@@ -659,4 +743,9 @@ ShopBean.prototype.getClaimState = function(){
 ShopBean.prototype.updateState = function(state){
 	this.state = state;
 }
+
+ShopBean.prototype.getOwner = function(){
+	return this.uid;
+}
+
 module.exports = ShopBean;

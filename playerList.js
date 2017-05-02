@@ -1,4 +1,5 @@
 'use strict';
+console.log('load playerList.js');
 var db_proxy = require("./mysqlproxy");
 var util = require('util');
 var logger = require('./logger').logger();

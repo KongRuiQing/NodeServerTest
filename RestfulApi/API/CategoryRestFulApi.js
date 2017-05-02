@@ -4,8 +4,9 @@ console.log("load CategoryRestFulApi.js");
 var events = require('events');
 var util = require('util');
 var logger = require('../../logger').logger();
-
+var WebSocketServer = require('../../WebSocketServer');
 var DbCacheManager = require("../../cache/DbCache.js");
+const Joi = require('joi');
 
 function CategoryInstance(){
 	logger.log("INFO","create CategoryInstance");
@@ -16,25 +17,28 @@ util.inherits(CategoryInstance, events.EventEmitter);
 
 function __delete(req,rsp){
 
-	if(!('code' in req.body)){
-		__usage("DELETT",rsp,"code is undefined");
-		return;
+	const schema = Joi.object().keys({
+		'code': Joi.number().integer().min(1).required(),
+		'type': Joi.number().integer().min(1).max(2).required(),
+	});
+	const joi_result = Joi.validate(req.body, schema);
+	if(joi_result.error != null){
+		__usage("DELETT",rsp,joi_result.error);
+		return ;
 	}
-	if(!('type' in req.body)){
-		__usage("DELETT",rsp,"type is undefined value(1)商铺,value(2)物品");
-		return;
-	}
+	let error = 0;
+	let error_msg = "";
 	let code = Number(req.body['code']);
 	let type = Number(req.body['type']);
 
-	if(IsNaN(code) || IsNaN(type) || type != 1 || type != 2){
-		__usage('DELETT','code or type format is error');
-		return;
-	}
 	
 	let result = DbCacheManager.getInstance().removeCategory({
 		'code' : code,
 		'type' : type,
+	});
+	WebSocketServer.broadcast('delete_category',{
+		'code' : code,
+		'type' : type
 	});
 
 	rsp.writeHead(200, {'content-type': 'text/html'});
@@ -45,8 +49,8 @@ function __delete(req,rsp){
 	}));
 
 	return true;
-
 }
+
 
 function __usage(method,rsp,error_msg){
 	rsp.writeHead(200, {'content-type': 'text/html'});
@@ -89,28 +93,17 @@ function __usage(method,rsp,error_msg){
 
 function __post(req,rsp){
 
-	if(!('type' in req.body)){
-		//logger.log("INFO",'position req:',util.inspect(req,{depth:null}));
-		logger.log("WARN","req.body(type):",util.inspect(req.body));
-		__usage('POST',rsp,"type is undefined");
-		return;
-	}
-	if(!('code' in req.body)){
-		//logger.log("INFO",'index req:',util.inspect(req,{depth:null}));
-		logger.log("WARN","req.body(code):",util.inspect(req.body));
-		__usage('POST',rsp,"code in undefined");
-		return;
-	}
-	if(!('name' in req.body)){
-		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
-		logger.log("WARN","req.body(name):",util.inspect(req.body));
-		__usage('POST',rsp,'name is undefined');
-		return;
-	}
-	if(!('parent' in req.body)){
-		//logger.log("INFO",'image req:',util.inspect(req,{depth:null}));
-		logger.log("WARN","req.body(parent):",util.inspect(req.body));
-		__usage('POST',rsp,'parent is undefined');
+	const schema = Joi.object().keys({
+		'code': Joi.number().integer().min(1).required(),
+		'type': Joi.number().integer().min(1).max(2).required(),
+		'name' : Joi.string().required(),
+		'parent' : Joi.number().integer().min(1).required(),
+	});
+
+	const joi_result = Joi.validate(req.body, schema);
+	if(joi_result.error != null){
+		logger.log('INFO','joi_result:',joi_result.error);
+		__usage('POST',rsp,joi_result.error);
 		return;
 	}
 	
@@ -121,6 +114,13 @@ function __post(req,rsp){
 	let parent = Number(req.body['parent']);
 	
 	let result = DbCacheManager.getInstance().addCategory({
+		'type' : type,
+		'code' : code,
+		'name' : name,
+		'parent' : parent,
+	});
+
+	WebSocketServer.broadcast('add_category',{
 		'type' : type,
 		'code' : code,
 		'name' : name,

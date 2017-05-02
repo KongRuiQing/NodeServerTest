@@ -269,7 +269,7 @@ ShopItem.prototype.getFavoritesItemJsonValue = function(){
 	return {
 		'item_name' : this.name,
 		'price' : this.price,
-		'image' : list.length > 0?list[0]:""
+		'image' : (list == null || list.length == 0)?"":list[0],
 	};
 	
 }

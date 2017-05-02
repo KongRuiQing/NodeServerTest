@@ -10,7 +10,7 @@ const path = require('path');
 var moment = require('moment');
 var down_file_name = "";
 var down_file_version = "";
-
+var WebSocketServer = require("../WebSocketServer");
 function watchApkVersion(root_path){
 
 	var files = fs.readdirSync(root_path);
@@ -88,9 +88,9 @@ exports.getShopList = function(headers, query,callback){
 	if('distance' in query){
 		distance = Number(query['distance']);
 	}
-	let last_distance = 0;
-	if('last_distance' in query){
-		last_distance = Number(query['last_distance']);
+	let last_index = 0;
+	if('last_index' in query){
+		last_index = Number(query['last_index']);
 	}
 	logger.log("HTTP_HANDER","getShopList param: category = ", category
 		,'city=',city
@@ -98,18 +98,18 @@ exports.getShopList = function(headers, query,callback){
 		,'search_key=,',search_key,
 		'longitude=',longitude,
 		'latitude=',latitude,
-		'last_distance=',last_distance,
+		'last_index=',last_index,
 		'area_code=',zone
 		);
 
-	var shop_list = ShopCache.getInstance().getShopList(uid,city,zone,category,last_distance,page_size,search_key,longitude,latitude,distance);
+	var shop_list = ShopCache.getInstance().getShopList(uid,city,zone,category,last_index,page_size,search_key,longitude,latitude,distance);
 
 
 	var json_result = {
 		"list" : shop_list['list'],
 		'page_size' : page_size,
 		'length' : shop_list['list'].length,
-		'last_distance' : shop_list['last_distance'],
+		'total' : shop_list['total'],
 	}
 	callback(0,json_result);
 }
@@ -168,8 +168,8 @@ exports.getAdImage = function(headers, query,callback){
 
 exports.getShopSpread = function(headers, query,callback){
 
-	var city_no = 167;
-	var area_code = 0; //query['area_code'] || '';
+	var city_no = Number(query['city_no'] || 167);
+	var area_code = Number(query['area_code'] || 0);
 	var cate_code = query['category'] || '';
 	var sort_code = query['sortby'] || '';
 	let distance = Number(query['distance'] || "0");
@@ -183,23 +183,21 @@ exports.getShopSpread = function(headers, query,callback){
 		latitude = parseFloat(headers['latitude']);
 	}
 	
-
-	
-	let last_distance = Number(query['last_distance']);
+	let last_index = Number(query['last_index'] || 0);
 	
 	var keyword = "";
 	if('keyword' in query){
 		keyword = query['keyword'];
 	}
-	logger.log("HTTP_HANDER:",'city_no=',city_no,'area_code=',area_code,'cate_code=',cate_code);
+	logger.log("INFO",'last_index',last_index,
+		'longitude',longitude);
 	
 
-	var query_result = ShopCache.getInstance().getShopSpread(last_distance,longitude,latitude,city_no,area_code,distance,cate_code,keyword);
+	var query_result = ShopCache.getInstance().getShopSpread(last_index,longitude,latitude,city_no,area_code,distance,cate_code,keyword);
 	var json_value = {
 		'spread_list' : query_result['list'],
 		'page_size': 30,
 		'length' : query_result['list'].length,
-		'last_distance' : query_result['last_distance'],
 	};
 
 	callback(0,json_value);
@@ -525,3 +523,4 @@ exports.getShopClaimState = function(headers,query,callback)
 		return;
 	}
 }
+
