@@ -48,6 +48,7 @@ var ShopBean = function(){
 	//events.EventEmitter.call(this);
 
 	this.__cs = 0;
+	this.__big_image = "";
 
 }
 
@@ -127,6 +128,7 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.__business = db_row['business'];
 
 	this.__cs = Number(db_row['cs_id']);
+	this.__big_image = db_row['big_image'];
 }
 
 ShopBean.prototype.updateShopInfo = function(json_value){
@@ -341,6 +343,7 @@ ShopBean.prototype.getShopDetailInfo = function(uid){
 		'item_groups' : this.__itemGroup,
 		'fix_telephone' : this.__fix_telephone,
 		'business' : this.__business,
+		'big_image' : this.__big_image,
 	}
 }
 

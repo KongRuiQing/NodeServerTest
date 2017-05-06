@@ -28,6 +28,8 @@ var mime = {
 };
 var form = new formidable.IncomingForm();
 
+var ImageCache = new Map();
+
 exports.start = function(Host,Port)
 {
 	form.uploadDir = "assets/upload/";
@@ -46,6 +48,14 @@ exports.start = function(Host,Port)
 			var ext = path.extname(realPath);
 			ext = ext ? ext.slice(1) : 'unknown';
 
+			if(ImageCache.has(realPath)){
+				var contentType = mime[ext] || "text/plain";
+				response.writeHead(200, {'Content-Type': contentType});
+				response.write(ImageCache.get(realPath), "binary");
+				response.end();
+				return;
+			}
+
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
 
@@ -57,7 +67,9 @@ exports.start = function(Host,Port)
 					response.write("This request URL " + pathname + " was not found on this server.");
 					response.end();
 					return;
+
 				} else {
+					
 					fs.stat(realPath,function(err,fs_state){
 						if(err){
 							response.writeHead(404, {
@@ -76,6 +88,7 @@ exports.start = function(Host,Port)
 									});
 									response.end(err)
 								} else {
+									ImageCache.set(realPath,file);
 									var contentType = mime[ext] || "text/plain";
 									response.writeHead(200, {'Content-Type': contentType});
 									response.write(file, "binary");

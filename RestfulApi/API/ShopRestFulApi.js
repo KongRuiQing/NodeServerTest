@@ -34,11 +34,7 @@ function __delete(req,rsp){
 	}
 	
 	let shop_id = Number.parseInt(req.body['id']);
-	if(Number.isNaN(shop_id)){
-		__error(rsp,{'error' : 406,'error_msg' : 'id参数只能是数字'});
-		return;
-	}
-
+	
 	shopCache.getInstance().removeShopByShopId(shop_id);
 	
 	rsp.writeHead(200, {'content-type': 'text/html'});
