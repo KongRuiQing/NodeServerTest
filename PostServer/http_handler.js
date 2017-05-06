@@ -343,7 +343,7 @@ exports.addToFavorites = function(header,fields,files,callback){
 
 	var shop_id = fields['shop_id'];
 	var item_id = fields['item_id'];
-	var check_has_item = ShopProxy.CheckHasItem(shop_id,item_id);
+	var check_has_item = ShopProxy.getInstance().CheckHasItem(shop_id,item_id);
 	var json_result = {};
 	
 	if(check_has_item == true){
