@@ -475,6 +475,7 @@ g_playerlist.Register = function(telephone,password){
 
 	this['playerCache'][uid] = newPlayer(uid);
 	
+	this['playerCache'][uid].setLoginInfo(telephone,password,0);
 	//this['account_uid'][telephone] = uid;
 
 	this['reg_account'][telephone] = null;
