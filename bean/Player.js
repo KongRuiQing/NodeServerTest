@@ -81,6 +81,7 @@ Player.prototype.initNewPlayer = function(uid){
 	this.sex = 1;
 	this.shop_id = 0;
 	this.nick_name = "用户" + uid;
+	this.name = "用户" + uid;
 }
 
 Player.prototype.setUserInfo = function(db_row) {
@@ -172,6 +173,8 @@ Player.prototype.removeFavoritesItem = function(item_id){
 }
 
 Player.prototype.canLogin = function(login_password){
+
+	console.log(`this.login_password='${this.login_password}' == '${login_password}'`);
 	if(this.login_password != login_password){
 		return 1008
 	}
