@@ -366,7 +366,7 @@ exports.getShopDetail = function(uid,shop_id){
 	if(shop_item_list != null){
 		shop_item_list.forEach(function(item_id){
 			let shop_item = g_shop_cache['shop_items'].get(item_id);
-			logger.log('INFO','shop_item:\n' ,util.inspect(shop_item));
+			//logger.log('INFO','shop_item:\n' ,util.inspect(shop_item));
 			if(shop_item.isShelve()){
 				json_result['shop_info']['shop_item'].push(shop_item.getItemBasicInfo());
 			}
