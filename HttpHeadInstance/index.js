@@ -10,6 +10,7 @@ var AdCacheManager = require('./Manager/AdCacheManager.js');
 var CategoryCacheManager = require('./Manager/CategoryCacheManager.js');
 var MyShopItemDetail = require("./Manager/MyShopItemDetailManager.js")
 var MyAttentionListManager = require("./Manager/MyAttentionListManager.js");
+var ShopDetailManager = require("./Manager/ShopDetailManager.js");
 class ReadyBeSellerDataMoniter{
 	constructor(defaultTime){
 		this.__map = {};
@@ -43,6 +44,7 @@ function HeadInstance(){
 		'/category' : CategoryCacheManager(this.defaultTime),
 		'/get_my_shop_item_detail' : MyShopItemDetail(this.defaultTime),
 		'/shop_attention' : MyAttentionListManager(this.defaultTime),
+		'/shop_detail' : ShopDetailManager(this.defaultTime),
 	};
 	this.map = {};
 
@@ -120,6 +122,14 @@ instnce.on('/shop_attention',function(uid,shop_id){
 	let obj = instnce.getObj('/shop_attention');
 	if(obj != null){
 		obj.changed(uid);
+	}
+})
+
+instnce.on('/shop_detail',function(shop_id){
+	logger.log("INFO",'/shop_detail','shop_id:',shop_id);
+	let obj = instnce.getObj('/shop_detail');
+	if(obj != null){
+		obj.changed(shop_id);
 	}
 })
 

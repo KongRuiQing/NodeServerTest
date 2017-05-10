@@ -1374,7 +1374,7 @@ exports.offShelveShopItem = function(header,fields,files,cb){
 			});
 			return;
 		}else{
-			ShopProxy.getInstance().offShelveShopItem(off_shelve_shop_items,state);
+			ShopProxy.getInstance().offShelveShopItem(shop_id,off_shelve_shop_items,state);
 			cb(true,{
 				'items' : off_shelve_shop_items,
 			});
