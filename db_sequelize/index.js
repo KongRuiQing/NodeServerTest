@@ -230,7 +230,7 @@ exports.addShopItem = function(jsonItem,jsonImages,jsonPropertys,callback){
 		
 		if(dbResult[1]){
 			let dbRow = dbResult[0]['dataValues'];
-			let id = dbRow['id'];
+			let id = Number(dbRow['id']);
 			for(var key in jsonImages){
 				jsonImages[key]['item_id'] = id;
 			}
@@ -264,4 +264,24 @@ exports.playerAttentionShop = function(jsonAttention,is_attention,callback){
 			callback(null,num);
 		});
 	}
+}
+
+exports.offShelveShopItem = function(items,state,callback){
+	let all_promise = [];
+
+	items.forEach(function(item_id){
+		let promise = new Promise(function(resolve,reject){
+			ItemModel.update({'state':state},{'where' : {'id' : item_id}}).then(function(affectedRows){
+				resolve(item_id);
+			});
+		})
+		all_promise.push(promise);
+	});
+
+	Promise.all(all_promise).then(function(results){
+		//console.log('INFO','results:',results);
+		callback(null,results);
+	},function(){
+		callback('error');
+	});
 }

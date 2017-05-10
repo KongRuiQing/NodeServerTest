@@ -117,7 +117,7 @@ ShopManager.prototype.refreshShopItem = function(itemBean,json_value,json_image,
 ShopManager.prototype.addShopItem= function(json_value,json_image,json_propertys){
 
 	let item_id = Number(json_value['id']);
-	let shop_id = json_value['shop_id'];
+	let shop_id = Number(json_value['shop_id']);
 
 	logger.log("INFO","[ShopCache][addShopItem]"
 		,'json_value:',util.inspect(json_value)
@@ -137,7 +137,7 @@ ShopManager.prototype.addShopItem= function(json_value,json_image,json_propertys
 		let itemBean = new ShopItem();
 
 		this.refreshShopItem(itemBean,json_value,json_image,json_propertys);
-		this.shop_items[item_id] = itemBean;
+		this.shop_items.set(item_id,itemBean);
 		
 		let shopBean = this.getShop(shop_id);
 		shopBean.addItemToShop(item_id);
@@ -367,7 +367,7 @@ exports.getShopDetail = function(uid,shop_id){
 		for(var i in shop_item_list){
 			var shop_item_id = shop_item_list[i];
 			var shop_item = g_shop_cache['shop_items'].get(shop_item_id);
-			if(shop_item.isSpreadItem()){
+			if(shop_item.isShelve()){
 				json_result['shop_info']['shop_item'].push(shop_item.getItemBasicInfo());
 			}
 		}
@@ -644,9 +644,10 @@ ShopManager.prototype.getMyShopItemInfo = function(shop_item_id){
 			return shop_item_info.getMyShopItemInfo();
 		}else{
 			logger.error("SHOP_CACHE","Find shop item error with itemid = "+ shop_item_id);
+			return null;
 		}
 	}
-	
+	logger.log("ERROR","[ShopManager][getMyShopItemInfo] shop_item_id:",shop_item_id);
 	return null;
 }
 
@@ -660,19 +661,17 @@ ShopManager.prototype.getMyShopItemList = function(uid){
 	if(shop_id > 0){
 		var shop_info = this.getShop(shop_id);
 		if(shop_info != null){
-			var shop_items = shop_info.getItems();
+			var this_shop_items = shop_info.getItems();
 
-			if(shop_items != null){
-				for(var shop_item_key in shop_items){
-
-					var shop_item_id = shop_items[shop_item_key];
-					let shop_item_info = this.getMyShopItemInfo(shop_item_id);
+			if(this_shop_items != null){
+				let that = this;
+				this_shop_items.forEach(function(shop_item_id){
+					let shop_item_info = that.getMyShopItemInfo(shop_item_id);
 					if(shop_item_info != null){
 						json_result['list'].push(shop_item_info)
 					}
-					
-					
-				}
+				})
+				
 				//logger.log("SHOP_CACHE",util.inspect(json_result['list']));
 			}
 		}
@@ -987,4 +986,35 @@ ShopManager.prototype.getOwner = function(shop_id){
 		return shop.getOwner();
 	}
 	return 0;
+}
+
+ShopManager.prototype.isShopItem = function(shop_id,item_id){
+	let shop = this.getShop(shop_id);
+	if(shop == null){
+		return false;
+	}
+	return shop.hasItem(item_id);
+}
+
+ShopManager.prototype.offShelveShopItem = function(items,state){
+	let that = this;
+	items.forEach(function(item_id){
+		let itemBean = that.getItemBean(item_id);
+		if(itemBean != null){
+			itemBean.offShelve(state);
+			if(state == 2 && itemBean.isSpreadItem()){
+				that.removeSpreadItem(itemBean.getId());
+			}
+			
+		}
+	});
+}
+
+ShopManager.prototype.removeSpreadItem = function(find_item_id){
+	let find_index = this.show_items.findIndex(function(item_id){
+		return find_item_id == item_id;
+	});
+	if(find_index >= 0){
+		this.show_items.splice(find_index,1);
+	}
 }

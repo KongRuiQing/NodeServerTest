@@ -1,6 +1,24 @@
 'use strict';
 
 var util = require('util');
+
+var ShopItemState = {}
+
+ShopItemState.SHELVE_STATE = 1;
+ShopItemState.OFF_SHELVE_STATE = 2;
+
+ShopItemState.getShelveState = function(value){
+	value = Number(value);
+	if(value <= 1){
+		return ShopItemState.SHELVE_STATE;
+	}
+	if(value >= 2){
+		return ShopItemState.OFF_SHELVE_STATE;
+	}
+
+	return ShopItemState.SHELVE_STATE;
+}
+
 var ShopItem = function(){
 	// db row
 	this.id = 0;
@@ -23,6 +41,7 @@ var ShopItem = function(){
 	this.__category_code = 0;
 
 	this.__link = "";
+	this.__state = 0;
 }
 
 ShopItem.prototype.getId = function(){
@@ -113,6 +132,7 @@ ShopItem.prototype.initFromDb = function(db_row){
 		this.__groupIndex = Number(db_row['group_index']);
 	}
 	this.__link = db_row['link'];
+	this.__state = ShopItemState.getShelveState(Number(db_row['state']));
 }
 
 
@@ -145,6 +165,10 @@ ShopItem.prototype.addAttention = function(uid){
 
 ShopItem.prototype.isSpreadItem = function(){
 	return this.is_show;
+}
+
+ShopItem.prototype.isShelve = function(){
+	return this.__state == ShopItemState.SHELVE_STATE;
 }
 
 ShopItem.prototype.addItemProperty = function(db_row){
@@ -188,6 +212,7 @@ ShopItem.prototype.getItemBasicInfo = function(){
 		'item_id' : this.id,
 		'shop_id' : this.shop_id,
 		'group_index' : this.__groupIndex,
+		'state' : this.__state,
 	};
 }
 
@@ -396,6 +421,10 @@ ShopItem.prototype.updateProperty = function(json_property){
 		this.__item_propertys[index].initFromDb(json_property);
 
 	}
+}
+
+ShopItem.prototype.offShelve = function(state){
+	this.__state = state;
 }
 
 module.exports = ShopItem;

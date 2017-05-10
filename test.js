@@ -15,6 +15,7 @@ test_route['spread'] = get_spread;
 test_route['websocket'] = test_websocket;
 test_route['delete_category'] = delete_category;
 test_route['add_category'] = add_category;
+
 if(args instanceof Array){
   if(args.length > 2){
     let cmd = args.splice(2);
@@ -315,3 +316,4 @@ function add_category(args){
     }
   });
 }
+

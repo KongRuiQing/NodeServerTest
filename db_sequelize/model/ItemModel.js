@@ -48,6 +48,11 @@ module.exports = function (sequelize, DataTypes) {
         type : DataTypes.BIGINT(3),
         allowNull: false,
         defaultValue : 0
+    },
+    'state' : {
+      type : DataTypes.BIGINT(3),
+      allowNull : false,
+      defaultValue : 0,
     }
   },{
   'tableName' : 'shop_item',

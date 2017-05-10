@@ -71,6 +71,17 @@ exports.login = function(header,fields,files,callback){
 
 }
 
+exports.logout = function(header,fields,files,callback){
+	let uid = Number(header['uid']);
+	if(uid > 0){
+		PlayerProxy.getInstance().logout();	
+	}
+
+	callback(true,{
+		'error' : 0
+	});
+}
+
 
 
 exports.register = function(header,fields,files,callback){
@@ -440,7 +451,7 @@ exports.changeUserInfo =function(header,fields,files,callback){
 exports.addShopItem = function(header,fields,files,callback){
 	
 
-	var uid = header['uid'];
+	var uid = Number(header['uid']);
 
 	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
 
@@ -530,11 +541,11 @@ exports.addShopItem = function(header,fields,files,callback){
 				});
 				return;
 			}else{
-				logger.log("INFO",'[HTTP_HANDLER][addShopItem]'
-					,'add_item_id:',add_item_id);
+				logger.log("INFO",'[HTTP_HANDLER][addShopItem]','add_item_id:',add_item_id);
 
 				json_value['id'] = add_item_id;
 				ShopProxy.getInstance().addShopItem(json_value,json_image,json_propertys);
+
 				let shop_item_info = ShopProxy.getInstance().getMyShopItemInfo(add_item_id);
 
 				if(shop_item_info != null){
@@ -552,16 +563,14 @@ exports.addShopItem = function(header,fields,files,callback){
 		});
 		return;
 	}else{
+		logger.log("WARN",'shop_id:',shop_id,'uid:',uid);
 		callback(true,{
 			'error' : 1,
 			'error_msg' : "没有找到商铺信息",
 		});
 		return;
 	}
-	callback(true,{
-		'error' : 10,
-		'error_msg' : "系统错误",
-	});
+	
 	return;
 	
 }
@@ -1305,5 +1314,73 @@ exports.claimShop = function(header,fields,files,cb){
 		});
 		HeadInstance.getInstance().emit('shop_claim',shop_id);
 	});
+
+}
+
+exports.offShelveShopItem = function(header,fields,files,cb){
+	let uid = Number(header['uid']);
+	let i = 0;
+	let key = "item_" + i;
+	let items = [];
+	while(key in fields){
+		logger.log('INFO','key:',key,'field:',fields[key]);
+		items.push(fields[key]);
+		i = i + 1;
+		key = "item_" + i;
+		if(i >= 18){
+			break;
+		}
+	};
+	if(!('state' in fields)){
+		cb(true,{
+			'error' : 3,
+			'error_msg' : '参数错误',
+		});
+		return;
+	}
+	let state = Number(fields['state']);
+	if(Number.isNaN(state)){
+		cb(true,{
+			'error' : 3,
+			'error_msg' : '指定下架的一个物品并不是自己商铺的',
+		});
+		return;
+	}
+	let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+
+
+	let out_my_shop_item = items.some(function(item_id){
+		let b = ShopProxy.getInstance().isShopItem(shop_id,item_id);
+		if(!b){
+			return true;
+		}
+		return false;
+	});
+
+	if(out_my_shop_item){
+		cb(true,{
+			'error' : 3,
+			'error_msg' : '指定下架的一个物品并不是自己商铺的',
+		});
+		return;
+	}
+
+	db_sequelize.offShelveShopItem(items,state,function(error,off_shelve_shop_items){
+		if(error){
+			logger.log("ERROR",error);
+			cb(true,{
+				'error' : 2,
+				'error_msg' : '数据库失败',
+			});
+			return;
+		}else{
+			ShopProxy.getInstance().offShelveShopItem(off_shelve_shop_items,state);
+			cb(true,{
+				'items' : off_shelve_shop_items,
+			});
+			return;
+		}
+	});
+
 
 }

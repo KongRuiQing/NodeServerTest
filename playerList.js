@@ -213,6 +213,14 @@ PlayerManager.prototype.Login = function(login_account){
 	return player_info.getUserLoginInfo();
 }
 
+PlayerManager.prototype.logout = function(uid){
+
+	let guid = this['player_online_list'][uid];
+
+	this['guid_to_uid'][guid] = null;
+	this['player_online_list'][uid] = null;
+}
+
 function updateUserInfo(uid,db_result){
 	var player_info = g_playerlist['playerCache'][uid];
 	if(player_info != null){
@@ -225,8 +233,9 @@ function updateUserInfo(uid,db_result){
 exports.Login = function(login_account){
 
 	return g_playerlist.Login(login_account);
-	
 }
+
+
 
 exports.CheckRegTelephone = function(telephone){
 	var uid = g_playerlist['account_uid'][telephone];

@@ -5,6 +5,7 @@ var http_notify = require("./http_notify");
 var handle_http = {};
 
 handle_http['/login'] = http_handler.login;
+handle_http['/logout'] = http_handler.logout;
 handle_http['/register'] = http_handler.register;
 
 handle_http['/attention_shop'] = http_handler.attentionShop;
@@ -36,4 +37,5 @@ handle_http['/admin/v1/ad'] = http_notify.changeAdImage;
 handle_http['/admin/v1/shop'] = http_notify.shopCallback;
 handle_http['/admin/v1/shop_item']  = http_notify.notifyShopItem;
 handle_http['/send_message'] = http_handler.sendMessage;
+handle_http['/off_shelve_shop_item'] = http_handler.offShelveShopItem;
 module.exports = handle_http;
