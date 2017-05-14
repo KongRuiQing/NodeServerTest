@@ -535,18 +535,39 @@ exports.getMyFavoritesItems = function(items){
 	return item_list;
 }
 
-ShopManager.prototype.getMyAttentionShopInfo = function(shop_id_list){
+ShopManager.prototype.getMyAttentionShopInfo = function(shop_id_list,start_index,page_size,filter){
 	var list = [];
+	let that = this;
+	
+	let filter_shop = shop_id_list.filter(function(shop_attention){
+		let shop_info = that.getShop(shop_attention['shop_id']);
 
-	for(var i in shop_id_list){
-		var shop_id = shop_id_list[i]['shop_id'];
-		var shop_info = this.getShop(shop_id);
+		if(shop_info == null){
+			logger.log("WARN",`shop_id ${shop_id} is not find`);
+			return false;
+		}
+		logger.log("WARN",'filter',filter);
+		if(shop_info.matchFilter(0,filter['area_code'],filter['category_code'])){
+			
+			if(filter['distance'] > 0){
+				let dis = shop_info.calcDistance(filter['longitude'],filter['latitude']);
+				if(dis > filter['distance']){
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	});
+	
+	filter_shop.forEach(function(shop_attention){
+		let shop_info = that.getShop(shop_attention['shop_id']);
 		if(shop_info != null){
 			list.push(shop_info.getShopAttentionInfo());
 		}
-	}
+	});
 	
-	return list;
+	return list.slice(start_index,start_index + page_size);
 }
 
 

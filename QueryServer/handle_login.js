@@ -8,7 +8,7 @@ var handle_login = function(req,rsp,next){
 
 		let uid = PlayerCache.getUid(guid);
 		if(uid != null){
-			headers['uid'] = uid;
+			headers['uid'] = Number(uid);
 			
 		}else{
 			headers['uid'] = 0;

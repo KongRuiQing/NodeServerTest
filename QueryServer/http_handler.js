@@ -330,7 +330,18 @@ exports.getMyAttention = function(headers, query,callback){
 
 
 	let uid = headers['uid'];
-	
+	let area_code = 0;
+	if('area_code' in query){
+		area_code = Number(query['area_code']);
+	}
+	let distance = 0;
+	if('distance' in query){
+		distance = Number(query['distance'])
+	}
+	let category_code = 0;
+	if('category_code' in query){
+		category_code = query['category_code'];
+	}
 	let start_index = 0;
 	if('page' in query){
 		start_index = Number(query['page']);
@@ -339,9 +350,23 @@ exports.getMyAttention = function(headers, query,callback){
 		start_index = 0;
 	}
 	var list = PlayerCache.getInstance().getMyAttention(uid);
+
 	let page_size = 20;
-	let slice_list = list.slice(start_index,start_index + page_size);
-	let attention_info_list = ShopCache.getInstance().getMyAttentionShopInfo(slice_list);
+	
+	//logger.log("INFO",'[getMyAttention] query:',uid,area_code,distance,category_code,start_index);
+
+	let attention_info_list = ShopCache.getInstance().getMyAttentionShopInfo(
+		list
+		,start_index
+		,page_size
+		,{
+		'area_code' : area_code,
+		'distance' : distance,
+		'category_code' : category_code,
+		'longitude' : headers['longitude'],
+		'latitude' : headers['latitude'],
+	});
+
 	var json_result = {
 		'page' : start_index,
 		'list' : attention_info_list,
