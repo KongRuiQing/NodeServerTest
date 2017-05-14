@@ -15,7 +15,7 @@ let RegAccountBean = require("./bean/RegAccountBean");
 function PlayerManager(){
 	this.player_online_list = {};
 	this.playerCache = {};
-	this.account_uid = {};
+	this.account_uid = new Map();
 	this.reg_account = {};
 	this.guid_to_uid = {};
 	this.MaxUID = 0;
@@ -93,7 +93,7 @@ exports.InitFromDb = function(
 			,all_login_info[i]['Password']
 			,Number(all_login_info[i]['state']));
 		
-		g_playerlist['account_uid'][all_login_info[i]['Account']] = all_login_info[i]['Id'];
+		g_playerlist['account_uid'].set(all_login_info[i]['Account'],all_login_info[i]['Id']);
 		
 		g_playerlist['MaxUID'] = Math.max(g_playerlist['MaxUID'],uid);
 
@@ -146,10 +146,9 @@ exports.InitFromDb = function(
 
 exports.CheckLogin = function(login_account,login_password){
 
-	var uid = g_playerlist['account_uid'][login_account];
+	var uid = g_playerlist['account_uid'].get(login_account);
 	logger.log("PLAYER_LIST",'[CheckLogin] login_account = '+ login_account +' uid:' + uid);
 	if(uid == null){
-		//logger.log("PLAYER_LIST",'[CheckLogin] g_playerlist["account_uid"]:' + util.inspect(g_playerlist['account_uid']));
 		return 1011;
 	}
 	if(g_playerlist['playerCache'][uid] == null){
@@ -198,7 +197,7 @@ function generate(count) {
 
 PlayerManager.prototype.Login = function(login_account){
 
-	var uid = this['account_uid'][login_account];
+	var uid = this['account_uid'].get(login_account);
 	var player_info = this['playerCache'][uid];
 
 	var guid = generate(10);
@@ -238,7 +237,7 @@ exports.Login = function(login_account){
 
 
 exports.CheckRegTelephone = function(telephone){
-	var uid = g_playerlist['account_uid'][telephone];
+	var uid = g_playerlist['account_uid'].get(telephone);
 	if(uid == null){
 		return true;
 	}
@@ -276,7 +275,7 @@ function sendRegisterVerifyCode(telephone,verify_code){
 
 function checkAccount(telephone){
 
-	var uid = g_playerlist['account_uid'][telephone];
+	var uid = g_playerlist['account_uid'].get(telephone);
 	if(uid == null){
 		return true;
 	}
@@ -363,7 +362,7 @@ exports.RegisterStep = function(step,cuid,telephone,code,password){
 exports.RegisterStep1 = function(step,client_guid,telephone,code,password){
 	
 	if(step == 1){
-		var uid = g_playerlist['account_uid'][telephone];
+		var uid = g_playerlist['account_uid'].get(telephone);
 		if( uid == null ){
 			var guid = generate(10);
 
@@ -386,7 +385,7 @@ exports.RegisterStep1 = function(step,client_guid,telephone,code,password){
 		}
 		// 
 	}else if(step == 2){
-		var uid = g_playerlist['account_uid'][telephone];
+		var uid = g_playerlist['account_uid'].get(telephone);
 		
 		if(!uid && client_guid){
 			var reg = g_playerlist['reg_account'][client_guid];
@@ -416,7 +415,7 @@ exports.RegisterStep1 = function(step,client_guid,telephone,code,password){
 		}
 		
 	}else if(step == 3){
-		var uid = g_playerlist['account_uid'][telephone];
+		var uid = g_playerlist['account_uid'].get(telephone);
 		
 		if(!uid && client_guid){
 			//console.log("reg_account = " + util.inspect(this.reg_account));
@@ -462,14 +461,14 @@ function newPlayer(uid){
 }
 
 g_playerlist.Register = function(telephone,password){
-	var uid = this['account_uid'][telephone];
+	var uid = this['account_uid'].get(telephone);
 	if(uid != null){
 		return false;
 	}
 	uid = this.MaxUID + 1;
 	this.MaxUID = g_playerlist.MaxUID + 1;
 
-	this['account_uid'][telephone] = uid;
+	this['account_uid'].set(telephone,uid);
 
 	this['player_online_list'][uid] = {};
 
@@ -855,4 +854,23 @@ exports.removeShopFromSchedule = function(guid,schedule_id,shop_id){
 	}
 
 	return null;
+}
+
+PlayerManager.prototype.removePlayer = function(account){
+	logger.log("INFO",'start remove player account:',account);
+	if(this.account_uid.has(account)){
+		let uid = this.account_uid.get(account);
+		let player = this.getPlayer(uid);
+		if(player != null){
+
+		}
+		logger.log("INFO",`ready removePlayer account : ${account},uid:${uid}`);
+		// delete
+		this.account_uid.delete(account);
+
+		return uid;
+	}else{
+		logger.log("WARN",`remmove account:${account} failer is not exist`);
+	}
+	return 0;
 }

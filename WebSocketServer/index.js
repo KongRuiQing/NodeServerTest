@@ -3,7 +3,7 @@
 const WebSocket = require('ws');
 
 const handler_route = require('./route.js');
-
+var logger = require('../logger').logger();
 console.log("load WebSocket.index.js");
 
 function WebSocketApp(HOST,PORT){
@@ -35,9 +35,8 @@ function handler_close(code,reason){
 }
 
 WebSocketApp.prototype.sendMessage = function(uid,cmd,sendData) {
-	//console.log('uid:',uid,'sendData',JSON.stringify(sendData));
 	let nid = this.login_client.get(uid);
-
+	logger.log("INFO",`uid:${uid} find nid:${nid}`);
 	if(nid != null){
 		let client = this.clients.get(nid);
 		if(client != null){
@@ -50,6 +49,8 @@ WebSocketApp.prototype.sendMessage = function(uid,cmd,sendData) {
 		}else{
 			console.log("client == null");
 		}
+	}else{
+		logger.log('WARN',`uid:${uid} can't register this app`);
 	}
 	
 };
@@ -61,6 +62,20 @@ WebSocketApp.prototype.broadcast = function(cmd,sendData){
 			'data' : sendData,
 		}));
 	});
+}
+
+function handle_sendError(error){
+	if(error != null){
+		logger.log("ERROR",'send error:',error);
+	}
+}
+
+WebSocketApp.prototype.reply = function(client,cmd,responseData){
+	logger.log("INFO",`uid:${client.uid} nid:${client.nid} reply-> cmd : ${cmd},responseData`,responseData);
+	client.send(JSON.stringify({
+		'cmd' : cmd + "_rsp",
+		'data' : responseData,
+	},handle_sendError));
 }
 
 WebSocketApp.prototype.removeClient = function(socket){
@@ -111,6 +126,7 @@ WebSocketApp.prototype.register = function(socket){
 }
 
 WebSocketApp.prototype.login = function(uid,nid){
+	logger.log("INFO",`uid:${uid} bind nid:${nid}`);
 	if(this.clients.has(nid)){
 		this.login_client.set(uid,nid);
 	}
@@ -136,10 +152,11 @@ exports.start = function(HOST,PORT){
 }
 
 exports.sendMessage = function(uid,cmd,sendData){
+	logger.log("INFO",`${uid} send ${cmd} body:`, sendData);
 	if(app != null){
 		app.sendMessage(uid,cmd,sendData);
 	}else{
-		console.log('app is null');
+		logger.log("WARN",'WebSocketApp is null');
 	}
 }
 exports.broadcast = function(cmd,sendData){

@@ -16,6 +16,8 @@ test_route['websocket'] = test_websocket;
 test_route['delete_category'] = delete_category;
 test_route['add_category'] = add_category;
 
+test_route['user'] = test_user;
+
 if(args instanceof Array){
   if(args.length > 2){
     let cmd = args.splice(2);
@@ -317,3 +319,19 @@ function add_category(args){
   });
 }
 
+function output_result(error,body){
+  if(error){
+      console.log(error);
+    }else{
+      console.log(body);
+    }
+}
+
+function test_user(args){
+  if(args[0] == 'delete'){
+    let data = {
+      'account' : args[1]
+    }
+    __delete(data,'/admin/v1/user',output_result);
+  }
+}

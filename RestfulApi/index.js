@@ -15,6 +15,7 @@ var ShopClaimInstance = require("./API/ShopClaimFulApi.js");
 var CustomServiceInstance = require("./API/CustomServiceFulApi.js");
 var ShopStateInstance = require("./API/ShopStateFulApi.js");
 var WebSocketServer = require("./API/WebSocketServer.js");
+var UserInstance = require('./API/UserInstance.js');
 var server = null;
 
 var connect = require('connect');
@@ -33,6 +34,9 @@ http_obj['/admin/v1/claim'] = ShopClaimInstance.Instance();
 http_obj['/admin/v1/shop_cs'] = CustomServiceInstance.Instance();
 http_obj['/admin/v1/shop_state'] = ShopStateInstance.Instance();
 http_obj['/admin/v1/sendMessage'] = WebSocketServer.Instance();
+
+http_obj['/admin/v1/user'] = UserInstance.Instance();
+
 let PORT = 0;
 function handle_route(request,response,next){
 	var pathname = url.parse(request.url).pathname;
