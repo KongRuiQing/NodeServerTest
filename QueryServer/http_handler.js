@@ -473,15 +473,19 @@ exports.getShopAttentionBoard = function(headers,query,callback){
 
 	var area_code = Number(query['area_code'] || 0);
 	var city = Number(query['city_no'] || 0);
-	
-	var search_key = query['search_key'] || "";
+	let distance = Number(query['distance']);
 
 	var category = Number(query['cate_code'] || 0) ;
 
 	let uid = headers['uid'];
 	var start_index = Number(query['page'] || 0);
 	var page_size = 15;
-	var json_value = ShopCache.getInstance().getShopAttentionBoard(uid,city,area_code,category,search_key);
+	let distance_json = {
+		'distance' : distance,
+		'longitude' : Number(headers['longitude']),
+		'latitude' : Number(headers['latitude']),
+	};
+	var json_value = ShopCache.getInstance().getShopAttentionBoard(uid,city,area_code,category,distance_json);
 
 	var json_result = {
 		'count' : json_value.length,

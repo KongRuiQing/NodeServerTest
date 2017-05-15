@@ -785,21 +785,23 @@ exports.getGameShopList = function(uid,city,area_code,category_code,page_size)
 	return list.slice(0,page_size);
 }
 
-ShopManager.prototype.getShopAttentionBoard = function(uid,city,area_code,category_code,search_key){
+ShopManager.prototype.getShopAttentionBoard = function(uid,city,area_code,category_code,distance_json){
 
 	var list = [];
-
+	let that = this;
 	this.dict.forEach(function(shop_info,shop_id){
 		
 		if(shop_info != null){
 			if(shop_info.matchFilter(city,area_code,category_code)){
-				if(search_key.length > 0){
-					if(shop_info.search(search_key)){
+				if(distance_json != undefined && distance_json != null && distance_json['distance'] > 0){
+					let shop_distance = shop_info.calcDistance(distance_json['longitude'],distance['latitude']);
+					if(shop_distance <= distance){
 						list.push(shop_info.getShopBoardInfo());
 					}
 				}else{
 					list.push(shop_info.getShopBoardInfo());
 				}
+				
 			}
 		}
 	});
