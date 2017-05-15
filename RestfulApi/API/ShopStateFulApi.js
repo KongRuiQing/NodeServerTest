@@ -8,6 +8,7 @@ const Joi = require('joi');
 var DbCacheManager = require("../../cache/DbCache.js");
 var ShopCache = require("../../cache/shopCache.js")
 var WebSocketServer = require('../../WebSocketServer');
+
 const schema = Joi.object().keys({
     'shop_id': Joi.number().integer().min(1).required(),
     'state': Joi.number().integer().min(0).max(3).required(),
@@ -73,7 +74,8 @@ function __patch(req,rsp){
 }
 
 function __options(req,rsp){
-	__usage('OPTIONS',rsp);
+	rsp.writeHead(200, {'content-type': 'text/html'});
+	rsp.end("");
 	return;
 }
 
@@ -82,7 +84,7 @@ var __instance = new ShopStateFulApi();
 //__instance.on('DELETE',__delete);
 //__instance.on('POST',__post);
 __instance.on('PATCH',__patch);
-//__instance.on('OPTIONS',__options);
+__instance.on('OPTIONS',__options);
 
 exports.Instance = function(){
 	if(__instance == null){
