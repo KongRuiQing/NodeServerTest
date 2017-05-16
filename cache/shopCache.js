@@ -209,20 +209,19 @@ exports.InitFromDb = function(
 			shop_info.addItemToShop(item_id);
 			let shop_item = new ShopItem();
 			shop_item.initFromDb(shop_item_list[i]);
+			
 			g_shop_cache['shop_items'].set(item_id,shop_item);
-			//logger.log("SHOP_CACHE","[init][shopitem]:" + util.inspect(shop_item[i]))
+			
 			
 			if(shop_item.isSpreadItem()){
+				
 				g_shop_cache['show_items'].push(item['id']);
 			}
 			
 			g_shop_cache['max_shop_item_id'] = Math.max(g_shop_cache['max_shop_item_id'],parseInt(item['id']));
 		}
 	}
-	g_shop_cache['shop_items'].forEach(function(value){
-		logger.log("shop_item:",util.inspect(value));
-	})
-
+	
 	//logger.log("SHOP_CACHE","max_shop_item_id:" + g_shop_cache['max_shop_item_id']);
 
 	for(var i in shop_item_attention){
@@ -238,7 +237,7 @@ exports.InitFromDb = function(
 			g_shop_cache['shop_items'].get(item_id).addItemProperty(shop_item_property[i]);
 		}
 	}
-	logger.log("INFO",shop_attention);
+	
 	for(var i in shop_attention){
 		var shop_id = Number(shop_attention[i]['shop_id']);
 		if(g_shop_cache['dict'].has(shop_id)){
@@ -540,7 +539,8 @@ ShopManager.prototype.getMyAttentionShopInfo = function(shop_id_list,start_index
 	let that = this;
 	
 	let filter_shop = shop_id_list.filter(function(shop_attention){
-		let shop_info = that.getShop(shop_attention['shop_id']);
+		let shop_id = shop_attention['shop_id'];
+		let shop_info = that.getShop(shop_id);
 
 		if(shop_info == null){
 			logger.log("WARN",`shop_id ${shop_id} is not find`);

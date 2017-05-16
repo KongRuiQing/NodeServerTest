@@ -126,7 +126,7 @@ exports.changeSign = function(header,fields,files,callback){
 
 exports.becomeSeller = function(header,fields,files,callback){
 
-	
+	let Tag = "[POST_SERVER][http_handler][becomeSeller]";
 	var uid = header['uid'];
 
 	var uploadFile = {
@@ -253,13 +253,15 @@ exports.becomeSeller = function(header,fields,files,callback){
 			callback(true,{
 				'error' : 0,
 				'shop_id' : db_row['Id'],
-				'state' : 1,
+				'state' : 0,
 			});
 		});
 
 		
 		return;
 		
+	}else{
+		logger.log("ERROR",Tag,'uid is 0');
 	}
 	callback(true,{
 		'error' : 1,
