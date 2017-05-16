@@ -8,7 +8,7 @@ const Joi = require('joi');
 var DbCacheManager = require("../../cache/DbCache.js");
 var ShopCache = require("../../cache/shopCache.js")
 var WebSocketServer = require('../../WebSocketServer');
-
+let Tag = "[ShopStateFulApi]";
 const schema = Joi.object().keys({
     'shop_id': Joi.number().integer().min(1).required(),
     'state': Joi.number().integer().min(0).max(3).required(),
@@ -55,12 +55,14 @@ function __patch(req,rsp){
 	if(result.error == null){
 		let shop_id = Number(req.body['shop_id']);
 		let state = Number(req.body['state']);
+		logger.log("INFO",Tag,'__patch','param:',`shop_id:${shop_id} state:${state}`);
 		ShopCache.getInstance().updateShopState(shop_id,state);
 		let uid = ShopCache.getInstance().getOwner(shop_id);
 		if(uid > 0){
 			WebSocketServer.sendMessage(uid,'update_shop_state',{'state' : state});
 		}
 	}else{
+		logger.log("ERROR",Tag,'__patch','joi_error:',result.error);
 		error_msg = result.error;
 		error = 1;
 	}
