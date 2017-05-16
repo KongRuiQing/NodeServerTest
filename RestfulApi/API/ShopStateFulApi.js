@@ -50,8 +50,9 @@ function __post(req,rsp){
 function __patch(req,rsp){
 	logger.log("INFO",Tag,"__patch",'req.body:',req.body);
 	const result = Joi.validate(req.body, schema);
-	let error = 0;
+	
 	let error_msg = "";
+	let response_state = 200;
 	if(result.error == null){
 		let shop_id = Number(req.body['shop_id']);
 		let state = Number(req.body['state']);
@@ -62,20 +63,22 @@ function __patch(req,rsp){
 			WebSocketServer.sendMessage(uid,'update_shop_state',{'state' : state});
 		}
 	}else{
+		response_state = 400;
 		logger.log("ERROR",Tag,'__patch','joi_error:',result.error);
 		error_msg = result.error;
-		error = 1;
+		
 	}
 	let patch_result = {
-		'error' : error,
+		'error' : response_state == 200,
 		'error_msg' : error_msg,
 	}
-	rsp.writeHead(200, {'content-type': 'text/html'});
+	rsp.writeHead(response_state, {'content-type': 'text/html'});
 	rsp.end(JSON.stringify(patch_result));
 	return
 }
 
 function __options(req,rsp){
+	logger.log("INFO",Tag,'__options',req.body);
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	rsp.end("");
 	return;

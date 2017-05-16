@@ -1,7 +1,7 @@
 'use strict';
 
 const WebSocket = require('ws');
-
+var util = require("util");
 const handler_route = require('./route.js');
 var logger = require('../logger').logger();
 console.log("load WebSocket.index.js");
@@ -18,11 +18,16 @@ function WebSocketApp(HOST,PORT){
 		websocket.on('error',handler_Error);
 		websocket.on('close',handler_close);
 		websocket.on('ping',handler_ping);
+		websocket.on('open',handle_open);
 	});
 }
 
+function handle_open(){
+
+}
+
 function handler_Error(error){
-	console.log(error);
+	logger.log("ERROR",'[WebSocketApp] error:',util.inspect(error));
 }
 
 function handler_ping(){
@@ -64,18 +69,32 @@ WebSocketApp.prototype.broadcast = function(cmd,sendData){
 	});
 }
 
-function handle_sendError(error){
-	if(error != null){
-		logger.log("ERROR",'send error:',error);
+function handle_sendResponse(error){
+	if(typeof error === 'string'){
+		if(error.length != 0){
+			logger.log('ERROR','[WebSocketApp][handle_sendResponse]','error:',error);
+		}
+	}else{
+		if(error != null){
+			logger.log('ERROR','[WebSocketApp][handle_sendResponse]','error:',util.inspect(error));
+		}
 	}
 }
 
 WebSocketApp.prototype.reply = function(client,cmd,responseData){
-	logger.log("INFO",`uid:${client.uid} nid:${client.nid} reply-> cmd : ${cmd},responseData`,responseData);
-	client.send(JSON.stringify({
-		'cmd' : cmd + "_rsp",
-		'data' : responseData,
-	},handle_sendError));
+
+	setImmediate(()=>{
+
+		logger.log("INFO",`uid:${client.uid} nid:${client.nid} reply-> cmd : ${cmd},responseData`,responseData);
+		if(client != null){
+			client.send(JSON.stringify({
+				'cmd' : cmd + "_rsp",
+				'data' : responseData,
+			},handle_sendResponse));
+		}
+		
+	});
+
 }
 
 WebSocketApp.prototype.removeClient = function(socket){
