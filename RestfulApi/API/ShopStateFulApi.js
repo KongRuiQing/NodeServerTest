@@ -48,7 +48,7 @@ function __post(req,rsp){
 }
 
 function __patch(req,rsp){
-	
+	logger.log("INFO",Tag,"__patch",'req.body:',req.body);
 	const result = Joi.validate(req.body, schema);
 	let error = 0;
 	let error_msg = "";
