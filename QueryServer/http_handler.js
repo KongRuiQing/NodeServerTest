@@ -189,9 +189,7 @@ exports.getShopSpread = function(headers, query,callback){
 	if('keyword' in query){
 		keyword = query['keyword'];
 	}
-	logger.log("INFO",'last_index',last_index,
-		'longitude',longitude);
-	
+	logger.log("INFO","[HTTP_HANDER]getShopSpread param:",city_no,area_code,cate_code,sort_code,distance,longitude,latitude,last_index);
 
 	var query_result = ShopCache.getInstance().getShopSpread(last_index,longitude,latitude,city_no,area_code,distance,cate_code,keyword);
 	var json_value = {

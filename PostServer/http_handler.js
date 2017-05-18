@@ -694,7 +694,7 @@ exports.saveSellerInfo = function(header,fields,files,callback){
 	var json_result = {};
 
 	var params_type = {
-		'name' : 'STRING',
+		'shop_name' : 'STRING',
 		'city_no' : 'INT',
 		'area_code' : 'INT',
 		'category_code1' : 'INT',

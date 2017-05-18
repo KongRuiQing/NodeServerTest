@@ -590,8 +590,8 @@ ShopBean.prototype.updateSellerInfo = function(json_value){
 	
 	if(this.id == json_value['id']){
 		
-		if('name' in json_value){
-			this.name = json_value['name'];
+		if('shop_name' in json_value){
+			this.name = json_value['shop_name'];
 		}
 
 		if('city_no' in json_value){

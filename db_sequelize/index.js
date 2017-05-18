@@ -78,7 +78,7 @@ exports.insertRequestBeSeller = function(jsonObject,callback){
 exports.saveSellerInfo = function(jsonObject,callback){
 
 	var value = {
-		'name' : jsonObject['name'],
+		'name' : jsonObject['shop_name'],
 		'city_no' : jsonObject['city_no'],
 		'area_code' : jsonObject['area_code'],
 		'category_code1' : jsonObject['category_code1'],

@@ -192,7 +192,7 @@ DbCacheManager.prototype.getItemCategory = function(){
 
 DbCacheManager.prototype.getShopAd = function(position){
 	
-	logger.log("INFO","ad_image :",util.inspect(this.ad_image,{depth : null}));
+	//logger.log("INFO","ad_image :",util.inspect(this.ad_image,{depth : null}));
 
 	if(position in this.ad_image){
 
