@@ -78,7 +78,7 @@ exports.start = function(Host,Port){
 	.use(bodyParser.urlencoded({ extended: false }))
 	.use(handle_head)
 	.use(handle_route)
-	.use(handle_Error)
+	.use(handle_Error);
 	app.listen(Port);
 }
 

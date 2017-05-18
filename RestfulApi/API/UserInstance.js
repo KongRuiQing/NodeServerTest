@@ -25,23 +25,26 @@ function __error(rsp,error){
 }
 
 function __delete(req,rsp){
-
+	let TAG = '[UserInstance][__delete]';
 	const schema = Joi.object().keys({
-		'account': Joi.string().required(),
+		'id': Joi.string().required(),
 	});
 	const joi_result = Joi.validate(req.body, schema);
+	let response_state = 200;
 	let json_result = {};
 	if(joi_result.error == null){
-		let account = req.body['account'];
-		let uid = PlayerCache.getInstance().removePlayer(account);
-		logger.log("INFO",`uid ${uid} is removed notify player`);
+		let uid = req.body['id'];
+		logger.log("INFO",TAG,`uid ${uid} is removed`);
+		PlayerCache.getInstance().removePlayer(uid);
 		if(uid > 0){
 			WebSocketServer.sendMessage(uid,'remove_account',{'reason' : 1006});
 		}
 	}else{
+		response_state = 400;
+		logger.log("ERROR","[UserInstance][__delete] joi error:",joi_result.error);
 		json_result['error_msg'] = joi_result.error;
 	}
-	rsp.writeHead(200, {'content-type': 'text/html'});
+	rsp.writeHead(response_state, {'content-type': 'text/html'});
 	rsp.end(JSON.stringify(json_result));
 }
 
@@ -76,7 +79,7 @@ var __instance = new UserInstance();
 __instance.on('DELETE',__delete);
 //__instance.on('POST',__post);
 //__instance.on('PATCH',__patch);
-//__instance.on('OPTIONS',__options);
+__instance.on('OPTIONS',__options);
 
 exports.Instance = function(){
 	if(__instance == null){
