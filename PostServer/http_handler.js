@@ -322,11 +322,9 @@ exports.attentionShop = function(header,fields,files,callback){
 				});
 				return;
 			}else{
-				if(is_attention){
-					PlayerProxy.getInstance()
-				}
+				
 				PlayerProxy.getInstance().attentionShop(uid,shop_id,is_attention);
-				ShopProxy.getInstance().addAttention(uid,shop_id);
+				ShopProxy.getInstance().addAttention(uid,shop_id,is_attention);
 
 				let result = ShopProxy.getInstance().getShopAttentionInfo(uid,shop_id);
 				HeadInstance.getInstance().emit('/shop_attention',uid,shop_id);

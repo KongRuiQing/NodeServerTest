@@ -78,7 +78,7 @@ function __patch(req,rsp){
 }
 
 function __options(req,rsp){
-	logger.log("INFO",Tag,'__options',req.body);
+	//logger.log("INFO",Tag,'__options',req.body);
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	rsp.end("");
 	return;
@@ -93,7 +93,7 @@ __instance.on('OPTIONS',__options);
 
 exports.Instance = function(){
 	if(__instance == null){
-		logger.log("WARN","CategoryInstance is null");
+		logger.log("WARN","ShopStateFulApi is null");
 	}
 	return __instance;
 }

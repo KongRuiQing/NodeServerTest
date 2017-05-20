@@ -587,7 +587,7 @@ exports.getShopActivityList = function(page,page_size){
 }
 
 ShopManager.prototype.addAttention = function(uid,shop_id,is_attention){
-
+	logger.log("INFO","[ShopManager][addAttention] uid :",uid,',shop_id:',shop_id,',is_attention:',is_attention);
 	var shop_info = this.getShop(shop_id);
 	if(shop_info != null){
 		if(is_attention){
@@ -595,6 +595,8 @@ ShopManager.prototype.addAttention = function(uid,shop_id,is_attention){
 		}else{
 			shop_info.cancelAttention(uid);
 		}
+	}else{
+		logger.log("ERROR",`[ShopManager][addAttention] uid:${uid} attention: ${is_attention} shop_id:${shop_id}`);
 	}
 }
 
@@ -960,6 +962,7 @@ ShopManager.prototype.getShopClaimState = function(shop_id){
 }
 
 ShopManager.prototype.addShop = function(db_row){
+
 	var shop_id = Number(db_row['Id']);
 	if(shop_id in this.dict){
 		logger.log("WARN",TAG,'error_msg:',shop_id,'is in this.dict');
@@ -968,11 +971,11 @@ ShopManager.prototype.addShop = function(db_row){
 			'error_msg' : `${shop_id} is find in this.dict`,
 		};
 	}
-	this.dict[shop_id] = new ShopBean();
 
-	this.dict[shop_id].initFromDbRow(db_row);
-
-
+	let shopBean = new ShopBean();
+	shopBean.initFromDbRow(db_row);
+	this.dict.set(shop_id,shopBean);
+	
 	return null;
 }
 
