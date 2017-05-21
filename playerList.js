@@ -874,3 +874,12 @@ PlayerManager.prototype.removePlayer = function(account){
 	}
 	return 0;
 }
+
+PlayerManager.prototype.closeShop = function(uid){
+	let player = this.getPlayer(uid);
+	if(player != null){
+		player.beSeller(0,0);
+	}else{
+		logger.log("ERROR","[PlayerManager][closeShop] uid:",uid," is not find");
+	}
+}

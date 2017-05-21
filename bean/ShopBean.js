@@ -751,4 +751,13 @@ ShopBean.prototype.getOwner = function(){
 	return this.uid;
 }
 
+ShopBean.prototype.removeShopItem = function(to_remove_item_id){
+	let find_index = this.items.findIndex(function(item_id){
+		return item_id == to_remove_item_id;
+	});
+	if(find_index >= 0){
+		this.items.splice(find_index,1);
+	}
+}
+
 module.exports = ShopBean;

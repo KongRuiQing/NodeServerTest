@@ -153,6 +153,26 @@ ShopManager.prototype.addShopItem= function(json_value,json_image,json_propertys
 	}
 }
 
+
+ShopManager.prototype.removeShopItem = function(to_remove_item_id){
+	let item_bean = this.getItemBean(to_remove_item_id);
+
+	if(item_bean != null){
+		let shop_id = item_bean.getShopId();
+		this.shop_items.delete(to_remove_item_id);
+		let find_index = this.show_items.findIndex(function(item_id){
+			return item_id == to_remove_item_id;
+		});
+		if(find_index >= 0){
+			this.show_items.splice(find_index,1);
+		}
+		let shop_bean = this.getShop(shop_id);
+		if(shop_bean != null){
+			shop_bean.removeShopItem(to_remove_item_id);
+		}
+	}
+}
+
 let g_shop_cache = new ShopManager();
 
 exports.getInstance = function(){
@@ -838,10 +858,11 @@ ShopManager.prototype.removeShopByShopId = function(shop_id){
 
 	this.dict.delete(shop_id);
 
-	logger.log("INFO",'删除成功');
+	
 	if(this.dict.has(shop_id)){
-		logger.log("INFO","aaa");
+		logger.log("INFO","删除失败");
 	}
+	logger.log("INFO",'删除成功');
 	let all_remove_item = [];
 	this.shop_items.forEach(function(itemBean,itemId){
 		if(itemBean.getShopId() == shop_id){
@@ -979,25 +1000,6 @@ ShopManager.prototype.addShop = function(db_row){
 	return null;
 }
 
-ShopManager.prototype.removeShopItem = function(param){
-	let item_id = param['id'];
-	let itemBean = this.getItemBean(item_id);
-	let shop_id = itemBean.getShopId();
-	delete this.shop_items[item_id];
-	
-	for(var key in this.show_items){
-		if(this.show_items[key] == item_id){
-			this.show_items.splice(key,1);
-			break;
-		}
-	}
-	if(this.dict.has(shop_id)){
-		let shopBean = this.getShop(shop_id);
-		shopBean.removeShopItem(item_id);
-	}
-
-	return null;
-}
 
 ShopManager.prototype.updateShopState = function(shop_id,shop_state){
 	let shop = this.getShop(shop_id);
@@ -1047,4 +1049,8 @@ ShopManager.prototype.removeSpreadItem = function(find_item_id){
 	if(find_index >= 0){
 		this.show_items.splice(find_index,1);
 	}
+}
+
+ShopManager.prototype.closeShop = function(shop_id){
+	this.removeShopByShopId(shop_id);
 }

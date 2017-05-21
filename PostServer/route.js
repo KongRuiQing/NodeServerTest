@@ -13,6 +13,7 @@ handle_http['/add_favorites'] = http_handler.addToFavorites;
 handle_http['/change_user_info'] = http_handler.changeUserInfo;
 // shop_item
 handle_http['/add_shop_item'] = http_handler.addShopItem;
+handle_http['/remove_shop_item'] = http_handler.removeShopItem;
 // seller
 handle_http['/become_seller'] = http_handler.becomeSeller;
 
@@ -38,4 +39,6 @@ handle_http['/admin/v1/shop'] = http_notify.shopCallback;
 handle_http['/admin/v1/shop_item']  = http_notify.notifyShopItem;
 handle_http['/send_message'] = http_handler.sendMessage;
 handle_http['/off_shelve_shop_item'] = http_handler.offShelveShopItem;
+handle_http['/close_shop'] = http_handler.closeShop;
+
 module.exports = handle_http;

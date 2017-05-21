@@ -285,3 +285,59 @@ exports.offShelveShopItem = function(items,state,callback){
 		callback('error');
 	});
 }
+
+exports.closeShop = function(shop_id,callback){
+
+	let delete_shop_from_shop_info = new Promise((resolve, reject)=>{
+		ShopModel.destroy({
+			'where' : {'Id':shop_id}
+		}).then((count)=>{
+			resolve(true);
+		});
+	});
+	let delete_shop_from_shop_attention = new Promise((resolve,reject)=>{
+		UserAttentionModel.destroy({
+			'where' : {'shop_id' : shop_id}
+		}).then((count)=>{
+			resolve(true);
+		});
+	});
+
+	let p = Promise.resolve(true);
+	p.then(delete_shop_from_shop_info).then(delete_shop_from_shop_attention).then(()=>{
+		callback(null,true);
+	});
+}
+
+exports.removeShopItem = function(item_id,callback){
+	let delete_item_from_item_table = new Promise((resolve,reject)=>{
+		ItemModel.destroy({
+			'where' : {'id' : item_id}
+		}).then((count)=>{
+			resolve(count);
+		})
+	});
+	let delete_item_from_item_image = new Promise((resolve,reject)=>{
+		ItemImageModel.destroy({
+			'where' : {'id' : item_id}
+		}).then((count)=>{
+			resolve(count);
+		})
+	});
+	let delete_item_from_item_property = new Promise((resolve,reject)=>{
+		ItemPropertyModel.destroy({
+			'where' : {'id' : item_id}
+		}).then((count)=>{
+			resolve(count);
+		})
+	});
+
+	Promise.all([
+		delete_item_from_item_table,
+		delete_item_from_item_image,
+		delete_item_from_item_property])
+	.then((remove_count)=>{
+		console.log(remove_count)
+		callback(null,remove_count);
+	});
+}

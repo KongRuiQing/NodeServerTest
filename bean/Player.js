@@ -96,11 +96,8 @@ Player.prototype.setUserInfo = function(db_row) {
 	this.email = db_row['email'];
 	this.real_name = db_row['real_name'];
 	this.sex = Number(db_row['sex']);
-	this.shop_id = Number(db_row['shop_id']);
-
-	for(var i in this.schedule){
-		this.schedule[i].setUid(this.id);
-	}
+	
+	
 };
 
 
@@ -224,9 +221,7 @@ Player.prototype.isSeller = function(){
 }
 
 Player.prototype.beSeller = function(shop_id,shop_state){
-	if(this.shop_id != 0){
-
-	}
+	
 	this.shop_id = shop_id;
 	this.shop_state = shop_state;
 }
@@ -240,6 +235,7 @@ Player.prototype.getMyAttention = function(){
 }
 
 Player.prototype.getShopId = function(){
+
 	return this.shop_id;
 }
 Player.prototype.getClaim = function(){

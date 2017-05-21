@@ -575,6 +575,40 @@ exports.addShopItem = function(header,fields,files,callback){
 	
 }
 
+exports.removeShopItem = function(header,fields,files,callback){
+	var uid = Number(header['uid']);
+
+	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+
+	let item_id = Number(fields['item_id']);
+	logger.log("INFO",`[POST_SERVER][removeShopItem] uid ${uid},shop_id ${shop_id},item_id ${item_id}`);
+	if(shop_id > 0){
+		let check = ShopProxy.getInstance().isShopItem(shop_id,item_id);
+		if(check){
+			db_sequelize.removeShopItem(item_id,(error,db_result)=>{
+				if(error){
+					callback(true,{
+						'error' : 2,
+					});
+				}else{
+					ShopProxy.getInstance().removeShopItem(item_id);
+					callback(true,{
+						'error' : 0
+					});
+				}
+			});
+		}else{
+			callback(true,{
+				'error' : 3,
+			})
+		}
+	}else{
+		callback(true,{
+			'error' : 1,
+		});
+	}
+}
+
 exports.saveMyShopBasicInfo = function(header,fields,files,callback){
 	var json_result = {};
 	var uploadFileKey = {
@@ -1382,5 +1416,45 @@ exports.offShelveShopItem = function(header,fields,files,cb){
 		}
 	});
 
+}
 
+exports.closeShop = function(header,fields,files,cb){
+	let uid = Number(header['uid']);
+	let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	logger.log("INFO",`[POST_SERVER][closeShop] params shop_id:${shop_id}`);
+	if(shop_id <= 0 ){
+		cb(true,{
+			'error' : 3,
+		});
+		return;
+	}
+	if(Number.isNaN(shop_id)){
+		cb(true,{
+			'error' : 4
+		});
+		return;
+	}
+
+	db_sequelize.closeShop(shop_id,function(error,close_result){
+		if(error){
+			logger.log("ERROR","[POST_SERVER][closeShop] db_sequelize  error",error);
+			cb(true,{
+				'error' : 1,
+			});
+		}else{
+			if(close_result){
+				PlayerProxy.getInstance().closeShop(uid);
+				ShopProxy.getInstance().closeShop(shop_id);
+				cb(true,{
+					'error' : 0,
+				});
+				return;
+			}else{
+				cb(true,{
+					'error' : 2,
+				});
+				return;
+			}
+		}
+	});
 }

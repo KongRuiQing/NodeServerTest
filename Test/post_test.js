@@ -1,6 +1,6 @@
 'use strict';
 var http = require('http');
-function post(path,send_message,callback){
+function post(path,send_message,uid,callback){
   let sendBuffer = JSON.stringify(send_message);
   var options = {
     host:'192.168.0.120',
@@ -10,7 +10,7 @@ function post(path,send_message,callback){
     headers: {
       'Content-Type': 'application/json',
       'Content-Length': Buffer.byteLength(sendBuffer),
-      'uid' : 1,
+      'uid' : uid,
     }
   };
 
@@ -30,13 +30,40 @@ function post(path,send_message,callback){
 
 let test_route = {};
 test_route['off_shelve_shop_item'] = off_shelve_shop_item;
-
+test_route['close_shop'] = close_shop;
+test_route['remove_shop_item'] = remove_item;
 function off_shelve_shop_item(){
   let data = {
     'item_0' : 2,
   };
-  post('off_shelve_shop_item',data,function(err,body){
+  post('off_shelve_shop_item',data,1,function(err,body){
     console.log(body);
+  });
+}
+
+function close_shop(param){
+  let data = {
+    'close' : 'true',
+  };
+  post('close_shop',data,param[0],(error,body)=>{
+    if(error){
+      console.log(error);
+    }else{
+      console.log(body);
+    }
+  });
+}
+
+function remove_item(param){
+  let data = {
+    'item_id' : param[1],
+  }
+  post('remove_shop_item',data,param[0],(error,body)=>{
+    if(error){
+      console.log(error);
+    }else{
+      console.log(body);
+    }
   });
 }
 
