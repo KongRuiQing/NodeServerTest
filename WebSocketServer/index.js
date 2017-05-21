@@ -41,7 +41,7 @@ function handler_close(code,reason){
 
 WebSocketApp.prototype.sendMessage = function(uid,cmd,sendData) {
 	let nid = this.login_client.get(uid);
-	logger.log("INFO",`uid:${uid} find nid:${nid}`);
+	logger.log("INFO",`uid:${uid} find nid:${nid} typeof uid =`, typeof uid);
 	if(nid != null){
 		let client = this.clients.get(nid);
 		if(client != null){

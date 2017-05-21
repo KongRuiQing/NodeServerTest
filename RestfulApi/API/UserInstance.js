@@ -33,7 +33,7 @@ function __delete(req,rsp){
 	let response_state = 200;
 	let json_result = {};
 	if(joi_result.error == null){
-		let uid = req.body['id'];
+		let uid = Number(req.body['id']);
 		logger.log("INFO",TAG,`uid ${uid} is removed`);
 		PlayerCache.getInstance().removePlayer(uid);
 		if(uid > 0){
