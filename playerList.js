@@ -857,7 +857,7 @@ exports.removeShopFromSchedule = function(guid,schedule_id,shop_id){
 }
 
 PlayerManager.prototype.removePlayer = function(uid){
-	logger.log("INFO",'start remove player account:',account);
+	logger.log("INFO",'start remove player account:',uid);
 	let player = this.getPlayer(uid);
 	if(player != null){
 		this.playerCache[uid] = null;
