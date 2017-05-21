@@ -856,23 +856,16 @@ exports.removeShopFromSchedule = function(guid,schedule_id,shop_id){
 	return null;
 }
 
-PlayerManager.prototype.removePlayer = function(account){
+PlayerManager.prototype.removePlayer = function(uid){
 	logger.log("INFO",'start remove player account:',account);
-	if(this.account_uid.has(account)){
-		let uid = this.account_uid.get(account);
-		let player = this.getPlayer(uid);
-		if(player != null){
-
-		}
-		logger.log("INFO",`ready removePlayer account : ${account},uid:${uid}`);
-		// delete
-		this.account_uid.delete(account);
-
-		return uid;
+	let player = this.getPlayer(uid);
+	if(player != null){
+		this.playerCache[uid] = null;
+		delete this.playerCache[uid];
 	}else{
-		logger.log("WARN",`remmove account:${account} failer is not exist`);
+		logger.log("WARN",`remmove uid:${uid} failer is not exist`);
 	}
-	return 0;
+	
 }
 
 PlayerManager.prototype.closeShop = function(uid){
