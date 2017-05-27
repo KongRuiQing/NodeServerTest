@@ -18,7 +18,7 @@ test_route['add_category'] = add_category;
 
 test_route['user'] = test_user;
 
-test_route['close_shop'] = close_shop;
+
 
 if(args instanceof Array){
   if(args.length > 2){
@@ -332,8 +332,9 @@ function output_result(error,body){
 function test_user(args){
   if(args[0] == 'delete'){
     let data = {
-      'account' : args[1]
+      'id' : args[1]
     }
     __delete(data,'/admin/v1/user',output_result);
   }
 }
+
