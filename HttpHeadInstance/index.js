@@ -21,12 +21,28 @@ class ReadyBeSellerDataMoniter{
 	} 
 }
 
+
+
 class ShopListDataMoniter{
 	constructor(defaultTime){
 		this.__defaultTime = defaultTime;
+		this.__changedTime = defaultTime;
+	}
+	changed(shop_id){
+		this.__changedTime = moment();
 	}
 	checkModified(req){
-		return moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+		let headers = req.headers;
+
+		if('if-modified-since' in headers){
+			let since_moment = moment(headers['if-modified-since'],'YYYY-MM-DD HH:mm:ss.SSS');
+			if(since_moment.isBefore(this.__changedTime,'millisecond')){
+				return this.__changedTime.format('YYYY-MM-DD HH:mm:ss.SSS');
+			}
+		}else{
+			return this.__defaultTime.format('YYYY-MM-DD HH:mm:ss.SSS');
+		}
+		
 	}
 };
 
@@ -132,6 +148,13 @@ instnce.on('/shop_detail',function(shop_id){
 		obj.changed(shop_id);
 	}
 })
+
+instnce.on('/shop_list',(shop_id)=>{
+	let obj = instnce.getObj('/shop_list');
+	if(obj != null){
+		obj.changed(shop_id);
+	}
+});
 
 exports.getInstance = function(){
 	return instnce;

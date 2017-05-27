@@ -1,7 +1,7 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define('userLogin', {
-    'id':{
+    'Id':{
       type:DataTypes.BIGINT(11), 
       autoIncrement:true, 
       primaryKey : true, 

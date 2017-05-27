@@ -11,6 +11,8 @@ var moment = require('moment');
 var down_file_name = "";
 var down_file_version = "";
 var WebSocketServer = require("../WebSocketServer");
+const assert = require('assert');
+
 function watchApkVersion(root_path){
 
 	var files = fs.readdirSync(root_path);
@@ -358,12 +360,12 @@ exports.getMyAttention = function(headers, query,callback){
 		,start_index
 		,page_size
 		,{
-		'area_code' : area_code,
-		'distance' : distance,
-		'category_code' : category_code,
-		'longitude' : headers['longitude'],
-		'latitude' : headers['latitude'],
-	});
+			'area_code' : area_code,
+			'distance' : distance,
+			'category_code' : category_code,
+			'longitude' : headers['longitude'],
+			'latitude' : headers['latitude'],
+		});
 
 	var json_result = {
 		'page' : start_index,
@@ -551,3 +553,57 @@ exports.getShopClaimState = function(headers,query,callback)
 	}
 }
 
+exports.getAttentionGroup = function(headers,query,callback){
+	let uid = Number(headers['uid']);
+	assert.equal(typeof uid,'number','uid typeof require number but is string');
+
+	let shop_id = PlayerCache.getInstance().getMyShopId(uid);
+	if(shop_id > 0){
+		let attention_list = ShopCache.getInstance().getShopAttention();
+		let result = [];
+		attention_list.forEach((attention_uid)=>{
+			assert.equal(typeof attention_uid,'number','attention_uid is a string');
+
+			if(attention_uid != uid){
+				let playerInfo = PlayerCache.getInstance().getAttentionInfo(attention_uid);
+				result.append(playerInfo);
+			}
+		});
+
+		result.sort(()=>{
+
+		});
+		callback(0,{
+			'error' : 0,
+			'list' : result,
+		});
+		return;
+	}else{
+		logger.log("ERROR",`${uid} not have shop`);
+		callback(0,{
+			'error' : 1,
+		});
+	}
+}
+
+exports.getShopAttentionGroupMessageList = function(headers,query,callback){
+	let shop_id = Number(query['shop_id']);
+	assert.equal(typeof shop_id,'number','');
+	if(shop_id > 0){
+		let result = ShopCache.getInstance().getAttentionGroupMessageList();
+		if(result != null){
+			callback(0,{
+				'error' : 0,
+				'list' : result,
+			});
+			return;
+		}
+		
+	}
+
+	callback(0,{
+		'error' : 1,
+	});
+	return;
+
+}

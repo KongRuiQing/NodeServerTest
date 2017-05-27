@@ -27,4 +27,5 @@ handle_http['/get_my_schedule_route_info'] = http_handler.getMyScheduleRouteInfo
 handle_http['/get_ready_be_seller_data'] = http_handler.getBeSellerData;
 handle_http['/shop_claim_state'] = http_handler.getShopClaimState;
 handle_http['/custom_service'] = http_config.getCustomService;
+handle_http['/get_attention_group'] = http_handler.getAttentionGroup;
 module.exports = handle_http;

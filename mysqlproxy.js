@@ -16,6 +16,8 @@ var db_config = {
 	dateStrings: true
 };
 
+
+
 var connection = mysql.createConnection(db_config);
 
 function handleMySqlError(err){

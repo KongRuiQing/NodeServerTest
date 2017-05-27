@@ -20,6 +20,7 @@ function printCostTime(req,rsp,time){
 }
 
 function handle_post(pathname,headers,fields,files,response){
+	logger.log("INFO","[POST_SERVER]","fields:",fields);
 	handle_http[pathname](headers,fields,files,function(success,json_result){
 
 		logger.log("INFO","response:\n" + util.inspect(json_result));

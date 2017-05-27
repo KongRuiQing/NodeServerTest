@@ -1,7 +1,7 @@
 "use strict";
 var util = require("util");
 var ScheduleRouteBean = require("./ScheduleRouteBean.js");
-
+var moment = require("moment");
 var PlayerAttentionShopInfo = function(shop_id,attention_time,remark){
 	this.shop_id = Number(shop_id);
 	this.attention_time = attention_time;
@@ -49,7 +49,7 @@ var Player = function(){
 	this.login_account = "";
 	this.login_password = "";
 	this.state = 2;
-	this.guid = "";
+	
 	this.last_login_time = "";
 
 	this.head = "";
@@ -87,9 +87,11 @@ Player.prototype.initNewPlayer = function(uid){
 Player.prototype.setUserInfo = function(db_row) {
 	// user info
 	this.id = Number(db_row['id']);
-	this.head = db_row['head'];
+	if('head' in db_row){
+		this.head = db_row['head'];
+	}
 	this.name = db_row['name'];
-	this.birthday_timestamp = db_row['birthday_timestamp'];
+	this.birthday_timestamp = moment(db_row).format("YYYY-MM-DD HH:mm:ss");
 	this.sign = db_row['sign'];
 	this.address = db_row['address'];
 	this.telephone = db_row['telephone'];
@@ -123,12 +125,8 @@ Player.prototype.setLoginInfo = function(login_account,login_password,state){
 	this.state = state;
 }
 
-Player.prototype.setLoginGuid = function(guid){
-	this.guid = guid;
-}
 
-Player.prototype.login = function(guid){
-	this.guid = guid;
+Player.prototype.login = function(){
 	this.last_login_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 }
 
@@ -186,14 +184,14 @@ Player.prototype.getUserLoginInfo = function(){
 	var json_login = {};
 
 	json_login['uid'] = this.id;
-	json_login['guid'] = this.guid;
+	
 
 	json_login['head'] = this.head;
 	json_login['nick_name'] = this.name;
 	json_login['sex'] = this.sex;
 
 	if(this.birthday_timestamp){
-		json_login['birthday_timestamp'] = this.birthday_timestamp;
+		json_login['birthday_timestamp'] = moment(this.birthday_timestamp).format("YYYY-MM-DD HH:mm:ss");
 	}	
 
 	json_login['sign'] = this.sign;	

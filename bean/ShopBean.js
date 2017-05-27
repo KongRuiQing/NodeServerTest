@@ -50,6 +50,7 @@ var ShopBean = function(){
 	this.__cs = 0;
 	this.__big_image = "";
 
+	this.__attenton_group_messages = new Map();
 }
 
 //util.inherits(ShopBean, events.EventEmitter);
@@ -66,6 +67,18 @@ var ShopActivity = function(){
 	this.image = "";
 	this.name = "";
 	this.info = "";
+}
+
+class ShopAttentionGroupMessage{
+	
+	constructor(){
+
+	}
+
+	get list(){
+
+	}
+
 }
 
 ShopSpreadItem.prototype.newSpreadItem = function(item_id,image,time){
@@ -758,6 +771,17 @@ ShopBean.prototype.removeShopItem = function(to_remove_item_id){
 	if(find_index >= 0){
 		this.items.splice(find_index,1);
 	}
+}
+
+ShopBean.prototype.getAttentionGroupMessageList = function(){
+
+}
+
+ShopBean.prototype.addAttentionGroupMessage = function(json_msg){
+	let msg = new AttentionGroupMessage();
+	msg.initFromJSON(json_msg);
+
+	this.__attenton_group_messages.set(msg.getId(),msg);
 }
 
 module.exports = ShopBean;

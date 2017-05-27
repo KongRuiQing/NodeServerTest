@@ -9,6 +9,9 @@ var DbCacheManager = require("../../cache/DbCache.js");
 var ShopCache = require("../../cache/shopCache.js");
 var PlayerCache = require("../../playerList.js");
 var WebSocketServer = require('../../WebSocketServer');
+
+var LoginModule = require("../../Logic/login.js");
+var OnlineModule = require("../../Logic/online.js");
 const Joi = require('joi');
 
 
@@ -35,9 +38,15 @@ function __delete(req,rsp){
 	if(joi_result.error == null){
 		let uid = Number(req.body['id']);
 		logger.log("INFO",TAG,`uid ${uid} is removed`);
+		let shop_id = PlayerCache.getInstance().getMyShopId(uid);
+		if(shop_id > 0){
+			ShopCache.getInstance().removeShopByShopId(shop_id);
+		}
 		PlayerCache.getInstance().removePlayer(uid);
 		if(uid > 0){
-			WebSocketServer.sendMessage(uid,'remove_account',{'reason' : 1006});
+			
+			OnlineModule.kickoff(uid);
+			LoginModule.removeUser(uid);
 		}
 	}else{
 		response_state = 400;
@@ -57,13 +66,21 @@ function __usage(method,rsp,error_msg){
 
 function __post(req,rsp){
 
-	rsp.writeHead(state_code, {'content-type': 'text/html'});
-	rsp.end(JSON.stringify(json_result));
+	rsp.writeHead(200, {'content-type': 'text/html'});
+	rsp.end("");
 	return;
 
 }
 
 function __patch(req,rsp){
+	if('state' in req.body){
+		let state = Number(req.body['state']);
+		let uid = Number(req.body['id']);
+		LoginModule.changeLoginState(uid,state);
+		OnlineModule.notifyUserLoginStateChange(uid,state);
+	}else{
+
+	}
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	rsp.end("");
 	return

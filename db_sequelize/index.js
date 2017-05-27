@@ -341,3 +341,49 @@ exports.removeShopItem = function(item_id,callback){
 		callback(null,remove_count);
 	});
 }
+
+exports.registerPlayer = function(json_register,callback){
+	new Promise((resolve,reject)=>{
+		UserLogin.findOrCreate({
+			'defaults' : {
+				'Account' : json_register['telephone'],
+				'Password' : json_register['password'],
+				'longitude' : json_register['longitude'],
+				'latitude' : json_register['latitude'],
+			},
+			'where' : {
+				'Id' : null,
+			}
+		}).then((Instance,created)=>{
+			let dbRow = Instance[0]['dataValues'];
+			resolve(dbRow);
+		});
+	}).then((login_info)=>{
+		console.log("db_seq:",login_info)
+		UserModel.findOrCreate({
+			'defaults' : {
+				'id' : login_info['Id'],
+				'name' : '用户' + login_info['Id'],
+				'state' : 0,
+			},
+			'where' : {
+				'id' : login_info['Id'],
+			}
+		}).then((Instance,created)=>{
+			let user_info = Instance[0]['dataValues'];
+			callback(login_info,user_info);
+		});
+	});
+}
+
+exports.saveUserInfo = function(uid,json_userinfo,callback){
+	console.log("db_seq: uid:" , uid, "json_userinfo:",json_userinfo);
+	UserModel.update(
+		json_userinfo,
+		{"where" : {'id' : uid}})
+	.then((affectedCount,results)=>{
+			callback(null);
+	});
+	return;
+	
+}

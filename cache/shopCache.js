@@ -850,6 +850,7 @@ exports.setShopItemImage = function(item_id,index,image){
 }
 
 ShopManager.prototype.removeShopByShopId = function(shop_id){
+	logger.log("INFO","[ShopManager][removeShopByShopId] to remove shop_id",shop_id);
 	let shop = this.getShop(shop_id);
 	if(shop == null){
 		logger.log("WARN",'用户请求删除的shop不存在');
@@ -864,6 +865,7 @@ ShopManager.prototype.removeShopByShopId = function(shop_id){
 	}
 	logger.log("INFO",'删除成功');
 	let all_remove_item = [];
+	
 	this.shop_items.forEach(function(itemBean,itemId){
 		if(itemBean.getShopId() == shop_id){
 			all_remove_item.push(itemId);
@@ -873,6 +875,7 @@ ShopManager.prototype.removeShopByShopId = function(shop_id){
 	all_remove_item.forEach(function(to_remove_item_id){
 		this.shop_items.delete(to_remove_item_id);
 	});
+
 	all_remove_item.forEach(function(to_remove_item_id){
 		let find_index = this.show_items.findIndex(function(item_id){
 			return item_id == to_remove_item_id;
@@ -881,6 +884,8 @@ ShopManager.prototype.removeShopByShopId = function(shop_id){
 			this.show_items.splice(find_index,1);
 		}
 	});
+
+	HeadInstance.getInstance().emit("/shop_list",shop_id);
 }
 
 ShopManager.prototype.updateShopByApi = function(json_shop){
@@ -1053,4 +1058,23 @@ ShopManager.prototype.removeSpreadItem = function(find_item_id){
 
 ShopManager.prototype.closeShop = function(shop_id){
 	this.removeShopByShopId(shop_id);
+}
+
+ShopManager.prototype.getAttentionGroupMessageList = function(shop_id){
+	let shop_info = this.getShop(shop_id);
+	if(shop_info != null){
+		return shop_info.getAttentionGroupMessageList();
+	}
+	return null;
+}
+
+ShopManager.prototype.addAttentionGroupMessage = function(shop_id,msg){
+	let shop_info = this.getShop(shop_id);
+	if(shop_info != null){
+		shop_info.addAttentionGroupMessage(msg);
+	}
+	else{
+		logger.log("ERROR","[ShopManager][addAttentionGroupMessage] error:",`can't find ${shop_id} in this shop`);
+	}
+
 }

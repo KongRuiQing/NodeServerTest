@@ -1,8 +1,11 @@
 'use strict';
 
-var PlayerManager = require("../../playerList.js");
+let OnlineModule = require("../../Logic/online.js");
 
 module.exports = function(server,socket,jsonData){
-
-	server.logout(socket);
+	let uid = socket.uid;
+	if(uid > 0){
+		OnlineModule.logout(uid);
+	}
+	server.reply(socket,'logout',{});
 }

@@ -8,13 +8,17 @@ var PlayerProxy = require("../playerList.js");
 var ShopProxy = require("../cache/shopCache.js");
 var path=require('path');
 var moment = require('moment');
-
+let ErrorCode = require("../error.js");
 let BASE_SHOP_IMAGE = "../../www/SaySystemWeb/Files";
 
 let db_sequelize = require("../db_sequelize");
 
 let HeadInstance = require("../HttpHeadInstance");
-
+let Ws = require("../WebSocketServer");
+let LoginModule = require("../Logic/login.js");
+let RegisterService = require("../Logic/register.js");
+var OnlineService = require("../Logic/online.js");
+const Joi = require('joi');
 exports.new_feed = function(header,fields,files,callback){
 	
 };
@@ -32,6 +36,7 @@ function check_dir(dirs){
 function upload_file_to_json(files,map,result){
 
 	check_dir(map[file_key]);
+
 	for(var file_key in map){
 		if(file_key in files){
 			let upload_file = files[file_key];
@@ -39,37 +44,14 @@ function upload_file_to_json(files,map,result){
 			let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
 			result[file_key] = path.join('Files',virtual_file_name).replace(/\\/g,"\\\\");
+			logger.log("INFO","[POST_SERVER][upload_file_to_json] files:",result[file_key]);
 		}
 	} 
+
+	logger.log("INFO","end upload_file_to_json");
 }
 
-exports.login = function(header,fields,files,callback){
-	logger.log('INFO','start login');
-	var login_account = fields['account'];
-	var login_password = fields['password'];
-	
-	var json_result = {};
-	
-	var login_result = PlayerProxy.CheckLogin(login_account,login_password);
-	
-	if( login_result == 0){
-		var login_response = PlayerProxy.Login(login_account);
 
-		//db_sequelize.updateLogin(,1,header['longitude'],header['latitude']);
-
-		json_result['user_info'] = login_response;
-		json_result['account'] = login_account;
-		json_result['password'] = login_password;
-		json_result['success'] = true;
-	}else{
-		json_result['success'] = false;
-		json_result['error'] = login_result;
-	}
-	//logger.log("HTTP_HANDLER",util.inspect(json_result));
-
-	callback(true,json_result);
-
-}
 
 exports.logout = function(header,fields,files,callback){
 	let uid = Number(header['uid']);
@@ -85,15 +67,73 @@ exports.logout = function(header,fields,files,callback){
 
 
 exports.register = function(header,fields,files,callback){
-	var step = parseInt(fields['step']);
-	var telephone = fields['telephone'];
-	var cuid = fields['cuid'] || null;
-	var code = fields['code'] || null;
-	var password = fields['password'] || null;
-	//console.log("register start:" + util.inspect(fields));
-	var result = PlayerProxy.RegisterStep(step,cuid,telephone,code,password);
-	//console.log("register end:" + util.inspect(result));
-	callback(true,result);
+
+	let telephone = fields['telephone'];
+	if(LoginModule.checkAccount(telephone)){
+		callback(true,{
+			'error' : 1,
+		});
+		return;
+	}
+
+	let step = parseInt(fields['step']);
+	
+	if(step == 1){
+		let register_id = RegisterService.createRegisterInfo(telephone);
+		logger.log("INFO","[POST_SERVER][register]:",`step:${step},register_id:${register_id}`);
+		callback(true,{
+			'step' : 2,
+			'register_id' : register_id,
+		});
+		return;
+	}else if(step == 2){
+		let register_id = fields['register_id'];
+		let verify_code = fields['verify_code'];
+		logger.log("INFO","[POST_SERVER][register]:",`step:${step},register_id:${register_id},verify_code:${verify_code}`);
+		let result = RegisterService.checkVerifyCode(register_id,telephone,verify_code);
+		if(!result){
+			callback(true,{
+				'error' : 1018,
+			});
+			return;
+		}else{
+			callback(true,{
+				'step' : 3
+			});
+		}
+	}else if(step == 3){
+		let password = fields['password'];
+		let register_id = fields['register_id'];
+		
+		let socket_id = fields['socket_id'];
+
+		logger.log("INFO","[POST_SERVER][register]:",`step:${step},register_id:${register_id},password ${password}`);
+		RegisterService.removeRegisterInfo(register_id);
+		db_sequelize.registerPlayer({
+			'telephone' : telephone,
+			'password' : password,
+			'longitude' : header['longitude'],
+			'latitude' : header['latitude'],
+		},(logininfo,userinfo)=>{
+			logger.log("INFO","[POST_SERVER][register] db_result",logininfo,userinfo);
+
+			LoginModule.addLoginInfo(logininfo['Account'],logininfo['Id'],logininfo['Password'],logininfo['state']);
+
+			PlayerProxy.getInstance().addUserInfo(userinfo);
+
+			let guid = OnlineService.registerLogin(logininfo['Id'],socket_id);
+
+			let user_info = PlayerProxy.getInstance().getUserInfo(logininfo['Id']);
+
+
+			callback(true,{
+				'step' : 4,
+				'user_info' : user_info,
+				'guid' : guid,
+			});
+		});
+	}
+	
 }
 
 exports.changeSex = function(header,fields,files,callback){
@@ -378,74 +418,66 @@ exports.addToFavorites = function(header,fields,files,callback){
 }
 
 exports.changeUserInfo =function(header,fields,files,callback){
+	let uid = header['uid'];
+	if(uid <= 0 || uid == null ){
+		callback(true,{
+			'error' : ErrorCode.USER_NO_LOGIN,
+		});
+		return;
+	}
+	const schema = Joi.object().keys({
+		'nick_name': Joi.string().required(),
+		'sex': Joi.number().empty(''),
+		'birthday' : Joi.string().empty(''),
+		'sign' : Joi.string().empty(''),
+		'address' : Joi.string().empty(''),
+		'email' : Joi.string().empty(''),
+		'name' : Joi.string().empty(''),
+		'telephone' : Joi.string().empty(''),
+		'time_stamp' : Joi.number(),
+	});
+	const result = Joi.validate(fields, schema);
+	if(result.error){
+		callback(true,{
+			'error' : ErrorCode.FIELD_PARAM_ERROR,
+			'error_msg' : result.error,
+		});
+		return;
+	}
 
 	
-	var json_result = {
-		'error' : 0
-	};
-	var key_field = ['nick_name','sex','birthday','sign','address','email','name','telephone'];
-
-	if(moment(fields['birthday']).isAfter(moment(Date.now()))){
-		json_result['error'] = 1007;
-	}
-
-	if(json_result['error'] != 0){
-		callback(true,json_result);
-		return;
-	}
-
-	if(json_result['error'] != 0){
-		callback(true,json_result);
-		return;
-	}
-
-	var guid = fields['guid'];
-	var uid = PlayerProxy.getUid(guid);
 
 	var uploadFileKey = {
-		"head_image" : "player/"
+		"head" : "player/"
 	};
-	check_dir(uploadFileKey);
+	
 	var image = {};
-
 
 	upload_file_to_json(files,uploadFileKey,image);
 
+	if(uid > 0){
+		let db_row = {
+			'name' : fields['nick_name'],
+			'sex' : fields['sex'],
+			'birthday_timestamp' : fields['birthday'],
+			'sign' : fields['sign'],
+			'address' : fields['address'],
+			'email' : fields['email'],
+			'real_name' : fields['name'],
+			'telephone' : fields['telephone'],
+		};
+		if('head' in image){
+			db_row['head'] = image['head'];
+		}
 
-
-	if(uid != null){
-		var list_result = [];
-
-		list_result.push(fields['nick_name']); //0
-		list_result.push(fields['sex']); //1
-		list_result.push(fields['birthday']); //2
-		list_result.push(fields['sign']); //3
-		list_result.push(fields['address']);//4
-		list_result.push(fields['email']);//5
-		list_result.push(fields['name']);//6
-		list_result.push(fields['telephone']);//7
-		//list_result.push(fields['verify_code']); //8
-		list_result.push(image['head_image']); //8
-
-		PlayerProxy.changeUserInfo(uid,list_result);
-		db.changeUserInfo(uid,list_result);
-
-		json_result['error'] = 0;
-		json_result['nick_name'] = fields['nick_name'];
-		json_result['sex'] = fields['sex'];
-		json_result['birthday'] = fields['birthday'];
-		json_result['sign'] = fields['sign'];
-		json_result['address'] = fields['address'];
-		json_result['email'] = fields['email'];
-		json_result['name'] = fields['name'];
-		json_result['telephone'] = fields['telephone'];
-		json_result['head_image'] = image['head_image'];
-
-	}else{
-		json_result['error'] = 1;
+		db_sequelize.saveUserInfo(uid,db_row,(error)=>{
+			PlayerProxy.getInstance().changeUserInfo(uid,db_row);
+			callback(true,{
+				'error' : 0,
+				'user_info': PlayerProxy.getInstance().getUserInfo(uid),
+			});
+		});
 	}
-
-	callback(true,json_result);
 }
 
 exports.addShopItem = function(header,fields,files,callback){

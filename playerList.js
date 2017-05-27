@@ -10,8 +10,8 @@ var FindUtil = require('./FindUtil');
 
 let sms = require('./proxy/sms.js');
 let RegAccountBean = require("./bean/RegAccountBean");
-
-
+var LoginModule = require("./Logic/login.js");
+var assert = require("assert");
 function PlayerManager(){
 	this.player_online_list = {};
 	this.playerCache = {};
@@ -84,6 +84,14 @@ exports.InitFromDb = function(
 	shop_claims){
 
 	for(var i in all_login_info){
+		let db_row = all_login_info[i];
+		LoginModule.addLoginInfo(db_row['Account'],db_row['Id'],db_row['Password'],db_row['state']);
+	}
+
+	LoginModule.printData();
+
+
+	for(var i in all_login_info){
 
 		var uid = parseInt(all_login_info[i]['Id']);
 		g_playerlist['playerCache'][uid] = new Player();
@@ -141,29 +149,45 @@ exports.InitFromDb = function(
 			g_playerlist['playerCache'][uid].setClaim(shop_id);
 		}
 	}
-
 }
 
-exports.CheckLogin = function(login_account,login_password){
+PlayerManager.prototype.addUserInfo = function(db_row){
+	let uid = Number(db_row['id']);
+	logger.log("INFO","[PLAYER_LIST][addUserInfo] params:",db_row);
+	g_playerlist['playerCache'][uid] = new Player();
+	g_playerlist['playerCache'][uid].setUserInfo(db_row);
+}
 
-	var uid = g_playerlist['account_uid'].get(login_account);
+PlayerManager.prototype.CheckLogin = function(login_account,login_password){
+
+	let uid = this['account_uid'].get(login_account);
+
 	logger.log("PLAYER_LIST",'[CheckLogin] login_account = '+ login_account +' uid:' + uid);
 	if(uid == null){
-		return 1011;
+		return {
+			'error' : 1011
+		};
 	}
-	if(g_playerlist['playerCache'][uid] == null){
+
+	if(this['playerCache'][uid] == null){
 		//console.log("false1");
-		logger.log("PLAYER_LIST",'[CheckLogin] playerCache:' + util.inspect(g_playerlist['account_uid']));
-		return 1012;
+		logger.log("PLAYER_LIST",'[CheckLogin] playerCache:' + util.inspect(this['account_uid']));
+		return {
+			'error' : 1012
+		};
 	}
-	var player_info = g_playerlist['playerCache'][uid];
+	var player_info = this['playerCache'][uid];
 	var error_code = player_info.canLogin(login_password);
 	if(error_code > 0){
 		logger.log("PLAYER_LIST","[CheckLogin] check player login result:" + error_code);
-		return error_code;
+		return {
+			'error' : error_code
+		};
 	}
 
-	return 0;
+	return {
+		'uid' : uid,
+	};
 }
 
 exports.CheckLoginByGuid = function(guid){
@@ -195,21 +219,18 @@ function generate(count) {
 	return str;
 }
 
-PlayerManager.prototype.Login = function(login_account){
 
-	var uid = this['account_uid'].get(login_account);
-	var player_info = this['playerCache'][uid];
+PlayerManager.prototype.getUserInfo = function(uid){
 
-	var guid = generate(10);
-	//logger.log("PLAYER_LIST","[Login] account : " + login_account, + " guid:" + guid + " is login");
-	this['player_online_list'][uid] = guid;
-	this['guid_to_uid'][guid] = uid;
+	//logger.log("INFO","[PLAYER_LIST][getUserInfo] uid:",uid);
+	
+	let player_info = this['playerCache'][Number(uid)];
 
-	player_info.setLoginGuid(guid);
+	if(player_info != null){
+		return player_info.getUserLoginInfo();
+	}
 
-	db_proxy.updateUserInfo(uid,updateUserInfo);
-
-	return player_info.getUserLoginInfo();
+	return {};
 }
 
 PlayerManager.prototype.logout = function(uid){
@@ -228,13 +249,6 @@ function updateUserInfo(uid,db_result){
 		logger.log("PLAYER_LIST","error");
 	}
 }
-
-exports.Login = function(login_account){
-
-	return g_playerlist.Login(login_account);
-}
-
-
 
 exports.CheckRegTelephone = function(telephone){
 	var uid = g_playerlist['account_uid'].get(telephone);
@@ -637,26 +651,18 @@ exports.addToFavorites = function(guid,shop_id,item_id){
 	return 0;
 }
 
-exports.changeUserInfo = function(uid,user_info_list){
-	if(uid in g_playerlist['playerCache']){
 
-		var player_info = g_playerlist['playerCache'][uid];
+PlayerManager.prototype.changeUserInfo = function(uid,user_info){
+	assert(typeof uid === "number",'uid must bi number');
 
-		if(player_info != null){
-			player_info.ChangeUserInfo(
-				 user_info_list[9] // head image
-				,user_info_list[0] // name
-				,user_info_list[2] // birthday_timestamp
-				,user_info_list[3] // sign
-				,user_info_list[4] // address
-				,user_info_list[7] // telephone
-				,user_info_list[5] // email
-				,user_info_list[6] // real_name
-				,user_info_list[1] // sex
-				,player_info.getShopId() // shop_id
-				);
-		}
+	let player = this.getPlayer(uid);
+	if(player != null){
+		user_info['id'] = uid;
+		player.setUserInfo(user_info);
+
+		logger.log("INFO","[PLAYER_LIST][changeUserInfo] : player_info=",player.getUserLoginInfo());
 	}
+	
 	
 }
 

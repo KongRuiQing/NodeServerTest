@@ -4,7 +4,7 @@ var http_handler_upload = require("./handle_upload");
 var http_notify = require("./http_notify");
 var handle_http = {};
 
-handle_http['/login'] = http_handler.login;
+
 handle_http['/logout'] = http_handler.logout;
 handle_http['/register'] = http_handler.register;
 
