@@ -31,7 +31,7 @@ module.exports = function (sequelize, DataTypes) {
       type : DataTypes.STRING,
       defaultValue:"",
     },
-    'birthday' : {
+    'birthday_timestamp' : {
       type : DataTypes.DATE,
     },
     'real_name' : {
