@@ -54,12 +54,15 @@ class Online{
 		this.__online_guid = new Map();
 	}
 	notifyUserLoginStateChange(uid,state){
+		if(state != 0){
 
-	}
+			this.sendMessage(uid,"kickoff",{'error' : state});
 
-	sendMessage(uid,message){
+			this.logout(uid);
+		}
 		
 	}
+
 	isLogin(uid){
 		if(this.__online.has(uid)){
 			return this.__online.get(uid).socket_id;

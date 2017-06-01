@@ -9,9 +9,15 @@ var DbCacheManager = require("../../cache/DbCache.js");
 var ShopCache = require("../../cache/shopCache.js")
 var WebSocketServer = require('../../WebSocketServer');
 let Tag = "[ShopStateFulApi]";
+var ShopService = require("../../Logic/shop.js");
+var ShopState = require("../../enum/shopState.js");
+var OnlineService = require("../../Logic/online.js");
+
+let TAG = "[ShopStateFulApi]";
+
 const schema = Joi.object().keys({
-    'shop_id': Joi.number().integer().min(1).required(),
-    'state': Joi.number().integer().min(0).max(3).required(),
+	'shop_id': Joi.number().integer().min(1).required(),
+	'state': Joi.number().integer().min(0).max(3).required(),
 });
 
 function ShopStateFulApi(){
@@ -48,7 +54,7 @@ function __post(req,rsp){
 }
 
 function __patch(req,rsp){
-	logger.log("INFO",Tag,"__patch",'req.body:',req.body);
+	logger.log("INFO",TAG,"__patch",'req.body:',req.body);
 	const result = Joi.validate(req.body, schema);
 	
 	let error_msg = "";
@@ -56,11 +62,27 @@ function __patch(req,rsp){
 	if(result.error == null){
 		let shop_id = Number(req.body['shop_id']);
 		let state = Number(req.body['state']);
-		logger.log("INFO",Tag,'__patch','param:',`shop_id:${shop_id} state:${state}`);
-		ShopCache.getInstance().updateShopState(shop_id,state);
-		let uid = ShopCache.getInstance().getOwner(shop_id);
-		if(uid > 0){
-			WebSocketServer.sendMessage(uid,'update_shop_state',{'state' : state});
+		logger.log("INFO",TAG,'__patch','param:',`shop_id:${shop_id} state:${state}`);
+
+		let to_state = ShopState.parse(state);
+		if(to_state < 0){
+			logger.log("ERROR",TAG,'__patch',`state ${state} is error`);
+			response_state = 201;
+		}
+		let from_state = ShopService.getShopState(shop_id);
+		if(from_state == to_state){
+			logger.log("ERROR",TAG,'__patch',`from_state(${from_state}) == to_state(${to_state})`);
+			response_state = 202;
+		}
+
+
+		if(response_state == 200){
+			//ShopCache.getInstance().updateShopState(shop_id,state);
+			let uid = ShopService.changeShopState(shop_id,state);
+
+			if(uid > 0){
+				OnlineService.sendMessage(uid,'update_shop_state',{'state' : state});
+			}
 		}
 	}else{
 		response_state = 400;

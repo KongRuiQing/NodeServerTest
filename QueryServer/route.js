@@ -18,6 +18,7 @@ handle_http['/area_menu'] = http_handler.getAreaMenu;
 handle_http['/shop_attention'] = http_handler.getMyAttention;
 handle_http['/category'] = http_handler.getCategory;
 handle_http['/game_shop_list'] = http_handler.getGameShopList;
+handle_http['/game_item_list'] = http_handler.getGameItemList;
 handle_http['/get_my_shop_item_list'] = http_handler.getMyShopItemList;
 handle_http['/get_my_shop_basic_info'] = http_handler.getMyShopInfo;
 handle_http['/get_my_shop_item_detail'] = http_handler.getMyShopItemDetail;

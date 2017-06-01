@@ -43,9 +43,7 @@ function handle_route(request,response,next){
 	var method = request.method.toUpperCase();
 	logger.log("INFO",'pathname:',pathname," method:",method);
 	if(pathname in http_obj){
-		
 		http_obj[pathname].emit(method,request,response);
-		
 	}else{
 		logger.log("INFO",pathname," no find in http_obj");
 		next(new Error(pathname + " no find in http_obj"));

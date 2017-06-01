@@ -194,7 +194,7 @@ ShopItem.prototype.getItemBasicInfo = function(){
 	let image = this.__spread_image;
 	
 	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
-		image = this.__detail_images[0];
+		image = this.__show_images[0];
 	}
 
 	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
@@ -220,7 +220,7 @@ ShopItem.prototype.getMyShopItemInfo = function(){
 	
 	let image = this.__spread_image;
 	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
-		image = this.__detail_images[0];
+		image = this.__show_images[0];
 	}
 	if(image == null || image == undefined || typeof image != 'string' || image.length == 0){
 		image = "";

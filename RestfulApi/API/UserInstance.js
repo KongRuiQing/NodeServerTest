@@ -73,6 +73,7 @@ function __post(req,rsp){
 }
 
 function __patch(req,rsp){
+	logger.log("INFO","[UserInstance][__patch] req.body:",req.body);
 	if('state' in req.body){
 		let state = Number(req.body['state']);
 		let uid = Number(req.body['id']);
@@ -95,7 +96,7 @@ var __instance = new UserInstance();
 
 __instance.on('DELETE',__delete);
 //__instance.on('POST',__post);
-//__instance.on('PATCH',__patch);
+__instance.on('PATCH',__patch);
 __instance.on('OPTIONS',__options);
 
 exports.Instance = function(){

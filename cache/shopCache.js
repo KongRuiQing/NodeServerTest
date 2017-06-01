@@ -15,11 +15,9 @@ var DbCache = require("../cache/DbCache.js")
 var HeadInstance = require("../HttpHeadInstance");
 let TAG = "[ShopCache]"
 
-const INIT_SHOP_STATE = 0;
-const PASS_SHOP_STATE = 1;
-const CLOSE_SHOP_STATE  = 2;
-const CLAIM_SHOP_STATE = 3;
 
+var ShopService = require("../Logic/shop.js");
+var AttentionService = require("../Logic/Attentions.js");
 function ShopManager(){
 	this.dict = new Map();
 	this.item_property_name = {};
@@ -31,6 +29,14 @@ function ShopManager(){
 	
 	this.max_activity_id = 0;
 
+	let that = this;
+	ShopService.on("close_shop_by_player",(shop_id)=>{
+		that.removeShopByShopId(shop_id);
+	});
+	ShopService.on("new_shop",(db_row)=>{
+		that.addShop(db_row);
+	})
+	
 	//events.EventEmitter.call(this);
 }
 //util.inherits(ShopManager, events.EventEmitter);
@@ -202,6 +208,7 @@ exports.InitFromDb = function(
 		let state = Number(shop_list[i]['state']);
 		PlayerProxy.getInstance().SetUserShopId(uid,shop_id,state);
 		
+		ShopService.addShopIdWithUid(uid,shop_id,state);
 	}
 	//console.log(g_shop_cache['dict'].size);
 
@@ -260,9 +267,11 @@ exports.InitFromDb = function(
 	
 	for(var i in shop_attention){
 		var shop_id = Number(shop_attention[i]['shop_id']);
+		let uid = Number(shop_attention[i]['uid']);
 		if(g_shop_cache['dict'].has(shop_id)){
-			g_shop_cache['dict'].get(shop_id).addAttention(shop_attention[i]['uid']);
+			g_shop_cache['dict'].get(shop_id).addAttention(uid);
 		}
+		AttentionService.attentionShop(uid,shop_id,true);
 		
 	}
 
@@ -302,6 +311,8 @@ exports.InitFromDb = function(
 		if(g_shop_cache['dict'].has(shop_id)){
 			g_shop_cache['dict'].get(shop_id).setClaim(uid);
 		}
+
+		ShopService.adClaim(uid,shop_id);
 		
 	}
 
@@ -554,34 +565,45 @@ exports.getMyFavoritesItems = function(items){
 	return item_list;
 }
 
-ShopManager.prototype.getMyAttentionShopInfo = function(shop_id_list,start_index,page_size,filter){
+ShopManager.prototype.getMyAttentionShopInfo = function(uid,shop_id_iterator,start_index,page_size,filter){
 	var list = [];
 	let that = this;
-	
-	let filter_shop = shop_id_list.filter(function(shop_attention){
-		let shop_id = shop_attention['shop_id'];
-		let shop_info = that.getShop(shop_id);
 
+	let filter_shop = [];
+	if(uid > 0){
+		let shop_id = ShopService.getOwnShopId(uid);
+		if(shop_id > 0){
+			filter_shop.unshift(shop_id);
+		}
+	}
+	
+	for(let shop_id of shop_id_iterator){
+		let shop_info = that.getShop(shop_id);
 		if(shop_info == null){
 			logger.log("WARN",`shop_id ${shop_id} is not find`);
-			return false;
+			//return false;
+			continue;
 		}
-		logger.log("WARN",'filter',filter);
-		if(shop_info.matchFilter(0,filter['area_code'],filter['category_code'])){
-			
-			if(filter['distance'] > 0){
-				let dis = shop_info.calcDistance(filter['longitude'],filter['latitude']);
-				if(dis > filter['distance']){
-					return false;
-				}
+		if(filter['distance'] > 0){
+			let dis = shop_info.calcDistance(filter['longitude'],filter['latitude']);
+			if(dis > filter['distance']){
+				continue;
 			}
-			return true;
 		}
-		return false;
-	});
+		//logger.log("WARN",'filter',filter);
+		if(filter['area_code'] != 0 || filter['category_code'] != 0){
+			if(!shop_info.matchFilter(0,filter['area_code'],filter['category_code'])){
+				continue;
+			}
+		}
+		filter_shop.push(shop_id);
+		
+	}
+	logger.log("INFO","[SHOP_CACHE] getMyAttentionShopInfo : ",filter_shop);
 	
-	filter_shop.forEach(function(shop_attention){
-		let shop_info = that.getShop(shop_attention['shop_id']);
+	
+	filter_shop.forEach(function(shop_id){
+		let shop_info = that.getShop(shop_id);
 		if(shop_info != null){
 			list.push(shop_info.getShopAttentionInfo());
 		}
@@ -656,7 +678,9 @@ ShopManager.prototype.FindShopInfo = function(shop_id){
 
 
 ShopManager.prototype.getMyShopBasicInfo = function(uid,withItem){
-	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+
+	let shop_id = ShopService.getOwnShopId(uid);
+	
 	
 	if(shop_id > 0){
 		let shop_info = this.getShop(shop_id);
@@ -697,7 +721,7 @@ ShopManager.prototype.getMyShopItemInfo = function(shop_item_id){
 
 
 ShopManager.prototype.getMyShopItemList = function(uid){
-	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	var shop_id = ShopService.getOwnShopId(uid);
 	var json_result = {
 		'list':[]
 	};
@@ -851,37 +875,42 @@ exports.setShopItemImage = function(item_id,index,image){
 
 ShopManager.prototype.removeShopByShopId = function(shop_id){
 	logger.log("INFO","[ShopManager][removeShopByShopId] to remove shop_id",shop_id);
+	let that = this;
 	let shop = this.getShop(shop_id);
+
 	if(shop == null){
 		logger.log("WARN",'用户请求删除的shop不存在');
 		return {'error' : 400,'error_msg' : '用户请求删除的shop不存在'};
 	}
 
-	this.dict.delete(shop_id);
+	logger.log("INFO","[ShopManager][removeShopByShopId] shop:",shop);
+
+	that.dict.delete(shop_id);
 
 	
-	if(this.dict.has(shop_id)){
+	if(that.dict.has(shop_id)){
 		logger.log("INFO","删除失败");
 	}
 	logger.log("INFO",'删除成功');
 	let all_remove_item = [];
 	
-	this.shop_items.forEach(function(itemBean,itemId){
+	that.shop_items.forEach(function(itemBean,itemId){
 		if(itemBean.getShopId() == shop_id){
 			all_remove_item.push(itemId);
 		}
 	});
 	logger.log("INFO",'to remove shop_item num',all_remove_item.length);
+
 	all_remove_item.forEach(function(to_remove_item_id){
-		this.shop_items.delete(to_remove_item_id);
+		that.shop_items.delete(to_remove_item_id);
 	});
 
 	all_remove_item.forEach(function(to_remove_item_id){
-		let find_index = this.show_items.findIndex(function(item_id){
+		let find_index = that.show_items.findIndex(function(item_id){
 			return item_id == to_remove_item_id;
 		});
 		if(find_index >= 0){
-			this.show_items.splice(find_index,1);
+			that.show_items.splice(find_index,1);
 		}
 	});
 

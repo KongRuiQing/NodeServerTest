@@ -19,9 +19,13 @@ let LoginModule = require("../Logic/login.js");
 let RegisterService = require("../Logic/register.js");
 var OnlineService = require("../Logic/online.js");
 const Joi = require('joi');
+let AttentionService = require("../Logic/Attentions.js");
+
 exports.new_feed = function(header,fields,files,callback){
 	
 };
+
+var ShopService = require("../Logic/shop.js");
 
 function check_dir(dirs){
 	for(var key in dirs){
@@ -264,19 +268,19 @@ exports.becomeSeller = function(header,fields,files,callback){
 	
 	
 	if(uid > 0){
-
-		let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
-		if((!Number.isNaN(shop_id)) && (shop_id != 0)){
-			logger.log("WARN",'uid:',uid,' request be seller where shop_id:',shop_id);
+		let check_result = ShopService.checkBeShop(uid);
+		if(check_result > 0){
 			callback(true,{
 				'error' : 1,
 				'error_msg' : '用户已经有商铺了,不能再申请',
 			});
 			return;
 		}
-		shopInfo['uid'] = uid;
 		
-		db_sequelize.insertRequestBeSeller(shopInfo,function(err,db_row){
+		shopInfo['uid'] = uid;
+
+		ShopService.requestBeShop(shopInfo,(err,db_row)=>{
+
 			if(err){
 				logger.error(err);
 				callback(true,{
@@ -286,9 +290,8 @@ exports.becomeSeller = function(header,fields,files,callback){
 				return;
 			}
 
-			ShopProxy.getInstance().addShop(db_row);
-
-			PlayerProxy.getInstance().SetUserShopId(uid,db_row['Id'],db_row['state']);
+			//ShopProxy.getInstance().addShop(db_row);
+			//PlayerProxy.getInstance().SetUserShopId(uid,db_row['Id'],db_row['state']);
 
 			callback(true,{
 				'error' : 0,
@@ -296,6 +299,8 @@ exports.becomeSeller = function(header,fields,files,callback){
 				'state' : 0,
 			});
 		});
+		
+		
 
 		
 		return;
@@ -328,65 +333,69 @@ exports.attentionShop = function(header,fields,files,callback){
 	
 
 	let uid = header['uid'];
-
+	if(uid <= 0){
+		callback(true,{
+			'error' : ErrorCode.NOT_LOGIN,
+			'error_msg' : "没有登录",
+		});
+		return;
+	}
 	var shop_id = Number(fields['shop_id']);
 	let is_attention = Number(fields['is_attention']);
 
-	var player_attention_shop_info = PlayerProxy.getInstance().getPlayerAttentionShopInfo(uid,shop_id);
+	let player_attention_shop_info = AttentionService.isAttentionThisShop(uid,shop_id);
 	
-	if(player_attention_shop_info != null){
-		if('error' in player_attention_shop_info && player_attention_shop_info['error'] > 0){
-			callback(true,{
-				'error' : player_attention_shop_info['error'],
-				'error_msg' : player_attention_shop_info['error_msg'] || '操作失败,error_msg = ""',
-			});
-			return;
-		}
-		if(player_attention_shop_info['is_attention'] == is_attention){
+	if(player_attention_shop_info == is_attention){
+		callback(true,{
+			'error' : 1,
+			'error_msg' : '操作重复',
+		});
+		return;
+	}
+	if(!is_attention){
+		let _uid = ShopService.getUidByShopId(shop_id);
+		if(uid == _uid){
 			callback(true,{
 				'error' : 1,
 				'error_msg' : '操作重复',
 			});
 			return;
 		}
-		let json_value = {
-			'uid' : uid,
-			'shop_id' : shop_id,
-		};
-		db_sequelize.playerAttentionShop(json_value,is_attention,function(err){
-			if(err){
-				logger.log("WARN",err);
-				callback(true,{
-					'error' : 2,
-					'error_msg' : '数据库失败',
-				});
-				return;
-			}else{
-				
-				PlayerProxy.getInstance().attentionShop(uid,shop_id,is_attention);
-				ShopProxy.getInstance().addAttention(uid,shop_id,is_attention);
-
-				let result = ShopProxy.getInstance().getShopAttentionInfo(uid,shop_id);
-				HeadInstance.getInstance().emit('/shop_attention',uid,shop_id);
-				callback(true,{
-					'error' : 0,
-					'shop_info' : {
-						'shop_id' : json_value['shop_id'],
-						'is_attention' : is_attention,
-						'attention_num' : result['attention_num'],
-					}
-				});
-				return;
-			}
-		});
-
-	}else{
-		callback(true,{
-			'error' : 1,
-			'error_msg' : '没有获取到关注信息',
-		});
-		return;
 	}
+
+	let json_value = {
+		'uid' : uid,
+		'shop_id' : shop_id,
+	};
+
+	db_sequelize.playerAttentionShop(json_value,is_attention,function(err){
+		if(err){
+			logger.log("WARN",err);
+			callback(true,{
+				'error' : 2,
+				'error_msg' : '数据库失败',
+			});
+			return;
+		}else{
+
+			AttentionService.attentionShop(uid,shop_id,is_attention);
+			let attention_num = AttentionService.getShopAttentionNum(shop_id);
+			//PlayerProxy.getInstance().attentionShop(uid,shop_id,is_attention);
+			//ShopProxy.getInstance().addAttention(uid,shop_id,is_attention);
+
+			let result = ShopProxy.getInstance().getShopAttentionInfo(uid,shop_id);
+			HeadInstance.getInstance().emit('/shop_attention',uid,shop_id);
+			callback(true,{
+				'error' : 0,
+				'shop_info' : {
+					'shop_id' : json_value['shop_id'],
+					'is_attention' : is_attention,
+					'attention_num' : attention_num,
+				}
+			});
+			return;
+		}
+	});
 }
 
 exports.addToFavorites = function(header,fields,files,callback){
@@ -1452,41 +1461,23 @@ exports.offShelveShopItem = function(header,fields,files,cb){
 
 exports.closeShop = function(header,fields,files,cb){
 	let uid = Number(header['uid']);
-	let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
-	logger.log("INFO",`[POST_SERVER][closeShop] params shop_id:${shop_id}`);
-	if(shop_id <= 0 ){
-		cb(true,{
-			'error' : 3,
-		});
-		return;
-	}
-	if(Number.isNaN(shop_id)){
-		cb(true,{
-			'error' : 4
-		});
-		return;
-	}
+	//let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	//logger.log("INFO",`[POST_SERVER][closeShop] params shop_id:${shop_id}`);
+	//
 
-	db_sequelize.closeShop(shop_id,function(error,close_result){
+	ShopService.closeShop(uid,(error)=>{
 		if(error){
-			logger.log("ERROR","[POST_SERVER][closeShop] db_sequelize  error",error);
 			cb(true,{
-				'error' : 1,
+				'error' : 2,
 			});
+			return;
 		}else{
-			if(close_result){
-				PlayerProxy.getInstance().closeShop(uid);
-				ShopProxy.getInstance().closeShop(shop_id);
-				cb(true,{
-					'error' : 0,
-				});
-				return;
-			}else{
-				cb(true,{
-					'error' : 2,
-				});
-				return;
-			}
+			//PlayerProxy.getInstance().closeShop(uid);
+			//ShopProxy.getInstance().closeShop(shop_id);
+			cb(true,{
+				'error' : 0,
+			});
 		}
+		
 	});
 }

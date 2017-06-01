@@ -12,6 +12,9 @@ let sms = require('./proxy/sms.js');
 let RegAccountBean = require("./bean/RegAccountBean");
 var LoginModule = require("./Logic/login.js");
 var assert = require("assert");
+
+var ShopService = require("./Logic/shop.js");
+
 function PlayerManager(){
 	this.player_online_list = {};
 	this.playerCache = {};
@@ -19,6 +22,10 @@ function PlayerManager(){
 	this.reg_account = {};
 	this.guid_to_uid = {};
 	this.MaxUID = 0;
+	let that = this;
+	ShopService.on('close_shop',(shop_id,uid)=>{
+		that.closeShop(uid);
+	});
 }
 
 let g_playerlist = new PlayerManager();

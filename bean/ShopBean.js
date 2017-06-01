@@ -119,12 +119,13 @@ ShopBean.prototype.initFromDbRow = function(db_row){
 	this.category_code2 = Number(db_row['category_code2']);
 	this.category_code3 = Number(db_row['category_code3']);
 	this.info = db_row['info'];
-	this.distribution = db_row['distribution'];
-	this.telephone = db_row['telephone'];
-	this.email = db_row['email'];
-	this.qq = db_row['qq'];
-	this.wx = db_row['wx'];
-	this.image = db_row['image'];
+	this.distribution = db_row['distribution'] || "";
+	this.telephone = db_row['telephone'] || "";
+	this.email = db_row['email'] || "";
+	this.qq = db_row['qq'] || this.qq;
+	this.wx = db_row['wx'] || this.wx;
+	this.image = db_row['image'] || this.image;
+
 	this.ad_images[0] = db_row['image1'];
 	this.ad_images[1] = db_row['image2'];
 	this.ad_images[2] = db_row['image3'];
@@ -415,13 +416,10 @@ ShopBean.prototype.matchFilter = function(city_no,area_code,category_code){
 	if(city_no != 0 && city_no != this.city_no){
 		return false;
 	}
+
 	if(area_code != 0 && area_code != this.area_code){
 		return false;
 	}
-	if(this.state == 0 || this.state == 2){
-		return false;
-	}
-
 	
 	if(category_code != 0){
 		if(DbCache.getInstance().matchCategor(category_code,this.category_code1,'shop')){

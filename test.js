@@ -335,6 +335,12 @@ function test_user(args){
       'id' : args[1]
     }
     __delete(data,'/admin/v1/user',output_result);
+  }else if(args[0] == 'patch'){
+    let data = {
+      'id' : args[1],
+      'state' : args[2],
+    }
+    patch(data,'/admin/v1/user',output_result) ;
   }
 }
 

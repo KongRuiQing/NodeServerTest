@@ -14,6 +14,9 @@ var webSocket = require("./WebSocketServer");
 var logger = require('./logger').logger();
 var moment = require('moment');
 require("./HttpHeadInstance");
+
+require("./Logic/load.js");
+
 //
 //time = new Date(0);
 //console.log(time);

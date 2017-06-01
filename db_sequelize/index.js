@@ -288,6 +288,7 @@ exports.offShelveShopItem = function(items,state,callback){
 
 exports.closeShop = function(shop_id,callback){
 
+	
 	let delete_shop_from_shop_info = new Promise((resolve, reject)=>{
 		ShopModel.destroy({
 			'where' : {'Id':shop_id}
@@ -302,10 +303,19 @@ exports.closeShop = function(shop_id,callback){
 			resolve(true);
 		});
 	});
+	let delete_item_from_shop = new Promise((resolve,reject)=>{
+		ItemModel.destroy({
+			'where' : {'shop_id' : shop_id}
+		}).then((count)=>{
+			resolve(true);
+		});
+	});
 
 	let p = Promise.resolve(true);
 	p.then(delete_shop_from_shop_info).then(delete_shop_from_shop_attention).then(()=>{
-		callback(null,true);
+		callback(null);
+	},()=>{
+		callback(true);
 	});
 }
 

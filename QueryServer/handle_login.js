@@ -1,12 +1,12 @@
 'use strict';
-var PlayerCache = require("../playerList.js");
+var OnlineService = require("../Logic/online.js");
 
 var handle_login = function(req,rsp,next){
 	let headers = req.headers;
 	if('guid' in headers){
 		let guid = headers['guid'];
 
-		let uid = PlayerCache.getUid(guid);
+		let uid = OnlineService.getUidByGuid(guid);
 		if(uid != null){
 			headers['uid'] = Number(uid);
 			

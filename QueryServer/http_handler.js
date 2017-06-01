@@ -11,6 +11,8 @@ var moment = require('moment');
 var down_file_name = "";
 var down_file_version = "";
 var WebSocketServer = require("../WebSocketServer");
+var AttentionService = require("../Logic/Attentions.js");
+var ShopService = require("../Logic/shop.js");
 const assert = require('assert');
 
 function watchApkVersion(root_path){
@@ -349,13 +351,15 @@ exports.getMyAttention = function(headers, query,callback){
 	if(Number.isNaN(start_index)){
 		start_index = 0;
 	}
-	var list = PlayerCache.getInstance().getMyAttention(uid);
-
+	//var list = //PlayerCache.getInstance().getMyAttention(uid);
+	let list = AttentionService.getAttentionShops(uid);
+	
 	let page_size = 20;
 	
-	//logger.log("INFO",'[getMyAttention] query:',uid,area_code,distance,category_code,start_index);
+	logger.log("INFO",'[getMyAttention] query:',uid,area_code,distance,category_code,start_index);
+	
 
-	let attention_info_list = ShopCache.getInstance().getMyAttentionShopInfo(
+	let attention_info_list = ShopCache.getInstance().getMyAttentionShopInfo(uid,
 		list
 		,start_index
 		,page_size
@@ -437,36 +441,86 @@ exports.getMyActivity = function(headers,query,callback){
 }
 
 exports.getGameShopList = function(headers,query,callback){
-
-	var zone = Number(query['area_code'] || 0);
+	var zone = Number(query['area_code'] || 0) ;
 	var city = Number(query['city_no'] || 0);
-	var guid = headers['guid'];
-
+	//var guid = headers['guid'];
+	var uid = headers['uid']
+	if(city == 0) city = 167;
 	var category = Number(query['cate_code'] || 0) ;
 
-	var uid = PlayerCache.getUid(guid);
-	
-	var json_result = {'error' : 0};
-	if(city == 0){
-		json_result['error'] = 1010;
-		callback(true,json_result);
-		return;
+	var page_size = 50;
+	if('page_size' in query){
+		page_size = Number(query['page_size'] || 10);
 	}
-	if(uid == 0){
-		json_result['error'] = 1001;
-		callback(true,json_result);
-		return;
+	var search_key = "";
+	
+	var longitude = 0.0;
+	if('longitude' in headers){
+		longitude = Number(headers['longitude']);
 	}
-
-
-	var page_size = 10;
+	var latitude = 0.0;
+	if('latitude' in headers){
+		latitude = Number(headers['latitude']);
+	}
+	var distance = -1.0;
+	if('distance' in query){
+		distance = Number(query['distance']);
+	}
+	let last_index = 0;
 	
-	var shop_list = ShopCache.getGameShopList(uid,city,zone,category,page_size);
-	
-	json_result['list'] = shop_list;
-	json_result['count'] = shop_list.length;
+	logger.log("HTTP_HANDER","getShopList param: category = ", category
+		,'city=',city
+		,'page_size=',page_size
+		,'search_key=,',search_key,
+		'longitude=',longitude,
+		'latitude=',latitude,
+		'last_index=',last_index,
+		'area_code=',zone
+		);
 
+	var shop_list = ShopCache.getInstance().getShopList(uid,city,zone,category,last_index,page_size,search_key,longitude,latitude,distance);
+
+
+	var json_result = {
+		"list" : shop_list['list'],
+		'page_size' : page_size,
+		'length' : shop_list['list'].length,
+		'total' : shop_list['total'],
+	}
 	callback(0,json_result);
+}
+
+
+exports.getGameItemList = function(headers,query,callback){
+
+	var city_no = Number(query['city_no'] || 167);
+	var area_code = Number(query['area_code'] || 0);
+	var cate_code = query['category'] || '';
+	var sort_code = query['sortby'] || '';
+	let distance = Number(query['distance'] || "0");
+	
+	let longitude = 0.0;
+	if('longitude' in headers && !Number.isNaN(headers['longitude'])){
+		longitude = parseFloat(headers['longitude']);
+	}
+	let latitude = 0.0;
+	if('latitude' in headers && !Number.isNaN(headers['latitude'])){
+		latitude = parseFloat(headers['latitude']);
+	}
+	
+	let last_index = 0;
+	
+	var keyword = "";
+	
+	var query_result = ShopCache.getInstance().getShopSpread(last_index,longitude,latitude,city_no,area_code,distance,cate_code,keyword);
+	var json_value = {
+		'error' : 0,
+		'list' : query_result['list'],
+		'page_size': 100,
+		'length' : query_result['list'].length,
+	};
+
+	callback(0,json_value);
 }
 
 exports.getShopAttentionBoard = function(headers,query,callback){
