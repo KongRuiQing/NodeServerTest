@@ -336,7 +336,6 @@ ShopBean.prototype.getShopDetailInfo = function(uid){
 		'beg' : this.beg,
 		'end' : this.end,
 		'days' : this.days,
-		'attention': this.ownAttention(uid),
 		'image': this.image,
 		'show_images': [this.ad_images[0],this.ad_images[1],this.ad_images[2],this.ad_images[3]],
 		'address' : this.address,

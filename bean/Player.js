@@ -199,8 +199,8 @@ Player.prototype.getUserLoginInfo = function(){
 	json_login['telephone'] = this.telephone;	
 	json_login['email'] = this.email;	
 	json_login['real_name'] = this.real_name;	
-	json_login['shop_id'] = this.shop_id;
-	json_login['shop_state'] = this.shop_state;
+	//json_login['shop_id'] = this.shop_id;
+	//json_login['shop_state'] = this.shop_state;
 	json_login['claim'] = this.__claim;
 	//json_login['shop_state'] = 0;
 	return json_login;

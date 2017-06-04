@@ -96,6 +96,7 @@ class ShopService extends EventEmitter {
 
 	getUidByShopId(find_shop_id){
 		let find_uid = 0;
+
 		this.__ownShop.forEach((shop_id,uid)=>{
 			if(find_shop_id == shop_id){
 				find_uid = uid;
@@ -107,10 +108,33 @@ class ShopService extends EventEmitter {
 		if(typeof uid != 'number'){
 			uid = Number(uid);
 		}
+
 		if(this.__ownShop.has(uid)){
 			return this.__ownShop.get(uid);
 		}
 		return 0;
+	}
+
+	getBindShopId(uid){
+		if(typeof uid != 'number'){
+			uid = Number(uid);
+		}
+
+		let shop_id = this.getOwnShopId(uid);
+		if(shop_id > 0){
+			return shop_id;
+		}
+
+		this.__pendingShop.forEach((_uid,_shop_id)=>{
+			if(_uid == uid){
+				shop_id = _shop_id;
+				return true;
+			}
+			return false;
+		});
+
+		return shop_id;
+		
 	}
 
 	getShopState(shop_id){
@@ -131,6 +155,7 @@ class ShopService extends EventEmitter {
 					this.__ownShop.set(uid,shop_id);
 					this.__pendingShop.delete(shop_id);
 					this.__shopState.set(shop_id,to_state);
+					logger.log("INFO",'[ShopService][changeShopState] data:','uid->',uid,'shop_id->',shop_id );
 					logger.log("INFO","[Shop] emit pass_pending_shop");
 					this.emit('pass_pending_shop',uid,shop_id);
 

@@ -7,14 +7,14 @@ class ShopAttentions {
 
 		let that = this;
 		ShopService.on("pass_pending_shop",(uid,shop_id)=>{
-			logger.log("INFO","[ShopAttentions] event:pass_pending_shop","param:",uid,shop_id);
+			//logger.log("INFO","[ShopAttentions] event:pass_pending_shop","param:",uid,shop_id);
 			//that.attentionShop(uid,shop_id,true);
 
-			logger.log("INFO","value:",that.__user_attention);
+			//logger.log("INFO","value:",that.__user_attention);
 		});
 
 		ShopService.on('to_pending_shop',(uid,shop_id)=>{
-			logger.log("INFO","[ShopAttentions] event:to_pending_shop","param:",uid,shop_id);
+			//logger.log("INFO","[ShopAttentions] event:to_pending_shop","param:",uid,shop_id);
 			//that.attentionShop(uid,shop_id,false);
 		});
 

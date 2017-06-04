@@ -127,11 +127,13 @@ exports.getShopDetail = function(headers, query,callback)
 	var json_result = null;
 	logger.log('INFO','[getShopDetail]','shop_id:',shop_id);
 	if(shop_id > 0){
-		json_result = ShopCache.getShopDetail(uid,shop_id);
+		json_result = ShopCache.getInstance().getShopDetail(shop_id);
+
 		let error = 0;
 		if(json_result == null){
 			error = 1004;
 		}else{
+			json_result['attention'] = AttentionService.isAttentionThisShop(uid,shop_id);
 			if('error' in json_result){
 				error = json_result['error'];
 			}

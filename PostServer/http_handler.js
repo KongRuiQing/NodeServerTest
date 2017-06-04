@@ -383,15 +383,13 @@ exports.attentionShop = function(header,fields,files,callback){
 			//PlayerProxy.getInstance().attentionShop(uid,shop_id,is_attention);
 			//ShopProxy.getInstance().addAttention(uid,shop_id,is_attention);
 
-			let result = ShopProxy.getInstance().getShopAttentionInfo(uid,shop_id);
+			let shop_info = ShopProxy.getInstance().getShopAttentionInfo(shop_id);
 			HeadInstance.getInstance().emit('/shop_attention',uid,shop_id);
 			callback(true,{
 				'error' : 0,
-				'shop_info' : {
-					'shop_id' : json_value['shop_id'],
-					'is_attention' : is_attention,
-					'attention_num' : attention_num,
-				}
+				'is_attention' : is_attention,
+				'shop_info' : shop_info,
+				'attention_num' : attention_num,
 			});
 			return;
 		}

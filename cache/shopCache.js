@@ -373,10 +373,9 @@ exports.GetNearShopList = function(type,long,late,page,size){
 
 }
 
-exports.getShopDetail = function(uid,shop_id){
-	shop_id = Number(shop_id);
+ShopManager.prototype.getShopDetail = function(shop_id){
 
-	var shop_info = g_shop_cache['dict'].get(shop_id);
+	let shop_info = this.getShop(shop_id);
 
 	if(shop_info == null){
 		return {
@@ -390,7 +389,7 @@ exports.getShopDetail = function(uid,shop_id){
 	var json_result = {
 		'error' : 0,
 		"shop_id" : shop_id,
-		"shop_info" : shop_info.getShopDetailInfo(uid)
+		"shop_info" : shop_info.getShopDetailInfo()
 	};
 
 	if(shop_item_list != null){
@@ -645,13 +644,9 @@ ShopManager.prototype.addAttention = function(uid,shop_id,is_attention){
 ShopManager.prototype.getShopAttentionInfo = function(shop_id){
 	let shop_info = this.getShop(shop_id);
 	if(shop_info != null){
-		return {
-			'attention_num' : shop_info.getAttentionNum(),
-		}
+		return shop_info.getShopAttentionInfo();
 	}else{
-		return {
-			'attention_num' : 0,
-		}
+		return {};
 	}
 	
 }

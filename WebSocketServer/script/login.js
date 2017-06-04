@@ -6,7 +6,7 @@ const Joi = require('joi');
 let LoginModule = require("../../Logic/login.js");
 let OnlineModule = require("../../Logic/online.js");
 let UserModule = require("../../playerList.js");
-
+var ShopService = require("../../Logic/shop.js");
 function vaildLogin(jsonLogin){
 	const schema = Joi.object().keys({
 		'account': Joi.string().required(),
@@ -48,7 +48,10 @@ module.exports = function(server,socket,jsonLogin){
 				let guid = OnlineModule.registerLogin(login_info['uid'],jsonLogin['nid']);
 				server.register(jsonLogin['nid'],socket);
 				let user_info = UserModule.getInstance().getUserInfo(login_info['uid']);
-
+				console.log("user_info",user_info);
+				
+				user_info['shop_id'] = ShopService.getBindShopId(user_info['uid']);
+				user_info['shop_state'] = ShopService.getShopState(user_info['shop_id']);
 				response['error'] = 0;
 				response['user_info'] = user_info;
 				response['guid'] = guid;
