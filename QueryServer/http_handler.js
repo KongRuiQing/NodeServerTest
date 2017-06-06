@@ -257,7 +257,7 @@ exports.getMyShopItemDetail = function(headers,query,callback){
 	var uid = headers['uid'];
 
 	if(uid > 0){
-		let shop_id = PlayerCache.getInstance().getMyShopId(uid);
+		let shop_id = ShopService.getOwnShopId(uid);
 		let item_id = Number(query['item_id']);
 		var shop_item_detail = ShopCache.getInstance().getMyShopItemDetail(uid,shop_id,item_id);
 		if(shop_item_detail != null){
@@ -565,16 +565,17 @@ exports.getMyScheduleRouteInfo = function(headers,query,callback){
 exports.getBeSellerData = function(headers,query,callback)
 {
 	var json_result = {};
-
-	json_result['category'] = DbCache.getInstance().getShopCategory();
-	let shop_id = PlayerCache.getInstance().getMyShopId(headers['uid']);
-	logger.log("HTTP_HANDER","shop_id:" + shop_id + " uid:" + headers['uid']);
-	if(shop_id > 0){
-		json_result['shop_info'] = ShopCache.getInstance().getMyShopSellerInfo(shop_id);
+	let uid = Number(headers['uid']);
+	if(uid > 0){
+		json_result['category'] = DbCache.getInstance().getShopCategory();
+		let shop_id = ShopService.getOwnShopId(uid);
+		logger.log("HTTP_HANDER","shop_id:" + shop_id + " uid:" + headers['uid']);
+		if(shop_id > 0){
+			json_result['shop_info'] = ShopCache.getInstance().getMyShopSellerInfo(shop_id);
+		}
 	}
-	
 	callback(0,json_result);
-
+	
 }
 
 exports.getShopClaimState = function(headers,query,callback)
@@ -613,7 +614,7 @@ exports.getAttentionGroup = function(headers,query,callback){
 	let uid = Number(headers['uid']);
 	assert.equal(typeof uid,'number','uid typeof require number but is string');
 
-	let shop_id = PlayerCache.getInstance().getMyShopId(uid);
+	let shop_id = ShopService.getOwnShopId(uid);
 	if(shop_id > 0){
 		let attention_list = ShopCache.getInstance().getShopAttention();
 		let result = [];

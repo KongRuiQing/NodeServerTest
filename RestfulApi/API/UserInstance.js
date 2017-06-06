@@ -4,7 +4,7 @@ console.log("load UserInstance.js");
 var events = require('events');
 var util = require('util');
 var logger = require('../../logger').logger();
-
+var ShopService = require("../../Logic/shop.js");
 var DbCacheManager = require("../../cache/DbCache.js");
 var ShopCache = require("../../cache/shopCache.js");
 var PlayerCache = require("../../playerList.js");
@@ -38,7 +38,7 @@ function __delete(req,rsp){
 	if(joi_result.error == null){
 		let uid = Number(req.body['id']);
 		logger.log("INFO",TAG,`uid ${uid} is removed`);
-		let shop_id = PlayerCache.getInstance().getMyShopId(uid);
+		let shop_id = ShopService.getOwnShopId(uid);
 		if(shop_id > 0){
 			ShopCache.getInstance().removeShopByShopId(shop_id);
 		}

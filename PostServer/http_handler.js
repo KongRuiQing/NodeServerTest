@@ -214,7 +214,7 @@ exports.becomeSeller = function(header,fields,files,callback){
 		},
 		'days' : {
 			'name' : 'days',
-			'type' : 'int'
+			'type' : 'string'
 		},
 		'address' : {
 			'name' : 'address',
@@ -290,8 +290,6 @@ exports.becomeSeller = function(header,fields,files,callback){
 				return;
 			}
 
-			//ShopProxy.getInstance().addShop(db_row);
-			//PlayerProxy.getInstance().SetUserShopId(uid,db_row['Id'],db_row['state']);
 
 			callback(true,{
 				'error' : 0,
@@ -492,7 +490,7 @@ exports.addShopItem = function(header,fields,files,callback){
 
 	var uid = Number(header['uid']);
 
-	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	var shop_id = ShopService.getOwnShopId(uid);
 
 	if(shop_id > 0){
 
@@ -617,7 +615,7 @@ exports.addShopItem = function(header,fields,files,callback){
 exports.removeShopItem = function(header,fields,files,callback){
 	var uid = Number(header['uid']);
 
-	var shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	var shop_id = ShopService.getOwnShopId(uid);
 
 	let item_id = Number(fields['item_id']);
 	logger.log("INFO",`[POST_SERVER][removeShopItem] uid ${uid},shop_id ${shop_id},item_id ${item_id}`);
@@ -658,7 +656,7 @@ exports.saveMyShopBasicInfo = function(header,fields,files,callback){
 	upload_file_to_json(files,uploadFileKey,image);
 
 	var uid = header['uid'];
-	let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	let shop_id = ShopService.getOwnShopId(uid);
 	let json_param = {
 		'shop_id' : shop_id,
 		'image' : image['image'],
@@ -787,7 +785,7 @@ exports.saveSellerInfo = function(header,fields,files,callback){
 	};
 
 
-	var shop_id = PlayerProxy.getInstance().getMyShopId(header['uid']);
+	var shop_id = ShopService.getOwnShopId(header['uid']);
 
 	var params = {};
 	for(var key in params_type){
@@ -862,7 +860,7 @@ exports.saveShopItem = function(header,fields,files,callback){
 	let json_result = {};
 
 
-	var shop_id = PlayerProxy.getInstance().getMyShopId(header['uid']);
+	var shop_id = ShopService.getOwnShopId(header['uid']);
 
 	if(shop_id <= 0){
 		logger.log("WARN",Tag,'find shop error','uid',header['uid']);
@@ -1419,7 +1417,7 @@ exports.offShelveShopItem = function(header,fields,files,cb){
 		});
 		return;
 	}
-	let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+	let shop_id = ShopService.getOwnShopId(uid);
 
 
 	let out_my_shop_item = items.some(function(item_id){
@@ -1459,9 +1457,7 @@ exports.offShelveShopItem = function(header,fields,files,cb){
 
 exports.closeShop = function(header,fields,files,cb){
 	let uid = Number(header['uid']);
-	//let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
-	//logger.log("INFO",`[POST_SERVER][closeShop] params shop_id:${shop_id}`);
-	//
+	
 
 	ShopService.closeShop(uid,(error)=>{
 		if(error){

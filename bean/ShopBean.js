@@ -700,7 +700,8 @@ ShopBean.prototype.getShopAttentionInfo = function(){
 		'shop_attention_num' : this.attentions.length,
 		'shop_name' : this.name,
 		'shop_business' : this.__business,
-		'shop_id' : this.id
+		'shop_id' : this.id,
+		'telephone' : this.telephone,
 	};
 }
 

@@ -14,7 +14,7 @@ let db_sequelize = require("../db_sequelize");
 
 let HeadInstance = require("../HttpHeadInstance");
 var HelpUtil = require("./post_helputil.js");
-
+var ShopService = require("../Logic/shop.js");
 exports.uploadImage = function(header,fields,files,callback){
 
 	let file_param = {
@@ -54,7 +54,14 @@ exports.uploadImage = function(header,fields,files,callback){
 		return;
 	}
 	if(type == 1){
-		let shop_id = PlayerProxy.getInstance().getMyShopId(uid);
+		let shop_id = ShopService.getOwnShopId(uid);
+		if(shop_id == 0){
+			callback(true,{
+					'error' : 3,
+					'error_msg' : error, 
+				});
+				return;
+		}
 		db_sequelize.uploadShopBigImage(shop_id,param['image'],function(error){
 			if(error){
 				callback(true,{

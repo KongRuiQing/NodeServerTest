@@ -5,8 +5,8 @@ var AdBean = function(DbRow){
 	this.position = Number(DbRow['position']);
 	this.index = Number(DbRow['index']);
 	this.image = DbRow['image'];
-	//this.shop_id = DbRow['shop_id'];
-	this.url = DbRow['url'];
+	this.shop_id = DbRow['shop_id'] || 0;
+	this.url = DbRow['url'] || "";
 };
 
 
@@ -16,6 +16,7 @@ AdBean.prototype.getJsonValue = function(){
 		'index' : this.index,
 		'image' : this.image,
 		'url' : this.url,
+		'shop_id' : this.shop_id,
 	};
 }
 

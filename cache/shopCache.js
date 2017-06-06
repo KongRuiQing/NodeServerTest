@@ -206,7 +206,6 @@ exports.InitFromDb = function(
 		g_shop_cache['dict'].get(shop_id).initFromDbRow(shop_list[i]);
 		let uid = Number(shop_list[i]['uid']);
 		let state = Number(shop_list[i]['state']);
-		PlayerProxy.getInstance().SetUserShopId(uid,shop_id,state);
 		
 		ShopService.addShopIdWithUid(uid,shop_id,state);
 	}
@@ -226,7 +225,7 @@ exports.InitFromDb = function(
 	for(var i in shop_item_list){
 
 		var item = shop_item_list[i];
-		var shop_id = item['shop_id'];
+		var shop_id = Number(item['shop_id']);
 
 		var shop_info = g_shop_cache['dict'].get(shop_id);
 		
@@ -246,10 +245,12 @@ exports.InitFromDb = function(
 			}
 			
 			g_shop_cache['max_shop_item_id'] = Math.max(g_shop_cache['max_shop_item_id'],parseInt(item['id']));
+		}else{
+			logger.log("WARN","[ShopCache][InitFromDb] load shop_item_list where shop is not exist",'shop_id :',shop_id);
 		}
 	}
 	
-	//logger.log("SHOP_CACHE","max_shop_item_id:" + g_shop_cache['max_shop_item_id']);
+	logger.log("INFO","max_shop_item_id:" + g_shop_cache['max_shop_item_id']);
 
 	for(var i in shop_item_attention){
 		var item_id = shop_item_attention[i]['item_id'];
@@ -469,17 +470,12 @@ ShopManager.prototype.getShopItemDetail = function(uid,shop_id,shop_item_id) {
 
 ShopManager.prototype.getShopSpread = function(last_index,longitude,latitude,city_no,area_code,distance,category_code,keyword){
 	var arr_result = [];
-	logger.log("INFO",'this.show_items:',this.show_items);
+	//logger.log("INFO",'this.shop_items (size):',this.shop_items.size);
 	let that = this;
-	this.show_items.forEach(function(item_id,index){
-		
-		var shop_item = that.getItemBean(item_id);
-		if(shop_item == null){
-			return;
-		}
 
+	this.shop_items.forEach((shop_item,item_id)=>{
 
-		if(shop_item.isSpreadItem() && shop_item.matchFilter(keyword)){
+		if(shop_item.matchFilter(keyword)){
 
 			let item_category = shop_item.getCategoryCode();
 
@@ -510,6 +506,8 @@ ShopManager.prototype.getShopSpread = function(last_index,longitude,latitude,cit
 			}
 		}
 	});
+
+	
 	
 
 	if(arr_result.length > 0){

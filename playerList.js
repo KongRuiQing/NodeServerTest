@@ -32,14 +32,6 @@ let g_playerlist = new PlayerManager();
 
 let PLAYER_LIST = "playerList.js";
 
-PlayerManager.prototype.getMyShopId = function(uid){
-
-	if(uid in this.playerCache){
-		return this.playerCache[uid].getShopId();
-	}
-
-	return 0;
-}
 
 PlayerManager.prototype.chekcCanClaim = function(uid){
 	if(uid in this.playerCache){
@@ -544,43 +536,7 @@ PlayerManager.prototype.getMyAttention = function(uid){
 }
 
 
-exports.CheckSeller = function(guid){
-	var uid = g_playerlist['guid_to_uid'][guid];
-	if(uid == null){
-		logger.warn("PLAYER_LIST","CheckSeller:uid = null,guid:" + guid);
-		logger.log("PLAYER_LIST","All guid is:");
-		logger.log("PLAYER_LIST","All guid is:" + util.inspect(g_playerlist['guid_to_uid']));
-		return {
-			'error' : 1
-		};
-	}
 
-	//logger.log("PLAYER_LIST","uid = " + uid);
-	var player_info = g_playerlist['playerCache'][uid];
-	if(player_info == null || player_info.isSeller()){
-		return 0;
-	}
-	//logger.log("PLAYER_LIST",util.inspect(g_playerlist['playerCache']));
-
-	return uid;
-}
-
-PlayerManager.prototype.SetUserShopId = function(uid,shop_id,shop_state){
-	if(uid > 0){
-		if(uid in this.playerCache){
-			var player_info = this.playerCache[uid];
-
-			player_info.beSeller(shop_id,shop_state);
-			return null;
-		}
-	}
-
-	return {
-		'error' : 1,
-		'error_msg' : '没有找到用户',
-	};
-	
-}
 PlayerManager.prototype.getPlayerAttentionShopInfo = function(uid,shop_id){
 	let player = this.getPlayer(uid);
 	if(player != null){
@@ -879,13 +835,4 @@ PlayerManager.prototype.removePlayer = function(uid){
 		logger.log("WARN",`remmove uid:${uid} failer is not exist`);
 	}
 	
-}
-
-PlayerManager.prototype.closeShop = function(uid){
-	let player = this.getPlayer(uid);
-	if(player != null){
-		player.beSeller(0,0);
-	}else{
-		logger.log("ERROR","[PlayerManager][closeShop] uid:",uid," is not find");
-	}
 }

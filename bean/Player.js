@@ -214,15 +214,6 @@ Player.prototype.getMyFavoritemItems = function(){
 	return json_result;
 }
 
-Player.prototype.isSeller = function(){
-	return this.shop_id > 0;
-}
-
-Player.prototype.beSeller = function(shop_id,shop_state){
-	
-	this.shop_id = shop_id;
-	this.shop_state = shop_state;
-}
 
 Player.prototype.getMyAttention = function(){
 	var list = [];
