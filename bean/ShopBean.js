@@ -667,6 +667,9 @@ ShopBean.prototype.updateSellerInfo = function(json_value){
 		if('latitude' in json_value){
 			this.__latitude = json_value['latitude'];
 		}
+		while(this.ad_images.length < 4){
+			this.ad_images.push('');
+		}
 		if('image1' in json_value){
 			this.ad_images[0] = json_value['image1'];
 		}
@@ -696,7 +699,7 @@ ShopBean.prototype.containsItem = function(item_id){
 ShopBean.prototype.getShopAttentionInfo = function(){
 	return {
 		'category_code' : this.category_code1,
-		'shop_image' : this.image,
+		'shop_image' : this.ad_images[0],
 		'shop_attention_num' : this.attentions.length,
 		'shop_name' : this.name,
 		'shop_business' : this.__business,

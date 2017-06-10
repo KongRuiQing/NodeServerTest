@@ -17,7 +17,7 @@ handle_http['/remove_shop_item'] = http_handler.removeShopItem;
 // seller
 handle_http['/become_seller'] = http_handler.becomeSeller;
 
-handle_http['/save_shop_basic_info'] = http_handler.saveMyShopBasicInfo;
+//handle_http['/save_shop_basic_info'] = http_handler.saveMyShopBasicInfo;
 handle_http['/remove_favorites_item'] = http_handler.removeFavoritesItem;
 handle_http['/renewal'] = http_handler.renewal;
 handle_http['/add_shop_activity'] = http_handler.addShopActivity;

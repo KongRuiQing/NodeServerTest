@@ -60,10 +60,6 @@ exports.insertRequestBeSeller = function(jsonObject,callback){
 			'category_code3' : jsonObject['category_code3'],
 			'address' : jsonObject['address'],
 			'telephone' : jsonObject['telephone'],
-			'user_name':jsonObject['user_name'],
-			'card_num' : jsonObject['card_num'],
-			'card_image' : jsonObject['card_image'],
-			'cs_id' : jsonObject['cs'],
 			'state' : 0,
 		},
 		'where':{
@@ -115,9 +111,10 @@ exports.saveSellerInfo = function(jsonObject,callback){
 			'Id':jsonObject['id']
 		}
 	}).then(function(affected_numbers,result1){
-		console.log(result1);
+		callback(null);
+	},function(err){
 
-		callback(null,jsonObject);
+		callback(err || "error");
 	});
 }
 

@@ -111,6 +111,7 @@ ShopManager.prototype.refreshShopItem = function(itemBean,json_value,json_image,
 					,'json_image[key]:',json_image[key]);
 			}
 		}
+		
 	}
 	if(json_propertys != null && json_propertys != undefined){
 		
@@ -296,7 +297,7 @@ exports.InitFromDb = function(
 			if(image_type == 1){
 				g_shop_cache['shop_items'].get(item_id).addItemShowImage(image);
 			}else if(image_type == 2){
-				g_shop_cache['shop_items'].get(item_id).setSpreadImage(image);
+				
 			}else if(image_type == 3){
 				g_shop_cache['shop_items'].get(item_id).addItemDetailImage(image);
 			}
