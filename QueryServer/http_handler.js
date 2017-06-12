@@ -14,6 +14,7 @@ var WebSocketServer = require("../WebSocketServer");
 var AttentionService = require("../Logic/Attentions.js");
 var ShopService = require("../Logic/shop.js");
 const assert = require('assert');
+var AttentionBoardService = require("../Logic/AttentionBoard.js");
 
 function watchApkVersion(root_path){
 
@@ -541,13 +542,32 @@ exports.getShopAttentionBoard = function(headers,query,callback){
 		'longitude' : Number(headers['longitude']),
 		'latitude' : Number(headers['latitude']),
 	};
-	var json_value = ShopCache.getInstance().getShopAttentionBoard(uid,city,area_code,category,distance_json);
 
-	var json_result = {
-		'count' : json_value.length,
+	let attention_board = AttentionBoardService.getAttentionBoard();
+
+	let attention_list = attention_board.slice(start_index,start_index + 15);
+	let json_result = {
+		'count' : attention_board.length,
 		'page' : start_index,
-		'list':json_value.slice(start_index,start_index + 15),
-	}
+		'list' : [],
+	};
+	attention_list.forEach((shop_attention_num_info)=>{
+		let shop_basic_info = ShopCache.getInstance().getShopBoardInfo(
+			shop_attention_num_info['shop_id'],
+			city,
+			area_code,
+			category,distance_json);
+
+		if(shop_basic_info != null){
+			shop_basic_info['attention_num'] = shop_attention_num_info['num'];
+			json_result['list'].push(shop_basic_info);
+			json_result['is_attention'] = AttentionService.isAttentionThisShop(uid,shop_attention_num_info['shop_id']);
+		}
+	});
+
+
+
+	//var json_value = ShopCache.getInstance().getShopAttentionBoard(uid,city,area_code,category,distance_json);
 	
 	callback(0,json_result);
 }
