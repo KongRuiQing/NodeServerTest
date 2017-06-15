@@ -823,16 +823,6 @@ exports.changeShopState = function(shop_id){
 	});
 }
 
-exports.addToFavorites = function(uid,shop_id,item_id){
-	connection.query("CALL p_add_favorites_item(?,?,?)",[uid,shop_id,item_id],function(err,result){
-		if(err){
-			logger.error("MYSQL_PROXY","addToFavorites error:" + err);
-		}else{
-			logger.log("MYSQL_PROXY","addToFavorites success");
-		}
-	});
-}
-
 exports.changeUserInfo = function(uid,user_info_list){
 
 	var db_params = [uid].concat(user_info_list);

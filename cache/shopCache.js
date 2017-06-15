@@ -526,22 +526,21 @@ ShopManager.prototype.getShopSpread = function(last_index, longitude, latitude, 
 }
 
 
-exports.getMyFavoritesItems = function(items) {
+ShopManager.prototype.getMyFavoritesItems = function(items) {
 	var item_list = [];
 	//logger.log("SHOP_CACHE",util.inspect(items));
-	for (var i in items) {
-		var item_id = items[i]['item_id'];
-
-		var shop_item = g_shop_cache['shop_items'].get(item_id);
+	for (let item_id of items) {
+		
+		var shop_item = this.getItemBean(item_id);
 		//logger.log("SHOP_CACHE",util.inspect(shop_item));
 		if (shop_item != null) {
-			var shop_id = shop_item['shop_id'];
-			var shop = g_shop_cache['dict'].get(shop_id);
+			let shop_id = shop_item['shop_id'];
+			let shop = this.getShop(shop_id);
 
 			if (shop != null) {
 				var shop_basic_info = shop.getShopBasicInfo(0);
 				var favorites_item = shop_item.getFavoritesItemJsonValue();
-				favorites_item['add_favorites_time'] = items[i]['add_favorites_time'];
+				//favorites_item['add_favorites_time'] = ['add_favorites_time'];
 				favorites_item['id'] = item_id;
 				favorites_item['shop_id'] = shop_id;
 				favorites_item['shop_name'] = shop_basic_info['shop_name'];
@@ -641,12 +640,8 @@ ShopManager.prototype.getShopAttentionInfo = function(shop_id) {
 
 }
 
-ShopManager.prototype.CheckHasItem = function(shop_id, item_id) {
-	var shop_info = this.getShop(shop_id);
-	if (shop_info != null && shop_info.hasItem(item_id)) {
-		return true;
-	}
-	return false;
+ShopManager.prototype.CheckHasItem = function(item_id) {
+	return this.shop_items.has(item_id);
 }
 
 ShopManager.prototype.FindShopInfo = function(shop_id) {

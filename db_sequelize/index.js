@@ -16,7 +16,7 @@ var ClaimModel = sequelize.import("./model/ClaimModel.js");
 var ItemModel = sequelize.import("./model/ItemModel.js");
 var ItemImageModel = sequelize.import("./model/ItemImageModel.js");
 var ItemPropertyModel = sequelize.import("./model/ItemPropertyModel.js");
-var UserAttentionModel = sequelize.import("./model/UserAttentionModel.js");
+var FavoriteMode = sequelize.import("./model/FavoriteMode.js");
 
 exports.TestFindOrCreate = function(name){
 	
@@ -391,6 +391,31 @@ exports.saveUserInfo = function(uid,json_userinfo,callback){
 	.then((affectedCount,results)=>{
 			callback(null);
 	});
-	return;
-	
+	return;	
+}
+
+exports.addFavoriteItem = function(uid,item_id,callback){
+	FavoriteMode.create({
+		'uid' : uid,
+		'item_id' : item_id,
+	}).then((Instance)=>{
+		//console.log(Instance);
+		callback(null,Instance['dataValues']);
+	}).catch((error)=>{
+		//console.log(error);
+		callback(error);
+	})
+}
+
+exports.removeFavoriteItem = function(uid,item_id,callback){
+	FavoriteMode.destroy({
+		'where' : {
+			'uid' : uid,
+			'item_id' : item_id,
+		}
+	}).then(()=>{
+		callback(null);
+	}).catch((error)=>{
+		callback(error);
+	})
 }

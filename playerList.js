@@ -14,6 +14,7 @@ var LoginModule = require("./Logic/login.js");
 var assert = require("assert");
 
 var ShopService = require("./Logic/shop.js");
+var FavoriteService = require("./Logic/favorite.js");
 
 function PlayerManager(){
 	this.player_online_list = {};
@@ -130,15 +131,15 @@ exports.InitFromDb = function(
 	}
 
 	for(var i in player_favorites_item){
-		var uid = player_favorites_item[i]['uid'];
-		var item_id = player_favorites_item[i]['item_id'];
-		var shop_id = player_favorites_item[i]['shop_id'];
-		var add_time = player_favorites_item[i]['add_time'];
-		//logger.log("PLAYER_LIST","[InitFromDb] uid = " + uid + " item_id = " + item_id);
+		var uid = Number(player_favorites_item[i]['uid']);
+		var item_id = Number(player_favorites_item[i]['item_id']);
+		//logger.log("INFO","[InitFromDb] uid = " + uid + " item_id = " + item_id);
 		
 		if(g_playerlist['playerCache'][uid] != null){
-			g_playerlist['playerCache'][uid].addFavoritesItem(shop_id,item_id,add_time);
+			//g_playerlist['playerCache'][uid].addFavoritesItem(shop_id,item_id,add_time);
 		}
+
+		FavoriteService.addFavoriteItem(uid,item_id);
 	}
 	
 	for(var i in shop_claims){
@@ -588,30 +589,6 @@ exports.getUid = function(guid){
 	}
 	return null;
 	
-}
-
-
-exports.addToFavorites = function(guid,shop_id,item_id){
-	var uid = g_playerlist['guid_to_uid'][guid];
-
-	if(uid != null && uid > 0){
-		var player_info = g_playerlist['playerCache'][uid];
-
-		if(player_info != null){
-			for(var i in player_info['favorites']){
-				if(item_id == player_info['favorites'][i]['item_id']){
-					return 0;
-				}
-			}
-			var now_time = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
-			player_info.addFavoritesItem(shop_id,item_id,now_time);
-			
-			//logger.log("PLAYER_LIST",moment(now).format('YYYY-MM-DD HH:mm:ss'));
-		}
-		
-		return uid;
-	}
-	return 0;
 }
 
 

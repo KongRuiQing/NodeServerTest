@@ -20,6 +20,7 @@ let RegisterService = require("../Logic/register.js");
 var OnlineService = require("../Logic/online.js");
 const Joi = require('joi');
 let AttentionService = require("../Logic/Attentions.js");
+let FavoriteService = require("../Logic/favorite.js");
 
 exports.new_feed = function(header, fields, files, callback) {
 
@@ -320,7 +321,7 @@ exports.attentionShop = function(header, fields, files, callback) {
 	let uid = header['uid'];
 	if (uid <= 0) {
 		callback(true, {
-			'error': ErrorCode.NOT_LOGIN,
+			'error': ErrorCode.USER_NO_LOGIN,
 			'error_msg': "没有登录",
 		});
 		return;
@@ -382,31 +383,56 @@ exports.attentionShop = function(header, fields, files, callback) {
 }
 
 exports.addToFavorites = function(header, fields, files, callback) {
-	var guid = fields['guid'];
 
-	var shop_id = fields['shop_id'];
-	var item_id = fields['item_id'];
-	var check_has_item = ShopProxy.getInstance().CheckHasItem(shop_id, item_id);
-	var json_result = {};
-
-	if (check_has_item == true) {
-
-		var uid = PlayerProxy.addToFavorites(guid, shop_id, item_id);
-		ShopProxy.addFavoritesUser(shop_id, item_id, uid);
-		if (uid > 0) {
-			db.addToFavorites(uid, shop_id, item_id);
-			json_result['error'] = 0;
-		} else {
-			json_result['error'] = 3;
-		}
-
-		json_result['shop_id'] = shop_id;
-		json_result['item_id'] = item_id;
-	} else {
-		json_result['error'] = 1;
+	let uid = header['uid'];
+	
+	if (uid <= 0) {
+		logger.log("ERROR", '[addToFavorites] USER_NO_LOGIN');
+		callback(true, {
+			'error': ErrorCode.USER_NO_LOGIN,
+		});
+		return;
 	}
 
-	callback(true, json_result);
+	let item_id = Number(fields['item_id']);
+
+	let check_has_item = ShopProxy.getInstance().CheckHasItem(item_id);
+	if (!check_has_item) {
+		logger.log("ERROR", '[addToFavorites] NOT_EXIST_ITEM');
+		callback(true, {
+			'error': ErrorCode.NOT_EXIST_ITEM,
+		});
+		return;
+	}
+
+	let check_repeat_favorite = FavoriteService.checkHasFavoriteItem(uid, item_id);
+
+	if (check_repeat_favorite) {
+		logger.log("ERROR", '[addToFavorites] FAVORITE_REPEAT');
+		callback(true, {
+			'error': ErrorCode.FAVORITE_REPEAT,
+		});
+		return;
+	}
+
+
+	db_sequelize.addFavoriteItem(uid, item_id, (err) => {
+		if (err) {
+			logger.log("ERROR", "[addToFavorites] SQL_ERROR:", err);
+			callback(true, {
+				'error': ErrorCode.SQL_ERROR,
+			});
+			return;
+		} else {
+			FavoriteService.addFavoriteItem(uid, item_id);
+			callback(true, {
+				'error': 0,
+				'list' : ShopProxy.getInstance().getMyFavoritesItems([item_id]),
+			});
+		}
+	});
+
+
 }
 
 exports.changeUserInfo = function(header, fields, files, callback) {
@@ -674,20 +700,40 @@ exports.addShopActivity = function(header, fields, files, callback) {
 }
 
 exports.removeFavoritesItem = function(header, fields, files, callback) {
-	if ('guid' in fields && 'id' in fields) {
-		var json_result = PlayerProxy.removeFavoritesItem(fields['guid'], Number(fields['id']));
-		if (json_result != null) {
-			json_result['error'] = 0;
-			db.removeFavoritesItem(json_result);
-			callback(true, json_result);
-			return;
-		}
+	let uid = Number(header['uid']);
+	if (uid <= 0) {
+		logger.log("ERROR", "[removeFavoritesItem] USER_NO_LOGIN");
+		callback(true, {
+			'error': ErrorCode.USER_NO_LOGIN,
+		});
+		return;
 	}
 
-	var json_result = {
-		'error': 1
-	};
-	callback(true, json_result);
+	let item_id = Number(fields['item_id']);
+
+	let check_repeat_favorite = FavoriteService.checkHasFavoriteItem(uid,item_id);
+	if(!check_repeat_favorite){
+		logger.log("ERROR","[removeFavoritesItem] NOT_EXIST_ITEM :",`uid:${uid}, item_id:${item_id}`);
+		callback(true, {
+			'error': ErrorCode.NOT_EXIST_ITEM,
+		});
+		return;
+	}
+	db_sequelize.removeFavoriteItem(uid, item_id, (error) => {
+		if (error) {
+			logger.log("ERROR", "[removeFavoritesItem] SQL_ERROR", error);
+			callback(true, {
+				'error': ErrorCode.SQL_ERROR,
+			});
+			return;
+		}
+		FavoriteService.removeFavoriteItem(uid, item_id);
+
+		callback(true, {
+			'error': 0,
+			'item_id': item_id,
+		});
+	});
 
 	return;
 }
@@ -786,15 +832,15 @@ exports.saveSellerInfo = function(header, fields, files, callback) {
 			params[key] = fields[key];
 		}
 	}
-	
+
 
 	params['id'] = shop_id;
 
 	db_sequelize.saveSellerInfo(params, function(err) {
 		if (err) {
-			logger.log("ERROR",err);
+			logger.log("ERROR", err);
 			callback(true, {
-				'error' : 1
+				'error': 1
 			});
 			return;
 		} else {

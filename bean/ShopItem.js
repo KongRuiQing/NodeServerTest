@@ -290,7 +290,8 @@ ShopItem.prototype.getDetailJsonItemInMyShop = function(){
 }
 
 ShopItem.prototype.getFavoritesItemJsonValue = function(){
-	var list = this.__show_image;
+	var list = this.__show_images;
+	console.log(list);
 	return {
 		'item_name' : this.name,
 		'price' : this.price,

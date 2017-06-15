@@ -15,7 +15,8 @@ var AttentionService = require("../Logic/Attentions.js");
 var ShopService = require("../Logic/shop.js");
 const assert = require('assert');
 var AttentionBoardService = require("../Logic/AttentionBoard.js");
-
+let FavoriteService = require("../Logic/favorite.js");
+let ErrorCode = require("../error.js");
 function watchApkVersion(root_path){
 
 	var files = fs.readdirSync(root_path);
@@ -311,15 +312,20 @@ exports.getShopItemDetail = function(headers, query,callback){
 
 exports.getMyFavoritesItems = function(headers, query,callback){
 
-	var page = query['page'];
-	var guid = headers['guid'];
+	let uid = Number(headers['uid']);
+	if(uid <= 0){
+		callback(0,{
+			'error' :ErrorCode.USER_NO_LOGIN,
+		});
+		return;
+	}
 
-	var favorites_items = PlayerCache.getMyFavoritesItems(guid,page);
+	let favorites_items = FavoriteService.getPlayerFavoriteItems(uid);
+
 	
-	var list = ShopCache.getMyFavoritesItems(favorites_items);
+	var list = ShopCache.getInstance().getMyFavoritesItems(favorites_items);
 	var json_result = {
 		'list':list,
-		'page':page
 	};
 	callback(0,json_result);
 }

@@ -9,8 +9,11 @@ var handle_login = function(req,rsp,next){
 		let uid = OnlineModule.getUidByGuid(guid);
 		headers['uid'] = uid;
 	}else{
-		headers['uid'] = 0;
-		console.log("headers:" + headers);
+		if(!('uid' in headers)){
+			headers['uid'] = 0;
+		}else{
+			headers['uid'] = Number(headers['uid']);
+		}
 	}
 	next();
 }
