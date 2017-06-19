@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('user', {
+  return sequelize.define('user_favorites', {
     'id': {
       type: DataTypes.BIGINT(11),
       autoIncrement: true,

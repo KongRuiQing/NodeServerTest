@@ -18,7 +18,7 @@ let TAG = "[ShopCache]"
 
 var ShopService = require("../Logic/shop.js");
 var AttentionService = require("../Logic/Attentions.js");
-
+var ShopState = require("../enum/shopState.js");
 function ShopManager() {
 	this.dict = new Map();
 	this.item_property_name = {};
@@ -305,7 +305,7 @@ exports.InitFromDb = function(
 			g_shop_cache['dict'].get(shop_id).setClaim(uid);
 		}
 
-		ShopService.adClaim(uid, shop_id);
+		//ShopService.adClaim(uid, shop_id);
 
 	}
 
@@ -947,7 +947,7 @@ ShopManager.prototype.chekcCanClaim = function(shop_id) {
 	if (shopBean == null) {
 		return false;
 	}
-	if (shopBean.getShopState() != CLAIM_SHOP_STATE) {
+	if (shopBean.getShopState() != ShopState.CLAIM_SHOP_STATE) {
 		return false;
 	}
 	if (shopBean.getClaim() != 0) {
@@ -980,7 +980,7 @@ ShopManager.prototype.getShopClaimState = function(shop_id) {
 		};
 	}
 	let json_result = shopBean.getClaimState();
-	if (json_result['shop_state'] != CLAIM_SHOP_STATE) {
+	if (json_result['shop_state'] != ShopState.CLAIM_SHOP_STATE) {
 		return {
 			'error_msg': '商铺不能认领',
 			'error': 2,

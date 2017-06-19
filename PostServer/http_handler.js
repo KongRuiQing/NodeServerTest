@@ -21,6 +21,7 @@ var OnlineService = require("../Logic/online.js");
 const Joi = require('joi');
 let AttentionService = require("../Logic/Attentions.js");
 let FavoriteService = require("../Logic/favorite.js");
+var AppConfig = require('config');
 
 exports.new_feed = function(header, fields, files, callback) {
 
@@ -76,7 +77,7 @@ exports.register = function(header, fields, files, callback) {
 	let telephone = fields['telephone'];
 	if (LoginModule.checkAccount(telephone)) {
 		callback(true, {
-			'error': 1,
+			'error': ErrorCode.ACCOUNT_REPEAT,
 		});
 		return;
 	}
@@ -84,12 +85,30 @@ exports.register = function(header, fields, files, callback) {
 	let step = parseInt(fields['step']);
 
 	if (step == 1) {
-		let register_id = RegisterService.createRegisterInfo(telephone);
-		logger.log("INFO", "[POST_SERVER][register]:", `step:${step},register_id:${register_id}`);
-		callback(true, {
-			'step': 2,
-			'register_id': register_id,
-		});
+
+		let checkCanSendResult = RegisterService.checkCanSend(telephone);
+		if (checkCanSendResult == null) {
+			RegisterService.createRegisterInfo(telephone, (error,register_id) => {
+				if (error) {
+					callback(true, {
+						'error': error,
+					});
+					return;
+				} else {
+					callback(true, {
+						'step': 2,
+						'msg' : AppConfig.get("Find.sms_time"),
+						'register_id': register_id,
+					});
+					return;
+				}
+			});
+		} else {
+			callback(true, {
+				'error': checkCanSendResult['error'],
+				'msg' : checkCanSendResult['msg']
+			});
+		}
 		return;
 	} else if (step == 2) {
 		let register_id = fields['register_id'];
@@ -385,7 +404,7 @@ exports.attentionShop = function(header, fields, files, callback) {
 exports.addToFavorites = function(header, fields, files, callback) {
 
 	let uid = header['uid'];
-	
+
 	if (uid <= 0) {
 		logger.log("ERROR", '[addToFavorites] USER_NO_LOGIN');
 		callback(true, {
@@ -427,7 +446,7 @@ exports.addToFavorites = function(header, fields, files, callback) {
 			FavoriteService.addFavoriteItem(uid, item_id);
 			callback(true, {
 				'error': 0,
-				'list' : ShopProxy.getInstance().getMyFavoritesItems([item_id]),
+				'list': ShopProxy.getInstance().getMyFavoritesItems([item_id]),
 			});
 		}
 	});
@@ -711,9 +730,9 @@ exports.removeFavoritesItem = function(header, fields, files, callback) {
 
 	let item_id = Number(fields['item_id']);
 
-	let check_repeat_favorite = FavoriteService.checkHasFavoriteItem(uid,item_id);
-	if(!check_repeat_favorite){
-		logger.log("ERROR","[removeFavoritesItem] NOT_EXIST_ITEM :",`uid:${uid}, item_id:${item_id}`);
+	let check_repeat_favorite = FavoriteService.checkHasFavoriteItem(uid, item_id);
+	if (!check_repeat_favorite) {
+		logger.log("ERROR", "[removeFavoritesItem] NOT_EXIST_ITEM :", `uid:${uid}, item_id:${item_id}`);
 		callback(true, {
 			'error': ErrorCode.NOT_EXIST_ITEM,
 		});
@@ -1371,15 +1390,13 @@ exports.claimShop = function(header, fields, files, cb) {
 		'name': fields['name'],
 		'telephone': fields['telephone'],
 		'uid': Number.parseInt(header['uid']),
-		'shop_id': Number.parseInt(fields['shop_id']),
-		'cs': Number(fields['cs']),
+		'shop_id': Number.parseInt(fields['shop_id'])
 	};
 
 	db_sequelize.insertClaimInfo(json_param, function(err, db_row) {
 		let uid = Number(db_row['uid']);
 		let shop_id = Number(db_row['shop_id']);
-		ShopProxy.getInstance().setClaimShop(uid, shop_id);
-		PlayerProxy.getInstance().setClaimShop(uid, shop_id);
+		ShopService.addClaim(uid, shop_id);
 		cb(true, {
 			'claim_shop_id': shop_id,
 		});

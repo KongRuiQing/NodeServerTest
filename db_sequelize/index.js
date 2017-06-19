@@ -4,7 +4,7 @@ var Sequelize = require("sequelize");
 var util = require("util");
 var sequelize = new Sequelize('find', 'eplus-find', 'eplus-find', {
 	host: '139.224.227.82',
-	port:3306,
+	port: 3306,
 	dialect: 'mysql'
 });
 
@@ -17,405 +17,443 @@ var ItemModel = sequelize.import("./model/ItemModel.js");
 var ItemImageModel = sequelize.import("./model/ItemImageModel.js");
 var ItemPropertyModel = sequelize.import("./model/ItemPropertyModel.js");
 var FavoriteMode = sequelize.import("./model/FavoriteMode.js");
+var VerifyCodeInfo = sequelize.import("./model/VerifyCodeInfo.js");
+exports.TestFindOrCreate = function(name) {
 
-exports.TestFindOrCreate = function(name){
-	
 }
 
 
-exports.testUpdate = function(itemImages){
-	
-	Promise.all([updateItemImageModel({'image' : 'a','id' : 38}),updateItemImageModel({'image' : 'b','id' : 39})]).then(function(result){
+exports.testUpdate = function(itemImages) {
+
+	Promise.all([updateItemImageModel({
+		'image': 'a',
+		'id': 38
+	}), updateItemImageModel({
+		'image': 'b',
+		'id': 39
+	})]).then(function(result) {
 		console.log(result);
 	})
 }
 
-exports.updateUserLogin = function(id,longitude,latitude){
+exports.updateUserLogin = function(id, longitude, latitude) {
 	UserLogin.update({
-		'longitude' : longitude,
-		'latitude' : latitude,
-	},{
-		'where':{
-			'id':id
+		'longitude': longitude,
+		'latitude': latitude,
+	}, {
+		'where': {
+			'id': id
 		}
-	}).then(function(affected_numbers,result1){
+	}).then(function(affected_numbers, result1) {
 		console.log(affected_numbers);
 		console.log(result1);
 	});
 }
 
 
-exports.insertRequestBeSeller = function(jsonObject,callback){
+exports.insertRequestBeSeller = function(jsonObject, callback) {
 	ShopModel.findOrCreate({
-		'defaults' : {
-			'name' : jsonObject['shop_name'],
-			'uid' : jsonObject['uid'],
-			'beg' : jsonObject['beg'],
-			'end' : jsonObject['end'],
-			'days' : jsonObject['end'],
-			'area_code' : jsonObject['area_code'],
-			'city_no' : jsonObject['city_no'],
-			'category_code1' : jsonObject['category_code1'],
-			'category_code2' : jsonObject['category_code2'],
-			'category_code3' : jsonObject['category_code3'],
-			'address' : jsonObject['address'],
-			'telephone' : jsonObject['telephone'],
-			'state' : 0,
+		'defaults': {
+			'name': jsonObject['shop_name'],
+			'uid': jsonObject['uid'],
+			'beg': jsonObject['beg'],
+			'end': jsonObject['end'],
+			'days': jsonObject['end'],
+			'area_code': jsonObject['area_code'],
+			'city_no': jsonObject['city_no'],
+			'category_code1': jsonObject['category_code1'],
+			'category_code2': jsonObject['category_code2'],
+			'category_code3': jsonObject['category_code3'],
+			'address': jsonObject['address'],
+			'telephone': jsonObject['telephone'],
+			'state': 0,
 		},
-		'where':{
-			'Id' : null,
+		'where': {
+			'Id': null,
 		}
-	}).then(function(Instance,created){
+	}).then(function(Instance, created) {
 		let dbRow = Instance[0]['dataValues'];
-		callback(null,dbRow);
+		callback(null, dbRow);
 	});
 }
 
-exports.saveSellerInfo = function(jsonObject,callback){
+exports.saveSellerInfo = function(jsonObject, callback) {
 
 	var value = {
-		'name' : jsonObject['shop_name'],
-		'city_no' : jsonObject['city_no'],
-		'area_code' : jsonObject['area_code'],
-		'category_code1' : jsonObject['category_code1'],
-		'category_code2' : jsonObject['category_code2'],
-		'category_code3' : jsonObject['category_code3'],
-		'beg' : jsonObject['beg'],
-		'end' : jsonObject['end'],
-		'days' : jsonObject['days'],
-		'address' : jsonObject['address'],
-		'telephone' : jsonObject['telephone'],
-		'business' : jsonObject['business'],
-		'distribution' : jsonObject['distribution'],
-		'fix_telephon' : jsonObject['fix_telephon'],
-		'qq' : jsonObject['qq'],
-		'wx' : jsonObject['wx'],
-		'email' : jsonObject['email'],
-		'longitude' : jsonObject['longitude'],
-		'latitude' : jsonObject['latitude'],
+		'name': jsonObject['shop_name'],
+		'city_no': jsonObject['city_no'],
+		'area_code': jsonObject['area_code'],
+		'category_code1': jsonObject['category_code1'],
+		'category_code2': jsonObject['category_code2'],
+		'category_code3': jsonObject['category_code3'],
+		'beg': jsonObject['beg'],
+		'end': jsonObject['end'],
+		'days': jsonObject['days'],
+		'address': jsonObject['address'],
+		'telephone': jsonObject['telephone'],
+		'business': jsonObject['business'],
+		'distribution': jsonObject['distribution'],
+		'fix_telephon': jsonObject['fix_telephon'],
+		'qq': jsonObject['qq'],
+		'wx': jsonObject['wx'],
+		'email': jsonObject['email'],
+		'longitude': jsonObject['longitude'],
+		'latitude': jsonObject['latitude'],
 	};
-	if('qualification' in jsonObject){
+	if ('qualification' in jsonObject) {
 		value['qualification'] = jsonObject['qualification'];
 	}
-	let images = ['image1','image2','image3','image4'];
-	for(var key in images){
+	let images = ['image1', 'image2', 'image3', 'image4'];
+	for (var key in images) {
 		let image_key = images[key];
-		if(image_key in jsonObject){
+		if (image_key in jsonObject) {
 			value[image_key] = jsonObject[image_key];
 		}
 	}
-	
-	
-	ShopModel.update(value,{
-		'where':{
-			'Id':jsonObject['id']
+
+
+	ShopModel.update(value, {
+		'where': {
+			'Id': jsonObject['id']
 		}
-	}).then(function(affected_numbers,result1){
+	}).then(function(affected_numbers, result1) {
 		callback(null);
-	},function(err){
+	}, function(err) {
 
 		callback(err || "error");
 	});
 }
 
-exports.insertClaimInfo = function(jsonObject,callback){
+exports.insertClaimInfo = function(jsonObject, callback) {
 	ClaimModel.findOrCreate({
-		'defaults' : jsonObject,
-		'where' : {
-			'id' : null,
+		'defaults': jsonObject,
+		'where': {
+			'id': null,
 		},
-	}).then(function(Instance,created){
+	}).then(function(Instance, created) {
 		let dbRow = Instance[0]['dataValues'];
-		callback(null,dbRow);
+		callback(null, dbRow);
 	});
 }
 
-exports.uploadShopBigImage = function(shop_id,image,callback){
+exports.uploadShopBigImage = function(shop_id, image, callback) {
 	let jsonObject = {
-		'big_image' : image,
+		'big_image': image,
 	};
-	ShopModel.update(jsonObject,{
-		'where' : {
-			'id' : shop_id,
+	ShopModel.update(jsonObject, {
+		'where': {
+			'id': shop_id,
 		}
-	}).then(function(affected_numbers,result){
-		if(affected_numbers == 1){
-			callback(null);
-		}else{
-			callback("数据库操作失败");
-		}
+	}).then((affected_numbers, result) => {
+		callback(null);
+	}).catch((error) => {
+		callback(error);
 	});
 }
 
-function updateManyItemImage(item_image){
-	return new Promise(function(resolve, reject){
-		console.log('item_image',item_image);
-		ItemImageModel.upsert(item_image,{
-			'where' : {
-				'item_id' : item_image['item_id'],
-				'image_type' : item_image['image_type'],
-				'index' : item_image['index'],
+function updateManyItemImage(item_image) {
+	return new Promise(function(resolve, reject) {
+		console.log('item_image', item_image);
+		ItemImageModel.upsert(item_image, {
+			'where': {
+				'item_id': item_image['item_id'],
+				'image_type': item_image['image_type'],
+				'index': item_image['index'],
 			}
-		}).then(function(affectedCount, affectedRows){
+		}).then(function(affectedCount, affectedRows) {
 			resolve(affectedCount);
 		})
 	});
 }
 
-function updateManyItemProperty(item_property){
-	return new Promise(function(resolve,reject){
-		ItemPropertyModel.upsert(item_property,{
-			'where' : {
-				'item_id' : item_property['item_id'],
-				'index' : item_property['index'],
+function updateManyItemProperty(item_property) {
+	return new Promise(function(resolve, reject) {
+		ItemPropertyModel.upsert(item_property, {
+			'where': {
+				'item_id': item_property['item_id'],
+				'index': item_property['index'],
 			}
-		}).then(function(affectedCount,affectedRows){
+		}).then(function(affectedCount, affectedRows) {
 			resolve(affectedCount);
 		});
 	});
 }
 
-exports.saveShopItem = function(jsonItem,jsonImages,jsonPropertys,callback){
+exports.saveShopItem = function(jsonItem, jsonImages, jsonPropertys, callback) {
 	Promise.resolve(true)
-	.then(function(){
-		return new Promise(function(resolve, reject){
-			ItemModel.update(jsonItem,{
-				'where' : {
-					'id' : jsonItem['id'],
-				}
-			}).then(function(affectedCount){
-				console.log(affectedCount);
-				if(affectedCount[0] == 1){
-					resolve();
-				}else{
-					reject();
-				}
+		.then(function() {
+			return new Promise(function(resolve, reject) {
+				ItemModel.update(jsonItem, {
+					'where': {
+						'id': jsonItem['id'],
+					}
+				}).then(function(affectedCount) {
+					console.log(affectedCount);
+					if (affectedCount[0] == 1) {
+						resolve();
+					} else {
+						reject();
+					}
+				});
 			});
-		});
-	})
-	.then(function(){
-		let array_Promise = [];
-		jsonImages.forEach(function(image){
-			array_Promise.push(updateManyItemImage(image));
+		})
+		.then(function() {
+			let array_Promise = [];
+			jsonImages.forEach(function(image) {
+				array_Promise.push(updateManyItemImage(image));
 
-		});
-		
-		return Promise.all(array_Promise);
-	})
-	.then(function(){
-		
-		let array_property_Promise = [];
-		jsonPropertys.forEach(function(property){
-			array_property_Promise.push(updateManyItemProperty(property));
-		});
+			});
 
-		return Promise.all(array_property_Promise);
-		
-	}).then(function(){
+			return Promise.all(array_Promise);
+		})
+		.then(function() {
 
-		callback(null);
-	});
+			let array_property_Promise = [];
+			jsonPropertys.forEach(function(property) {
+				array_property_Promise.push(updateManyItemProperty(property));
+			});
+
+			return Promise.all(array_property_Promise);
+
+		}).then(function() {
+
+			callback(null);
+		});
 }
 
-exports.addShopItem = function(jsonItem,jsonImages,jsonPropertys,callback){
+exports.addShopItem = function(jsonItem, jsonImages, jsonPropertys, callback) {
 	ItemModel.findOrCreate({
-		'defaults' : jsonItem,
-		'where' : {
-			'id' : null,
+		'defaults': jsonItem,
+		'where': {
+			'id': null,
 		}
-	}).then(function(dbResult){
-		
-		if(dbResult[1]){
+	}).then(function(dbResult) {
+
+		if (dbResult[1]) {
 			let dbRow = dbResult[0]['dataValues'];
 			let id = Number(dbRow['id']);
-			for(var key in jsonImages){
+			for (var key in jsonImages) {
 				jsonImages[key]['item_id'] = id;
 			}
-			
-			ItemImageModel.bulkCreate(jsonImages).then(function(){
-				for(var key in jsonPropertys){
+
+			ItemImageModel.bulkCreate(jsonImages).then(function() {
+				for (var key in jsonPropertys) {
 					jsonPropertys[key]['item_id'] = id;
 				}
-				ItemPropertyModel.bulkCreate(jsonPropertys).then(function(){
-					callback(null,id);
+				ItemPropertyModel.bulkCreate(jsonPropertys).then(function() {
+					callback(null, id);
 				});
 			});
 			return;
-		}else{
+		} else {
 			callback("create failed");
 		}
-		
+
 	});
 }
 
-exports.playerAttentionShop = function(jsonAttention,is_attention,callback){
-	if(is_attention){
+exports.playerAttentionShop = function(jsonAttention, is_attention, callback) {
+	if (is_attention) {
 		UserAttentionModel.upsert(jsonAttention)
-		.then(function(created){
-			callback(null,created);
-		});
-	}else{
+			.then(function(created) {
+				callback(null, created);
+			});
+	} else {
 		UserAttentionModel.destroy({
-			'where' : jsonAttention
-		}).then(function(num){
-			callback(null,num);
+			'where': jsonAttention
+		}).then(function(num) {
+			callback(null, num);
 		});
 	}
 }
 
-exports.offShelveShopItem = function(items,state,callback){
+exports.offShelveShopItem = function(items, state, callback) {
 	let all_promise = [];
 
-	items.forEach(function(item_id){
-		let promise = new Promise(function(resolve,reject){
-			ItemModel.update({'state':state},{'where' : {'id' : item_id}}).then(function(affectedRows){
+	items.forEach(function(item_id) {
+		let promise = new Promise(function(resolve, reject) {
+			ItemModel.update({
+				'state': state
+			}, {
+				'where': {
+					'id': item_id
+				}
+			}).then(function(affectedRows) {
 				resolve(item_id);
 			});
 		})
 		all_promise.push(promise);
 	});
 
-	Promise.all(all_promise).then(function(results){
+	Promise.all(all_promise).then(function(results) {
 		//console.log('INFO','results:',results);
-		callback(null,results);
-	},function(){
+		callback(null, results);
+	}, function() {
 		callback('error');
 	});
 }
 
-exports.closeShop = function(shop_id,callback){
+exports.closeShop = function(shop_id, callback) {
 
-	
-	let delete_shop_from_shop_info = new Promise((resolve, reject)=>{
+
+	let delete_shop_from_shop_info = new Promise((resolve, reject) => {
 		ShopModel.destroy({
-			'where' : {'Id':shop_id}
-		}).then((count)=>{
+			'where': {
+				'Id': shop_id
+			}
+		}).then((count) => {
 			resolve(true);
 		});
 	});
-	let delete_shop_from_shop_attention = new Promise((resolve,reject)=>{
+	let delete_shop_from_shop_attention = new Promise((resolve, reject) => {
 		UserAttentionModel.destroy({
-			'where' : {'shop_id' : shop_id}
-		}).then((count)=>{
+			'where': {
+				'shop_id': shop_id
+			}
+		}).then((count) => {
 			resolve(true);
 		});
 	});
-	let delete_item_from_shop = new Promise((resolve,reject)=>{
+	let delete_item_from_shop = new Promise((resolve, reject) => {
 		ItemModel.destroy({
-			'where' : {'shop_id' : shop_id}
-		}).then((count)=>{
+			'where': {
+				'shop_id': shop_id
+			}
+		}).then((count) => {
 			resolve(true);
 		});
 	});
 
 	let p = Promise.resolve(true);
-	p.then(delete_shop_from_shop_info).then(delete_shop_from_shop_attention).then(()=>{
+	p.then(delete_shop_from_shop_info).then(delete_shop_from_shop_attention).then(() => {
 		callback(null);
-	},()=>{
+	}, () => {
 		callback(true);
 	});
 }
 
-exports.removeShopItem = function(item_id,callback){
-	let delete_item_from_item_table = new Promise((resolve,reject)=>{
+exports.removeShopItem = function(item_id, callback) {
+	let delete_item_from_item_table = new Promise((resolve, reject) => {
 		ItemModel.destroy({
-			'where' : {'id' : item_id}
-		}).then((count)=>{
+			'where': {
+				'id': item_id
+			}
+		}).then((count) => {
 			resolve(count);
 		})
 	});
-	let delete_item_from_item_image = new Promise((resolve,reject)=>{
+	let delete_item_from_item_image = new Promise((resolve, reject) => {
 		ItemImageModel.destroy({
-			'where' : {'id' : item_id}
-		}).then((count)=>{
+			'where': {
+				'id': item_id
+			}
+		}).then((count) => {
 			resolve(count);
 		})
 	});
-	let delete_item_from_item_property = new Promise((resolve,reject)=>{
+	let delete_item_from_item_property = new Promise((resolve, reject) => {
 		ItemPropertyModel.destroy({
-			'where' : {'id' : item_id}
-		}).then((count)=>{
+			'where': {
+				'id': item_id
+			}
+		}).then((count) => {
 			resolve(count);
 		})
 	});
 
 	Promise.all([
-		delete_item_from_item_table,
-		delete_item_from_item_image,
-		delete_item_from_item_property])
-	.then((remove_count)=>{
-		console.log(remove_count)
-		callback(null,remove_count);
-	});
+			delete_item_from_item_table,
+			delete_item_from_item_image,
+			delete_item_from_item_property
+		])
+		.then((remove_count) => {
+			console.log(remove_count)
+			callback(null, remove_count);
+		});
 }
 
-exports.registerPlayer = function(json_register,callback){
-	new Promise((resolve,reject)=>{
+exports.registerPlayer = function(json_register, callback) {
+	new Promise((resolve, reject) => {
 		UserLogin.findOrCreate({
-			'defaults' : {
-				'Account' : json_register['telephone'],
-				'Password' : json_register['password'],
-				'longitude' : json_register['longitude'],
-				'latitude' : json_register['latitude'],
+			'defaults': {
+				'Account': json_register['telephone'],
+				'Password': json_register['password'],
+				'longitude': json_register['longitude'],
+				'latitude': json_register['latitude'],
 			},
-			'where' : {
-				'Id' : null,
+			'where': {
+				'Id': null,
 			}
-		}).then((Instance,created)=>{
+		}).then((Instance, created) => {
 			let dbRow = Instance[0]['dataValues'];
 			resolve(dbRow);
 		});
-	}).then((login_info)=>{
-		console.log("db_seq:",login_info)
+	}).then((login_info) => {
+		console.log("db_seq:", login_info)
 		UserModel.findOrCreate({
-			'defaults' : {
-				'id' : login_info['Id'],
-				'name' : '用户' + login_info['Id'],
-				'state' : 0,
+			'defaults': {
+				'id': login_info['Id'],
+				'name': '用户' + login_info['Id'],
+				'state': 0,
 			},
-			'where' : {
-				'id' : login_info['Id'],
+			'where': {
+				'id': login_info['Id'],
 			}
-		}).then((Instance,created)=>{
+		}).then((Instance, created) => {
 			let user_info = Instance[0]['dataValues'];
-			callback(login_info,user_info);
+			callback(login_info, user_info);
 		});
 	});
 }
 
-exports.saveUserInfo = function(uid,json_userinfo,callback){
-	console.log("db_seq: uid:" , uid, "json_userinfo:",json_userinfo);
+exports.saveUserInfo = function(uid, json_userinfo, callback) {
+	console.log("db_seq: uid:", uid, "json_userinfo:", json_userinfo);
 	UserModel.update(
-		json_userinfo,
-		{"where" : {'id' : uid}})
-	.then((affectedCount,results)=>{
+			json_userinfo, {
+				"where": {
+					'id': uid
+				}
+			})
+		.then((affectedCount, results) => {
 			callback(null);
-	});
-	return;	
+		});
+	return;
 }
 
-exports.addFavoriteItem = function(uid,item_id,callback){
+exports.addFavoriteItem = function(uid, item_id, callback) {
 	FavoriteMode.create({
-		'uid' : uid,
-		'item_id' : item_id,
-	}).then((Instance)=>{
+		'uid': uid,
+		'item_id': item_id,
+	}).then((Instance) => {
 		//console.log(Instance);
-		callback(null,Instance['dataValues']);
-	}).catch((error)=>{
+		callback(null, Instance['dataValues']);
+	}).catch((error) => {
 		//console.log(error);
 		callback(error);
 	})
 }
 
-exports.removeFavoriteItem = function(uid,item_id,callback){
+exports.removeFavoriteItem = function(uid, item_id, callback) {
 	FavoriteMode.destroy({
-		'where' : {
-			'uid' : uid,
-			'item_id' : item_id,
+		'where': {
+			'uid': uid,
+			'item_id': item_id,
 		}
-	}).then(()=>{
+	}).then(() => {
 		callback(null);
-	}).catch((error)=>{
+	}).catch((error) => {
 		callback(error);
 	})
+}
+
+exports.updateVerifyCodeInfo = function(db_row, callback) {
+	VerifyCodeInfo.upsert(db_row, {
+		'where': {
+			'telephone' : db_row['telephone'],
+		}
+	}).then(() => {
+		callback(null);
+	}).catch((error) => {
+		callback(error);
+	});
 }

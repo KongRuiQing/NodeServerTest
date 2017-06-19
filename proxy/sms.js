@@ -57,7 +57,6 @@ function post(uri,content,host){
         //console.log('STATUS: ' + res.statusCode);  
         res.setEncoding('utf8');  
         res.on('data', function (chunk) { 
-
             console.log('Recv BODY: ' + chunk);  
         }); 
         res.on('end',function(){

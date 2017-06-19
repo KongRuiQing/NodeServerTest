@@ -67,7 +67,7 @@ class ShopService extends EventEmitter {
 			this.__ownShop.set(uid,shop_id);
 		}
 	}
-	adClaim(uid,shop_id){
+	addClaim(uid,shop_id){
 		this.__shopClaim.set(uid,shop_id);
 	}
 

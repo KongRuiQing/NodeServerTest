@@ -29,11 +29,6 @@ module.exports = function (sequelize, DataTypes) {
       type:DataTypes.STRING,
       allowNull:false,
       defaultValue:""
-    },
-    'cs' : {
-      type : DataTypes.BIGINT(11),
-      allowNull : false,
-      defaultValue : 0,
     }
   });
 };

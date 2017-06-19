@@ -28,6 +28,9 @@ class ErrorCode{
 	get FAVORITE_REPEAT(){
 		return 10009; // 添加收藏物品时重复
 	}
+	get ACCOUNT_REPEAT(){
+		return 10010; // 帐号重复
+	}
 }
 
 module.exports = new ErrorCode;
