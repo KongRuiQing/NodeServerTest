@@ -214,7 +214,7 @@ class Register {
 				cb(null, register_info.registerId);
 			}
 		});
-		//sms.send_sms(telephone,register_info.verifyCode);
+		sms.send_sms(telephone,register_info.verifyCode);
 	}
 
 	checkVerifyCode(register_id, telephone, verify_code) {
