@@ -790,4 +790,12 @@ ShopBean.prototype.addAttentionGroupMessage = function(json_msg) {
 	this.__attenton_group_messages.set(msg.getId(), msg);
 }
 
+ShopBean.prototype.getName = function(){
+	return this.name;
+}
+
+ShopBean.prototype.search = function(keywords){
+	return this.name === keywords;
+}
+
 module.exports = ShopBean;

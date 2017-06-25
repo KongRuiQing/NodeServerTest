@@ -10,7 +10,7 @@ class AttentionBoard {
 		this.__cache = null;
 		let that = this;
 		Attentions.on('event_attention_shop',(shop_id,is_attention)=>{
-			logger.log('INFO','AttentionBoard on event_attention_shop',shop_id,is_attention);
+			//logger.log('INFO','AttentionBoard on event_attention_shop',shop_id,is_attention);
 			that.onAttentionChange(shop_id,is_attention);
 		});
 	}

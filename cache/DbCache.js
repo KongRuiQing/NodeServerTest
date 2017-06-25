@@ -7,7 +7,7 @@ var CategoryMenuBean = require("../bean/CategoryMenuBean");
 var moment = require('moment');
 
 var HeadInstance = require("../HttpHeadInstance");
-var RegisterService = require("../Logic/register.js");
+var VerifyCodeService = require("../Logic/VerifyCodeService.js");
 console.log("require","cache/DbCache.js");
 
 function DbCacheManager(){
@@ -106,7 +106,7 @@ DbCacheManager.prototype.InitFromDb = function(db_list_result){
 	}
 	var list_all_register = db_list_result[4];
 	for(var key in list_all_register){
-		RegisterService.addRegister(list_all_register[key]);
+		VerifyCodeService.addVerifyCodeInfo(list_all_register[key]);
 	}
 	//logger.log("DB_CACHE","[Init][ad_image]:" + util.inspect(g_db_cache['ad_image'],{depth:null}));
 }

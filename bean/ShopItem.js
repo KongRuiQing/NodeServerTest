@@ -310,6 +310,9 @@ ShopItem.prototype.matchFilter = function(keyword){
 	if(keyword.length == 0){
 		return true;
 	}
+	if(keyword.length > this.name.length){
+		return false;
+	}
 	
 	return this.name.indexOf(keyword) >= 0
 }
@@ -420,6 +423,10 @@ ShopItem.prototype.updateProperty = function(json_property){
 
 ShopItem.prototype.offShelve = function(state){
 	this.__state = state;
+}
+
+ShopItem.prototype.getName = function(){
+	return this.name;
 }
 
 module.exports = ShopItem;

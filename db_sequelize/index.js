@@ -449,11 +449,25 @@ exports.removeFavoriteItem = function(uid, item_id, callback) {
 exports.updateVerifyCodeInfo = function(db_row, callback) {
 	VerifyCodeInfo.upsert(db_row, {
 		'where': {
-			'telephone' : db_row['telephone'],
+			'telephone': db_row['telephone'],
 		}
 	}).then(() => {
 		callback(null);
 	}).catch((error) => {
 		callback(error);
 	});
+}
+exports.changePassword = function(telephone, password, callback) {
+	UserLogin.update({
+		'Password' : password,
+	}, {
+		'where': {
+			'Account' : telephone,
+		}
+	}).then((affected_numbers, result1) => {
+		callback(null);
+	}).catch((error) => {
+		callback(error);
+	})
+
 }

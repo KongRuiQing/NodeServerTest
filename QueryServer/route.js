@@ -29,4 +29,5 @@ handle_http['/get_ready_be_seller_data'] = http_handler.getBeSellerData;
 handle_http['/shop_claim_state'] = http_handler.getShopClaimState;
 handle_http['/custom_service'] = http_config.getCustomService;
 handle_http['/get_attention_group'] = http_handler.getAttentionGroup;
+handle_http['/search'] = http_handler.getSearchResult;
 module.exports = handle_http;

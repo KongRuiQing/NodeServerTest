@@ -17,6 +17,7 @@ let HeadInstance = require("../HttpHeadInstance");
 let Ws = require("../WebSocketServer");
 let LoginModule = require("../Logic/login.js");
 let RegisterService = require("../Logic/register.js");
+let VerifyCodeService = require("../Logic/VerifyCodeService.js");
 var OnlineService = require("../Logic/online.js");
 const Joi = require('joi');
 let AttentionService = require("../Logic/Attentions.js");
@@ -70,25 +71,52 @@ exports.logout = function(header, fields, files, callback) {
 	});
 }
 
-
-
 exports.register = function(header, fields, files, callback) {
 
-	let telephone = fields['telephone'];
-	if (LoginModule.checkAccount(telephone)) {
+
+	if (!('telephone' in fields)) {
 		callback(true, {
-			'error': ErrorCode.ACCOUNT_REPEAT,
+			'error': ErrorCode.FIELD_PARAM_ERROR,
 		});
 		return;
 	}
-
-	let step = parseInt(fields['step']);
+	if (!('step' in fields)) {
+		callback(true, {
+			'error': ErrorCode.FIELD_PARAM_ERROR,
+		});
+		return;
+	}
+	if (!('from' in fields)) {
+		callback(true, {
+			'error': ErrorCode.FIELD_PARAM_ERROR,
+		});
+		return;
+	}
+	let telephone = fields['telephone'];
+	let step = Number(fields['step']);
+	let from = Number(fields['from']);
+	if (from == 1) {
+		if (LoginModule.checkAccount(telephone)) {
+			callback(true, {
+				'error': ErrorCode.ACCOUNT_REPEAT,
+			});
+			return;
+		}
+	}
+	if (from == 2) {
+		if (!LoginModule.checkAccount(telephone)) {
+			callback(true, {
+				'error': ErrorCode.NOT_EXIST_ACCOUNT,
+			});
+			return;
+		}
+	}
 
 	if (step == 1) {
+		let checkCanSendResult = VerifyCodeService.checkCanSend(telephone);
 
-		let checkCanSendResult = RegisterService.checkCanSend(telephone);
 		if (checkCanSendResult == null) {
-			RegisterService.createRegisterInfo(telephone, (error,register_id) => {
+			VerifyCodeService.create(telephone, (error, leftTime) => {
 				if (error) {
 					callback(true, {
 						'error': error,
@@ -97,27 +125,29 @@ exports.register = function(header, fields, files, callback) {
 				} else {
 					callback(true, {
 						'step': 2,
-						'msg' : AppConfig.get("Find.sms_time"),
-						'register_id': register_id,
+						'msg': leftTime,
 					});
 					return;
 				}
-			});
+			})
+
 		} else {
 			callback(true, {
 				'error': checkCanSendResult['error'],
-				'msg' : checkCanSendResult['msg']
+				'msg': checkCanSendResult['msg']
 			});
 		}
 		return;
 	} else if (step == 2) {
-		let register_id = fields['register_id'];
+
+
 		let verify_code = fields['verify_code'];
-		logger.log("INFO", "[POST_SERVER][register]:", `step:${step},register_id:${register_id},verify_code:${verify_code}`);
-		let result = RegisterService.checkVerifyCode(register_id, telephone, verify_code);
+		logger.log("INFO", "[POST_SERVER][register]:", `step:${step},verify_code:${verify_code}`);
+		let result = VerifyCodeService.check(telephone, verify_code);
+		//let result = RegisterService.checkVerifyCode(register_id, telephone, verify_code);
 		if (!result) {
 			callback(true, {
-				'error': 1018,
+				'error': ErrorCode.VERIFY_CODE_ERROR,
 			});
 			return;
 		} else {
@@ -126,39 +156,73 @@ exports.register = function(header, fields, files, callback) {
 			});
 		}
 	} else if (step == 3) {
-		let password = fields['password'];
-		let register_id = fields['register_id'];
 
-		let socket_id = fields['socket_id'];
-
-		logger.log("INFO", "[POST_SERVER][register]:", `step:${step},register_id:${register_id},password ${password}`);
-		RegisterService.removeRegisterInfo(register_id);
-		db_sequelize.registerPlayer({
-			'telephone': telephone,
-			'password': password,
-			'longitude': header['longitude'],
-			'latitude': header['latitude'],
-		}, (logininfo, userinfo) => {
-			logger.log("INFO", "[POST_SERVER][register] db_result", logininfo, userinfo);
-
-			LoginModule.addLoginInfo(logininfo['Account'], logininfo['Id'], logininfo['Password'], logininfo['state']);
-
-			PlayerProxy.getInstance().addUserInfo(userinfo);
-
-			let guid = OnlineService.registerLogin(logininfo['Id'], socket_id);
-
-			let user_info = PlayerProxy.getInstance().getUserInfo(logininfo['Id']);
-
-
+		if (!('password' in fields)) {
 			callback(true, {
-				'step': 4,
-				'user_info': user_info,
-				'guid': guid,
+				'error': ErrorCode.FIELD_PARAM_ERROR,
 			});
-		});
+			return;
+		}
+
+		let password = fields['password'];
+
+
+
+		logger.log("INFO", "[POST_SERVER][register]:", `step:${step},password ${password}`);
+
+		if (from == 1) {
+			if (!('socket_id' in fields)) {
+				callback(true, {
+					'error': ErrorCode.FIELD_PARAM_ERROR,
+				});
+				return;
+			}
+			let socket_id = fields['socket_id'];
+			db_sequelize.registerPlayer({
+				'telephone': telephone,
+				'password': password,
+				'longitude': header['longitude'],
+				'latitude': header['latitude'],
+			}, (logininfo, userinfo) => {
+				logger.log("INFO", "[POST_SERVER][register] db_result", logininfo, userinfo);
+
+				LoginModule.addLoginInfo(logininfo['Account'], logininfo['Id'], logininfo['Password'], logininfo['state']);
+
+				VerifyCodeService.remove(telephone);
+
+				PlayerProxy.getInstance().addUserInfo(userinfo);
+
+				let guid = OnlineService.registerLogin(logininfo['Id'], socket_id);
+
+				let user_info = PlayerProxy.getInstance().getUserInfo(logininfo['Id']);
+
+
+				callback(true, {
+					'step': 4,
+					'user_info': user_info,
+					'guid': guid,
+					'from': from,
+				});
+			});
+		} else {
+			db_sequelize.changePassword(telephone,password,(error) => {
+				logger.log("INFO", "[POST_SERVER][changePassword] db_result:",error);
+
+				LoginModule.changePassword(telephone,password);
+				VerifyCodeService.remove(telephone);
+				callback(true, {
+					'step': 4,
+					'from': from,
+				});
+			});
+		}
+		//RegisterService.removeRegisterInfo(register_id);
+
 	}
 
 }
+
+
 
 exports.changeSex = function(header, fields, files, callback) {
 	var guid = fields['guid'];

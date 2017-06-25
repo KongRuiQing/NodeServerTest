@@ -19,6 +19,7 @@ let TAG = "[ShopCache]"
 var ShopService = require("../Logic/shop.js");
 var AttentionService = require("../Logic/Attentions.js");
 var ShopState = require("../enum/shopState.js");
+
 function ShopManager() {
 	this.dict = new Map();
 	this.item_property_name = {};
@@ -237,7 +238,7 @@ exports.InitFromDb = function(
 
 			g_shop_cache['max_shop_item_id'] = Math.max(g_shop_cache['max_shop_item_id'], parseInt(item['id']));
 		} else {
-			logger.log("WARN", "[ShopCache][InitFromDb] load shop_item_list where shop is not exist", 'shop_id :', shop_id);
+			//logger.log("WARN", "[ShopCache][InitFromDb] load shop_item_list where shop is not exist", 'shop_id :', shop_id);
 		}
 	}
 
@@ -294,7 +295,7 @@ exports.InitFromDb = function(
 			}
 
 		} else {
-			logger.warn("SHOP_CACHE", "can't find item_id in g_shop_cache['shop_items'] item_id= " + item_id);
+			//logger.warn("SHOP_CACHE", "can't find item_id in g_shop_cache['shop_items'] item_id= " + item_id);
 		}
 	}
 
@@ -530,7 +531,7 @@ ShopManager.prototype.getMyFavoritesItems = function(items) {
 	var item_list = [];
 	//logger.log("SHOP_CACHE",util.inspect(items));
 	for (let item_id of items) {
-		
+
 		var shop_item = this.getItemBean(item_id);
 		//logger.log("SHOP_CACHE",util.inspect(shop_item));
 		if (shop_item != null) {
@@ -1085,4 +1086,47 @@ ShopManager.prototype.addAttentionGroupMessage = function(shop_id, msg) {
 		logger.log("ERROR", "[ShopManager][addAttentionGroupMessage] error:", `can't find ${shop_id} in this shop`);
 	}
 
+}
+
+ShopManager.prototype.search = function(keyword, search_type) {
+	let SEARCH_TYPE = require("../enum/searchType.js");
+	let result = new Map();
+	logger.log("INFO", 'SEARCH_TYPE:', SEARCH_TYPE);
+	let that = this;
+	if (SEARCH_TYPE.SEARCH_SHOP == search_type) {
+		this.dict.forEach((shopBean, shop_id) => {
+			if (shopBean.search(keyword)) {
+				let shopName = shopBean.getName();
+				if (result.has(shopName)) {
+					result.set(shopName, result.get(shopName) + 1);
+				} else {
+					result.set(shopName, 1);
+				}
+			}
+		});
+
+
+
+	} else if (SEARCH_TYPE.SEARCH_ITEM == search_type) {
+		this.shop_items.forEach((itemBean, item_id) => {
+			if (itemBean.matchFilter(keyword)) {
+				let itemName = itemBean.getName();
+				if (result.has(itemName)) {
+					result.set(itemName, result.get(itemName) + 1);
+				} else {
+					result.set(itemName, 1);
+				}
+			}
+		});
+	}
+	let list = [];
+	result.forEach((count, name) => {
+		list.push({
+			'id': 0,
+			'name': name,
+			'count': count,
+		});
+	});
+
+	return list;
 }

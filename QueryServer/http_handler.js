@@ -193,11 +193,11 @@ exports.getShopSpread = function(headers, query,callback){
 	
 	let last_index = Number(query['last_index'] || 0);
 	
-	var keyword = "";
+	let keyword = "";
 	if('keyword' in query){
 		keyword = query['keyword'];
 	}
-	logger.log("INFO","[HTTP_HANDER]getShopSpread param:",city_no,area_code,cate_code,sort_code,distance,longitude,latitude,last_index);
+	logger.log("INFO","[HTTP_HANDER]getShopSpread param:",city_no,area_code,cate_code,sort_code,distance,longitude,latitude,last_index,keyword);
 
 	var query_result = ShopCache.getInstance().getShopSpread(last_index,longitude,latitude,city_no,area_code,distance,cate_code,keyword);
 	var json_value = {
@@ -688,5 +688,17 @@ exports.getShopAttentionGroupMessageList = function(headers,query,callback){
 		'error' : 1,
 	});
 	return;
+
+}
+
+exports.getSearchResult = function(headers,query,callback){
+	
+	let searchType = Number(query['type']);
+	let keyword = query['keyword'];
+	logger.log("INFO",'searchType:',searchType,'keyword:',keyword);
+	let list = ShopCache.getInstance().search(keyword,searchType);
+	callback(0,{
+		'list' : list,
+	});
 
 }

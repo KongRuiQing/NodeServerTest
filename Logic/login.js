@@ -48,6 +48,10 @@ class LoginInfo{
 		return this.__state;
 	}
 
+	changePassword(password){
+		this.__password = password;
+	}
+
 	toJSONObject(){
 		return {
 			'uid' : this.getUID(),
@@ -116,6 +120,11 @@ class Login{
 		});
 		if(find_key != null){
 			this.__login.delete(find_key);
+		}
+	}
+	changePassword(telephone,password){
+		if(this.__login.has(telephone)){
+			this.__login.get(telephone).changePassword(password);
 		}
 	}
 

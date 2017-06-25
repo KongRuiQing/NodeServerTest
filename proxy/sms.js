@@ -16,7 +16,8 @@ var query_balance_uri = '/msg/balance';
 
 var config = require('config');
 
-exports.send_sms = function(telephone,verify_code){
+exports.send_sms = function(telephone,verify_code,callback){
+    
     var msg = config.get("Find.sms_text");
     var post_data = { // 这是需要提交的数据 
         'un': config.get("Find.sms_username"),   
@@ -28,7 +29,14 @@ exports.send_sms = function(telephone,verify_code){
 
     var content = qs.stringify(post_data);  
 
-    post(send_sms_uri,content,sms_host);
+    post(send_sms_uri,content,sms_host,(state_code)=>{
+        if(state_code == 0){
+            callback(null);
+        }else{
+            callback(state_code)
+        }
+        
+    });
 }
 
 // 查询余额方法
@@ -39,10 +47,12 @@ exports.query_blance = function(){
         'pw': pw, 
     };  
     var content = qs.stringify(post_data);  
-    post(query_balance_uri,content,sms_host);
+    post(query_balance_uri,content,sms_host,()=>{
+
+    });
 }
 
-function post(uri,content,host){
+function post(uri,content,host,callback){
 	var options = {  
         hostname: host,
         port: 80,  
@@ -53,14 +63,18 @@ function post(uri,content,host){
             'Content-Length': content.length   
         }  
     };
+    let recvData = "";
     var req = http.request(options, function (res) {  
         //console.log('STATUS: ' + res.statusCode);  
         res.setEncoding('utf8');  
         res.on('data', function (chunk) { 
-            console.log('Recv BODY: ' + chunk);  
+            console.log('Recv BODY: ' + chunk);
+            recvData += chunk;  
         }); 
         res.on('end',function(){
-
+            let recv = recvData.split(',');
+            console.log("recv:" + recv);
+            callback(Number(recv[1]));
         });
     }); 
 
