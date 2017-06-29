@@ -11,4 +11,6 @@ module.exports = {
 	ACCOUNT_REPEAT: 10009, // 帐号重复
 	VERIFY_CODE_ERROR: 10010, // 验证码错误
 	NOT_EXIST_ACCOUNT : 10011, // 帐号不存在
+	CLAIM_ERROR : 10012, // 认领条件失败
+	USER_NO_SHOP : 10013, // 用户没有绑定的商铺
 };
