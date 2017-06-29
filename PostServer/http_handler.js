@@ -1433,22 +1433,19 @@ exports.claimShop = function(header, fields, files, cb) {
 		});
 		return;
 	}
-	let shop_id = fields['shop_id'];
+	let shop_id = Number(fields['shop_id']);
 
-	if (!ShopProxy.getInstance().chekcCanClaim(shop_id)) {
+	let uid = header['uid'];
+
+	let claim_check_result = ShopService.checkCanClaim(uid,shop_id);
+	if(claim_check_result == false){
 		cb(true, {
-			'error': 1001,
-			'error_msg': '商铺已经被人认领了',
+			'error': ErrorCode.CLAIM_ERROR,
+			'error_msg': '用户或商铺不满足认领条件',
 		});
 		return;
 	}
-	if (!PlayerProxy.getInstance().chekcCanClaim(header['uid'])) {
-		cb(true, {
-			'error': 1001,
-			'error_msg': '只能同时认领一个商铺',
-		});
-		return;
-	}
+	
 
 	let json_param = {
 		'name': fields['name'],
@@ -1555,4 +1552,31 @@ exports.closeShop = function(header, fields, files, cb) {
 		}
 
 	});
+}
+
+exports.addGroupMsg = function(header,fields,files,cb){
+	let uid = Number(header['uid']);
+	if(uid <= 0){
+		cb(true,{
+			'error' : ErrorCode.USER_NO_LOGIN,
+		});
+		return;
+	}
+	let shop_id = ShopService.getOwnShopId(uid);
+	if(shop_id <= 0){
+		cb(true,{
+			'error' : ErrorCode.USER_NO_SHOP,
+		});
+		return;
+	}
+
+	cb(true,{
+		'error' : 0,
+		'bean' : {
+			'msg' : fields['msg'],
+			'images' : ['Files/shop/attention/1.png','Files/shop/attention/1.png','Files/shop/attention/1.png'],
+			'time' : moment().format("YYYY.MM.DD"),
+		}
+	});
+	return;
 }

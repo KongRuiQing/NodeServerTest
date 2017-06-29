@@ -40,5 +40,5 @@ handle_http['/admin/v1/shop_item']  = http_notify.notifyShopItem;
 handle_http['/send_message'] = http_handler.sendMessage;
 handle_http['/off_shelve_shop_item'] = http_handler.offShelveShopItem;
 handle_http['/close_shop'] = http_handler.closeShop;
-
+handle_http['/group_msg'] = http_handler.addGroupMsg;
 module.exports = handle_http;
