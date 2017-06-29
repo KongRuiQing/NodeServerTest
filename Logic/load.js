@@ -1,8 +1,10 @@
 'use strict';
-var Attentions = require("./Attentions.js");
-var Login = require("./login.js");
-var online = require("./online.js");
-var register = require("./register");
-var shop = require("./shop.js");
+require("./Attentions.js");
+require("./login.js");
+require("./online.js");
+require("./register.js");
+require("./shop.js");
 require('./AttentionBoard.js');
 require('./favorite.js');
+require('./FindPassword.js');
+require('./VerifyCodeService.js');
