@@ -32,5 +32,5 @@ handle_http['/get_attention_group'] = http_handler.getAttentionGroup;
 handle_http['/search'] = http_handler.getSearchResult;
 // group msg
 
-handle_http['/group_msg_history'] = http_handler.getGroupMsgHistory;
+handle_http['/history_group_msg'] = http_handler.getGroupMsgHistory;
 module.exports = handle_http;
