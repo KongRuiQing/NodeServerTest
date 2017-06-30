@@ -11,7 +11,7 @@ var moment = require('moment');
 let ErrorCode = require("../error.js");
 let BASE_SHOP_IMAGE = "../../www/SaySystemWeb/Files";
 
-let db_sequelize = require("../db_sequelize");
+let _db = require("../db_sequelize");
 
 let HeadInstance = require("../HttpHeadInstance");
 let Ws = require("../WebSocketServer");
@@ -50,8 +50,10 @@ function upload_file_to_json(files, map, result) {
 			let virtual_file_name = path.join(map[file_key], path.basename(upload_file.path));
 			let newPath = path.join(BASE_SHOP_IMAGE, virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
-			result[file_key] = path.join('Files', virtual_file_name).replace(/\\/g, "\\\\");
-			logger.log("INFO", "[POST_SERVER][upload_file_to_json] files:", result[file_key]);
+			result[file_key] = path.join('Files', virtual_file_name).replace(/\\/g,
+				"\\\\");
+			logger.log("INFO", "[POST_SERVER][upload_file_to_json] files:", result[
+				file_key]);
 		}
 	}
 
@@ -142,7 +144,8 @@ exports.register = function(header, fields, files, callback) {
 
 
 		let verify_code = fields['verify_code'];
-		logger.log("INFO", "[POST_SERVER][register]:", `step:${step},verify_code:${verify_code}`);
+		logger.log("INFO", "[POST_SERVER][register]:",
+			`step:${step},verify_code:${verify_code}`);
 		let result = VerifyCodeService.check(telephone, verify_code);
 		//let result = RegisterService.checkVerifyCode(register_id, telephone, verify_code);
 		if (!result) {
@@ -168,7 +171,8 @@ exports.register = function(header, fields, files, callback) {
 
 
 
-		logger.log("INFO", "[POST_SERVER][register]:", `step:${step},password ${password}`);
+		logger.log("INFO", "[POST_SERVER][register]:",
+			`step:${step},password ${password}`);
 
 		if (from == 1) {
 			if (!('socket_id' in fields)) {
@@ -178,15 +182,17 @@ exports.register = function(header, fields, files, callback) {
 				return;
 			}
 			let socket_id = fields['socket_id'];
-			db_sequelize.registerPlayer({
+			_db.registerPlayer({
 				'telephone': telephone,
 				'password': password,
 				'longitude': header['longitude'],
 				'latitude': header['latitude'],
 			}, (logininfo, userinfo) => {
-				logger.log("INFO", "[POST_SERVER][register] db_result", logininfo, userinfo);
+				logger.log("INFO", "[POST_SERVER][register] db_result", logininfo,
+					userinfo);
 
-				LoginModule.addLoginInfo(logininfo['Account'], logininfo['Id'], logininfo['Password'], logininfo['state']);
+				LoginModule.addLoginInfo(logininfo['Account'], logininfo['Id'],
+					logininfo['Password'], logininfo['state']);
 
 				VerifyCodeService.remove(telephone);
 
@@ -205,10 +211,10 @@ exports.register = function(header, fields, files, callback) {
 				});
 			});
 		} else {
-			db_sequelize.changePassword(telephone,password,(error) => {
-				logger.log("INFO", "[POST_SERVER][changePassword] db_result:",error);
+			_db.changePassword(telephone, password, (error) => {
+				logger.log("INFO", "[POST_SERVER][changePassword] db_result:", error);
 
-				LoginModule.changePassword(telephone,password);
+				LoginModule.changePassword(telephone, password);
 				VerifyCodeService.remove(telephone);
 				callback(true, {
 					'step': 4,
@@ -412,7 +418,8 @@ exports.attentionShop = function(header, fields, files, callback) {
 	var shop_id = Number(fields['shop_id']);
 	let is_attention = Number(fields['is_attention']);
 
-	let player_attention_shop_info = AttentionService.isAttentionThisShop(uid, shop_id);
+	let player_attention_shop_info = AttentionService.isAttentionThisShop(uid,
+		shop_id);
 
 	if (player_attention_shop_info == is_attention) {
 		callback(true, {
@@ -437,7 +444,7 @@ exports.attentionShop = function(header, fields, files, callback) {
 		'shop_id': shop_id,
 	};
 
-	db_sequelize.playerAttentionShop(json_value, is_attention, function(err) {
+	_db.playerAttentionShop(json_value, is_attention, function(err) {
 		if (err) {
 			logger.log("WARN", err);
 			callback(true, {
@@ -499,7 +506,7 @@ exports.addToFavorites = function(header, fields, files, callback) {
 	}
 
 
-	db_sequelize.addFavoriteItem(uid, item_id, (err) => {
+	_db.addFavoriteItem(uid, item_id, (err) => {
 		if (err) {
 			logger.log("ERROR", "[addToFavorites] SQL_ERROR:", err);
 			callback(true, {
@@ -571,7 +578,7 @@ exports.changeUserInfo = function(header, fields, files, callback) {
 			db_row['head'] = image['head'];
 		}
 
-		db_sequelize.saveUserInfo(uid, db_row, (error) => {
+		_db.saveUserInfo(uid, db_row, (error) => {
 			PlayerProxy.getInstance().changeUserInfo(uid, db_row);
 			callback(true, {
 				'error': 0,
@@ -633,7 +640,8 @@ exports.addShopItem = function(header, fields, files, callback) {
 				});
 			}
 		}
-		logger.log("INFO", "[HTTP_HANDLER][addShopItem] json_image : ", util.inspect(json_image));
+		logger.log("INFO", "[HTTP_HANDLER][addShopItem] json_image : ", util.inspect(
+			json_image));
 
 		let category_code = Number(fields['category_code']);
 		var price = Number(fields['price']);
@@ -665,21 +673,26 @@ exports.addShopItem = function(header, fields, files, callback) {
 			}
 		}
 
-		db_sequelize.addShopItem(json_value, json_image, json_propertys, function(err, add_item_id) {
+		_db.addShopItem(json_value, json_image, json_propertys, function(err,
+			add_item_id) {
 			if (err) {
-				logger.log("WARN", "[HTTP_HANDLER][addShopItem] json_value:", util.inspect(json_value));
+				logger.log("WARN", "[HTTP_HANDLER][addShopItem] json_value:", util.inspect(
+					json_value));
 				callback(true, {
 					'error': 2,
 					'error_msg': err,
 				});
 				return;
 			} else {
-				logger.log("INFO", '[HTTP_HANDLER][addShopItem]', 'add_item_id:', add_item_id);
+				logger.log("INFO", '[HTTP_HANDLER][addShopItem]', 'add_item_id:',
+					add_item_id);
 
 				json_value['id'] = add_item_id;
-				ShopProxy.getInstance().addShopItem(json_value, json_image, json_propertys);
+				ShopProxy.getInstance().addShopItem(json_value, json_image,
+					json_propertys);
 
-				let shop_item_info = ShopProxy.getInstance().getMyShopItemInfo(add_item_id);
+				let shop_item_info = ShopProxy.getInstance().getMyShopItemInfo(
+					add_item_id);
 
 				if (shop_item_info != null) {
 					callback(true, {
@@ -714,11 +727,13 @@ exports.removeShopItem = function(header, fields, files, callback) {
 	var shop_id = ShopService.getOwnShopId(uid);
 
 	let item_id = Number(fields['item_id']);
-	logger.log("INFO", `[POST_SERVER][removeShopItem] uid ${uid},shop_id ${shop_id},item_id ${item_id}`);
+	logger.log("INFO",
+		`[POST_SERVER][removeShopItem] uid ${uid},shop_id ${shop_id},item_id ${item_id}`
+	);
 	if (shop_id > 0) {
 		let check = ShopProxy.getInstance().isShopItem(shop_id, item_id);
 		if (check) {
-			db_sequelize.removeShopItem(item_id, (error, db_result) => {
+			_db.removeShopItem(item_id, (error, db_result) => {
 				if (error) {
 					callback(true, {
 						'error': 2,
@@ -753,7 +768,8 @@ exports.addShopSpreadItem = function(header, fields, files, callback) {
 	upload_file_to_json(files, uploadFileKey, image);
 
 
-	var json_result = ShopProxy.addShopSpreadItem(fields['item_id'], fields['item_id'], image['image'], fields['month']);
+	var json_result = ShopProxy.addShopSpreadItem(fields['item_id'], fields[
+		'item_id'], image['image'], fields['month']);
 
 	if (json_result != null) {
 		db.addShopSpreadItem(json_result);
@@ -775,7 +791,8 @@ exports.addShopActivity = function(header, fields, files, callback) {
 	var image = {};
 	upload_file_to_json(files, uploadFileKey, image);
 
-	var json_result = ShopProxy.addShopActivity(fields['guid'], fields['title'], fields['discard'], image['image']);
+	var json_result = ShopProxy.addShopActivity(fields['guid'], fields['title'],
+		fields['discard'], image['image']);
 	if (json_result != null) {
 		db.addShopActivity(json_result);
 	}
@@ -796,13 +813,14 @@ exports.removeFavoritesItem = function(header, fields, files, callback) {
 
 	let check_repeat_favorite = FavoriteService.checkHasFavoriteItem(uid, item_id);
 	if (!check_repeat_favorite) {
-		logger.log("ERROR", "[removeFavoritesItem] NOT_EXIST_ITEM :", `uid:${uid}, item_id:${item_id}`);
+		logger.log("ERROR", "[removeFavoritesItem] NOT_EXIST_ITEM :",
+			`uid:${uid}, item_id:${item_id}`);
 		callback(true, {
 			'error': ErrorCode.NOT_EXIST_ITEM,
 		});
 		return;
 	}
-	db_sequelize.removeFavoriteItem(uid, item_id, (error) => {
+	_db.removeFavoriteItem(uid, item_id, (error) => {
 		if (error) {
 			logger.log("ERROR", "[removeFavoritesItem] SQL_ERROR", error);
 			callback(true, {
@@ -919,7 +937,7 @@ exports.saveSellerInfo = function(header, fields, files, callback) {
 
 	params['id'] = shop_id;
 
-	db_sequelize.saveSellerInfo(params, function(err) {
+	_db.saveSellerInfo(params, function(err) {
 		if (err) {
 			logger.log("ERROR", err);
 			callback(true, {
@@ -1043,7 +1061,7 @@ exports.saveShopItem = function(header, fields, files, callback) {
 	json_value['shop_id'] = shop_id;
 	json_value['id'] = item_id;
 
-	db_sequelize.saveShopItem(json_value, json_image, json_propertys, function(err) {
+	_db.saveShopItem(json_value, json_image, json_propertys, function(err) {
 
 		if (err != null) {
 			logger.log("WARN", Tag, "db error:", err);
@@ -1052,7 +1070,8 @@ exports.saveShopItem = function(header, fields, files, callback) {
 		} else {
 			logger.log("INFO", Tag, "aaaaa");
 			try {
-				ShopProxy.getInstance().saveShopItem(json_value, json_image, json_propertys);
+				ShopProxy.getInstance().saveShopItem(json_value, json_image,
+					json_propertys);
 
 				let shop_item_info = ShopProxy.getInstance().getMyShopItemInfo(item_id);
 
@@ -1084,7 +1103,8 @@ exports.saveShopItem = function(header, fields, files, callback) {
 }
 
 exports.cancelAttentionShop = function(header, fields, files, callback) {
-	logger.log("HTTP_HANDLER", "[cancelAttentionShop][fields] params : " + util.inspect(fields));
+	logger.log("HTTP_HANDLER", "[cancelAttentionShop][fields] params : " + util.inspect(
+		fields));
 
 	if (!'guid' in fields) {
 		var json_result = {
@@ -1103,12 +1123,14 @@ exports.cancelAttentionShop = function(header, fields, files, callback) {
 		return;
 	}
 
-	var player_info = PlayerProxy.cancelAttentionShop(fields['guid'], fields['shop_id']);
+	var player_info = PlayerProxy.cancelAttentionShop(fields['guid'], fields[
+		'shop_id']);
 	if (player_info != null && 'uid' in player_info && player_info['uid'] > 0) {
 
 		ShopProxy.cancelAttentionShop(player_info['uid'], fields['shop_id']);
 
-		db.attentionShop(player_info['uid'], fields['shop_id'], 0, moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'));
+		db.attentionShop(player_info['uid'], fields['shop_id'], 0, moment(Date.now())
+			.format('YYYY-MM-DD HH:mm:ss'));
 
 		callback(true, {
 			'error': 0,
@@ -1119,7 +1141,8 @@ exports.cancelAttentionShop = function(header, fields, files, callback) {
 	}
 
 	if (player_info != null && 'error' in player_info) {
-		logger.warn("HTTP_HANDLER", "[cancelAttentionShop] error : " + player_info['error']);
+		logger.warn("HTTP_HANDLER", "[cancelAttentionShop] error : " + player_info[
+			'error']);
 		callback(true, {
 			'error': player_info['error']
 		});
@@ -1133,7 +1156,8 @@ exports.cancelAttentionShop = function(header, fields, files, callback) {
 }
 
 exports.uploadScheduleImage = function(header, fields, files, callback) {
-	logger.log("HTTP_HANDLER", "uploadScheduleImage fields:" + util.inspect(fields));
+	logger.log("HTTP_HANDLER", "uploadScheduleImage fields:" + util.inspect(
+		fields));
 	if (!'guid' in fields) {
 		var json_result = {
 			'error': 1001
@@ -1203,7 +1227,8 @@ exports.uploadScheduleImage = function(header, fields, files, callback) {
 			return;
 		} else {
 
-			db.saveScheduleShopCommentImage(json_value['uid'], schedule_id, shop_id, image_index, image);
+			db.saveScheduleShopCommentImage(json_value['uid'], schedule_id, shop_id,
+				image_index, image);
 			var json_result = {
 				'error': 0,
 				'type': type,
@@ -1215,7 +1240,8 @@ exports.uploadScheduleImage = function(header, fields, files, callback) {
 			callback(true, json_result);
 		}
 	} else {
-		var json_value = PlayerProxy.ChangeScheduleRouteImage(guid, schedule_id, image);
+		var json_value = PlayerProxy.ChangeScheduleRouteImage(guid, schedule_id,
+			image);
 		if (json_value != null) {
 			//logger.log("HTTP_HANDLER","uploadScheduleImage json_value : " + util.inspect(json_value));
 			db.saveScheduleRouteImage(schedule_id, image);
@@ -1226,7 +1252,8 @@ exports.uploadScheduleImage = function(header, fields, files, callback) {
 				'schedule_id': schedule_id,
 				'image': image
 			}
-			logger.log("HTTP_HANDLER", "uploadScheduleImage json_result : " + util.inspect(json_result));
+			logger.log("HTTP_HANDLER", "uploadScheduleImage json_result : " + util.inspect(
+				json_result));
 			callback(true, json_result);
 			return;
 		} else {
@@ -1269,7 +1296,8 @@ exports.changeScheduleTitle = function(header, fields, files, callback) {
 	let schedule_id = Number(fields['schedule_id']);
 	let schedule_name = fields['name'];
 	let guid = fields['guid'];
-	let json_value = PlayerProxy.changeScheduleTitle(guid, schedule_id, schedule_name);
+	let json_value = PlayerProxy.changeScheduleTitle(guid, schedule_id,
+		schedule_name);
 	if (json_value != null) {
 		db.changeScheduleTitle(schedule_id, json_value['uid'], schedule_name);
 	}
@@ -1283,7 +1311,8 @@ exports.changeScheduleTitle = function(header, fields, files, callback) {
 }
 
 exports.addShopToSchedule = function(header, fields, files, callback) {
-	logger.log("HTTP_HANDLER", "[addShopToSchedule] params: " + util.inspect(fields));
+	logger.log("HTTP_HANDLER", "[addShopToSchedule] params: " + util.inspect(
+		fields));
 	let json_result = {};
 	if (!'guid' in fields) {
 		json_result = {
@@ -1325,7 +1354,8 @@ exports.addShopToSchedule = function(header, fields, files, callback) {
 			json_result['add_result'] = {
 				'shop_id': shop_id,
 				'shop_info': shop_schedule_info,
-				'schedule_info': PlayerProxy.getScheduleShopCommentInfo(guid, schedule_id, shop_id)
+				'schedule_info': PlayerProxy.getScheduleShopCommentInfo(guid, schedule_id,
+					shop_id)
 			}
 		}
 	}
@@ -1335,7 +1365,8 @@ exports.addShopToSchedule = function(header, fields, files, callback) {
 }
 
 exports.removeShopFromSchedule = function(header, fields, files, cb) {
-	logger.log("HTTP_HANDLER", "[removeShopFromSchedule] params: " + util.inspect(fields));
+	logger.log("HTTP_HANDLER", "[removeShopFromSchedule] params: " + util.inspect(
+		fields));
 	let json_result = {};
 
 	if (!'guid' in fields) {
@@ -1365,7 +1396,8 @@ exports.removeShopFromSchedule = function(header, fields, files, cb) {
 	let shop_id = Number(fields['shop_id']);
 	let schedule_id = Number(fields['schedule_id']);
 
-	let json_value = PlayerProxy.removeShopFromSchedule(guid, shop_id, schedule_id);
+	let json_value = PlayerProxy.removeShopFromSchedule(guid, shop_id,
+		schedule_id);
 
 	if (json_value != null) {
 		if ('error' in json_value) {
@@ -1383,7 +1415,8 @@ exports.removeShopFromSchedule = function(header, fields, files, cb) {
 }
 
 exports.setShopItemImage = function(header, fields, files, cb) {
-	logger.log("HTTP_HANDLER", "[removeShopFromSchedule] params: " + util.inspect(fields));
+	logger.log("HTTP_HANDLER", "[removeShopFromSchedule] params: " + util.inspect(
+		fields));
 
 	let json_result = {};
 	if (!'guid' in fields) {
@@ -1437,15 +1470,15 @@ exports.claimShop = function(header, fields, files, cb) {
 
 	let uid = header['uid'];
 
-	let claim_check_result = ShopService.checkCanClaim(uid,shop_id);
-	if(claim_check_result == false){
+	let claim_check_result = ShopService.checkCanClaim(uid, shop_id);
+	if (claim_check_result == false) {
 		cb(true, {
 			'error': ErrorCode.CLAIM_ERROR,
 			'error_msg': '用户或商铺不满足认领条件',
 		});
 		return;
 	}
-	
+
 
 	let json_param = {
 		'name': fields['name'],
@@ -1454,7 +1487,7 @@ exports.claimShop = function(header, fields, files, cb) {
 		'shop_id': Number.parseInt(fields['shop_id'])
 	};
 
-	db_sequelize.insertClaimInfo(json_param, function(err, db_row) {
+	_db.insertClaimInfo(json_param, function(err, db_row) {
 		let uid = Number(db_row['uid']);
 		let shop_id = Number(db_row['shop_id']);
 		ShopService.addClaim(uid, shop_id);
@@ -1514,7 +1547,7 @@ exports.offShelveShopItem = function(header, fields, files, cb) {
 		return;
 	}
 
-	db_sequelize.offShelveShopItem(items, state, function(error, off_shelve_shop_items) {
+	_db.offShelveShopItem(items, state, function(error, off_shelve_shop_items) {
 		if (error) {
 			logger.log("ERROR", error);
 			cb(true, {
@@ -1523,7 +1556,8 @@ exports.offShelveShopItem = function(header, fields, files, cb) {
 			});
 			return;
 		} else {
-			ShopProxy.getInstance().offShelveShopItem(shop_id, off_shelve_shop_items, state);
+			ShopProxy.getInstance().offShelveShopItem(shop_id, off_shelve_shop_items,
+				state);
 			cb(true, {
 				'items': off_shelve_shop_items,
 			});
@@ -1554,29 +1588,53 @@ exports.closeShop = function(header, fields, files, cb) {
 	});
 }
 
-exports.addGroupMsg = function(header,fields,files,cb){
+exports.addGroupMsg = function(header, fields, files, cb) {
 	let uid = Number(header['uid']);
-	if(uid <= 0){
-		cb(true,{
-			'error' : ErrorCode.USER_NO_LOGIN,
+	if (uid <= 0) {
+		cb(true, {
+			'error': ErrorCode.USER_NO_LOGIN,
 		});
 		return;
 	}
 	let shop_id = ShopService.getOwnShopId(uid);
-	if(shop_id <= 0){
-		cb(true,{
-			'error' : ErrorCode.USER_NO_SHOP,
+	if (shop_id <= 0) {
+		cb(true, {
+			'error': ErrorCode.USER_NO_SHOP,
 		});
 		return;
 	}
+	let uploadFileKey = {
+		'image1' : 'shop/group/',
+		'image2' : 'shop/group/',
+		'image3' : 'shop/group/',
+		'image4' : 'shop/group/',
+		'image5' : 'shop/group/',
+		'image6' : 'shop/group/',
+		'image7' : 'shop/group/',
+		'image8' : 'shop/group/',
+		'image9' : 'shop/group/',
+	};
+	let images = {};
+	upload_file_to_json(files, uploadFileKey, images);
 
-	cb(true,{
-		'error' : 0,
-		'bean' : {
-			'msg' : fields['msg'],
-			'images' : ['Files/shop/attention/1.png','Files/shop/attention/1.png','Files/shop/attention/1.png'],
-			'time' : moment().format("YYYY.MM.DD"),
-		}
+	_db.addGroupMsg(shop_id, msg, images, (error,db_row) => {
+			if (error) {
+				cb(true, {
+					'error': ErrorCode.SQL_ERROR,
+				});
+				return;
+			}
+
+			GroupMsgService.addFromDb(db_row);
+
+			cb(true, {
+					'error': 0,
+					'bean': {
+						'msg': msg,
+						'images': ['image1','image2','image3','image4','image5','image6','image7','image8','image9'],
+					],
+					'time': db_row['createdAt'].format("YYYY.MM.DD"),
+				}
+			});
 	});
-	return;
 }

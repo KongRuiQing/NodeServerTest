@@ -30,4 +30,7 @@ handle_http['/shop_claim_state'] = http_handler.getShopClaimState;
 handle_http['/custom_service'] = http_config.getCustomService;
 handle_http['/get_attention_group'] = http_handler.getAttentionGroup;
 handle_http['/search'] = http_handler.getSearchResult;
+// group msg
+
+handle_http['/group_msg_history'] = http_handler.getGroupMsgHistory;
 module.exports = handle_http;

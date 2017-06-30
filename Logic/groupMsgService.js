@@ -17,7 +17,7 @@ class GroupMsgService(){
 			this.__all_msg.set(shop_id,list);
 		}
 	}
-	getShopGroupMsgList(shop_id){
+	_getShopGroupMsgList(shop_id){
 		if(this.__all_msg == null){
 			return null;
 		}
@@ -26,6 +26,30 @@ class GroupMsgService(){
 		}
 		return null;
 	}
+
+	_loadFromDb(shop_id,callback){
+		let that = this;
+		_db.syncGroupMsgByShopId(shop_id,(db_rows)=>{
+			for (row of db_rows) {
+				that.addFromDb(row);
+			}
+			callback();
+		});
+	}
+
+	getShopGroupMsgList(shop_id,callback){
+		if(this._getShopGroupMsgList(shop_id) == null){
+			this._loadFromDb(shop_id,()=>{
+				callback(this._getShopGroupMsgList(shop_id));
+			});
+		}else{
+			callback(this._getShopGroupMsgList(shop_id));
+		}
+	}
+
+
+
+
 }
 
 
