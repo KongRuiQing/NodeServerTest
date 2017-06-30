@@ -300,14 +300,9 @@ exports.InitFromDb = function(
 	}
 
 	for (var i in shop_claims) {
-		let uid = Number(shop_claims[i]['uid']);
-		let shop_id = Number(shop_claims[i]['shop_id']);
-		if (g_shop_cache['dict'].has(shop_id)) {
-			g_shop_cache['dict'].get(shop_id).setClaim(uid);
-		}
-
-		//ShopService.adClaim(uid, shop_id);
-
+		let uid = shop_claims[i]['uid'];
+		let shop_id = shop_claims[i]['shop_id'];
+		ShopService.addClaim(uid, shop_id);
 	}
 
 }
@@ -943,34 +938,6 @@ ShopManager.prototype.getMyShopSellerInfo = function(shop_id) {
 	return {};
 }
 
-ShopManager.prototype.chekcCanClaim = function(shop_id) {
-	let shopBean = this.getShop(shop_id);
-	if (shopBean == null) {
-		return false;
-	}
-	if (shopBean.getShopState() != ShopState.CLAIM_SHOP_STATE) {
-		return false;
-	}
-	if (shopBean.getClaim() != 0) {
-		return false;
-	}
-	return true;
-}
-
-ShopManager.prototype.setClaimShop = function(uid, shop_id) {
-	let shopBean = this.getShop(shop_id);
-	if (shopBean != null) {
-		shopBean.setClaim(uid);
-	}
-}
-
-ShopManager.prototype.removeClaimShop = function(shop_id) {
-	let shopBean = this.getShop(shop_id);
-	if (shopBean != null) {
-		shopBean.setClaim(0);
-	}
-
-}
 
 ShopManager.prototype.getShopClaimState = function(shop_id) {
 	let shopBean = this.getShop(shop_id);
@@ -981,18 +948,7 @@ ShopManager.prototype.getShopClaimState = function(shop_id) {
 		};
 	}
 	let json_result = shopBean.getClaimState();
-	if (json_result['shop_state'] != ShopState.CLAIM_SHOP_STATE) {
-		return {
-			'error_msg': '商铺不能认领',
-			'error': 2,
-		};
-	}
-	if (json_result['claim'] != 0) {
-		return {
-			'error_msg': '商铺已经被其他人认领',
-			'error': 2,
-		};
-	}
+	
 	json_result['area_name'] = DbCache.getInstance().getAreaName(json_result['city_no'], json_result['area_code']);
 	return json_result;
 }

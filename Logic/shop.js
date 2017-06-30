@@ -136,6 +136,35 @@ class ShopService extends EventEmitter {
 		return shop_id;
 		
 	}
+	getClaimShop(uid){
+		if(this.__shopClaim.has(uid)){
+			return this.__shopClaim.get(uid);
+		}
+		return 0;
+	}
+	getCliamPlayer(shop_id){
+		let find_uid = 0;
+		this.__shopClaim.forEach((_shop_id,uid)=>{
+			if(_shop_id == shop_id){
+				find_uid = uid;
+			}
+		});
+		return find_uid;
+	}
+	checkCanClaim(uid,shop_id){
+		if(this.__shopClaim.has(uid)){
+			return false;
+		}
+		let state = this.getShopState(shop_id);
+		if(state != ShopState.CLAIM_SHOP_STATE){
+			return false;
+		}
+		let claim_shop_uid = this.getCliamPlayer(shop_id);
+		if(claim_shop_uid != 0){
+			return false;
+		}
+		return true;
+	}
 
 	getShopState(shop_id){
 		if(this.__shopState.has(shop_id)){
