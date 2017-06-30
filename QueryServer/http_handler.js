@@ -55,7 +55,8 @@ function watchApkVersion(root_path) {
 exports.getAreaMenu = function(headers, query, callback) {
 	let last_modified_time = null;
 	if ('If-Modified-Since' in query) {
-		last_modified_time = moment(query['If-Modified-Since']).format('YYYY-MM-DD HH:mm:ss');
+		last_modified_time = moment(query['If-Modified-Since']).format(
+			'YYYY-MM-DD HH:mm:ss');
 	}
 	let city = Number(query['city']);
 	logger.log("HTTP_HANDER", "[getAreaMenu]:query=" + util.inspect(query));
@@ -99,14 +100,16 @@ exports.getShopList = function(headers, query, callback) {
 	if ('last_index' in query) {
 		last_index = Number(query['last_index']);
 	}
-	logger.log("HTTP_HANDER", "getShopList param: category = ", category, 'city=', city, 'page_size=', page_size, 'search_key=,', search_key,
+	logger.log("HTTP_HANDER", "getShopList param: category = ", category, 'city=',
+		city, 'page_size=', page_size, 'search_key=,', search_key,
 		'longitude=', longitude,
 		'latitude=', latitude,
 		'last_index=', last_index,
 		'area_code=', zone
 	);
 
-	var shop_list = ShopCache.getInstance().getShopList(uid, city, zone, category, last_index, page_size, search_key, longitude, latitude, distance);
+	var shop_list = ShopCache.getInstance().getShopList(uid, city, zone, category,
+		last_index, page_size, search_key, longitude, latitude, distance);
 
 
 	var json_result = {
@@ -132,7 +135,8 @@ exports.getShopDetail = function(headers, query, callback) {
 		if (json_result == null) {
 			error = 1004;
 		} else {
-			json_result['attention'] = AttentionService.isAttentionThisShop(uid, shop_id);
+			json_result['attention'] = AttentionService.isAttentionThisShop(uid,
+				shop_id);
 			if ('error' in json_result) {
 				error = json_result['error'];
 			}
@@ -194,9 +198,11 @@ exports.getShopSpread = function(headers, query, callback) {
 	if ('keyword' in query) {
 		keyword = query['keyword'];
 	}
-	logger.log("INFO", "[HTTP_HANDER]getShopSpread param:", city_no, area_code, cate_code, sort_code, distance, longitude, latitude, last_index, keyword);
+	logger.log("INFO", "[HTTP_HANDER]getShopSpread param:", city_no, area_code,
+		cate_code, sort_code, distance, longitude, latitude, last_index, keyword);
 
-	var query_result = ShopCache.getInstance().getShopSpread(last_index, longitude, latitude, city_no, area_code, distance, cate_code, keyword);
+	var query_result = ShopCache.getInstance().getShopSpread(last_index,
+		longitude, latitude, city_no, area_code, distance, cate_code, keyword);
 	var json_value = {
 		'spread_list': query_result['list'],
 		'page_size': 30,
@@ -258,7 +264,8 @@ exports.getMyShopItemDetail = function(headers, query, callback) {
 	if (uid > 0) {
 		let shop_id = ShopService.getOwnShopId(uid);
 		let item_id = Number(query['item_id']);
-		var shop_item_detail = ShopCache.getInstance().getMyShopItemDetail(uid, shop_id, item_id);
+		var shop_item_detail = ShopCache.getInstance().getMyShopItemDetail(uid,
+			shop_id, item_id);
 		if (shop_item_detail != null) {
 			callback(0, {
 				"item_info": shop_item_detail,
@@ -285,7 +292,8 @@ exports.getShopItemDetail = function(headers, query, callback) {
 	var shop_id = Number(query['shop_id']);
 	var item_id = Number(query['item_id']);
 
-	var shop_item_detail = ShopCache.getInstance().getShopItemDetail(uid, shop_id, item_id);
+	var shop_item_detail = ShopCache.getInstance().getShopItemDetail(uid, shop_id,
+		item_id);
 	if ('error' in shop_item_detail && Number(shop_item_detail['error']) != 0) {
 		callback(0, shop_item_detail);
 		return;
@@ -362,7 +370,8 @@ exports.getMyAttention = function(headers, query, callback) {
 
 	let page_size = 20;
 
-	logger.log("INFO", '[getMyAttention] query:', uid, area_code, distance, category_code, start_index);
+	logger.log("INFO", '[getMyAttention] query:', uid, area_code, distance,
+		category_code, start_index);
 
 
 	let attention_info_list = ShopCache.getInstance().getMyAttentionShopInfo(uid,
@@ -413,7 +422,8 @@ exports.getMyShopItemList = function(headers, query, callback) {
 exports.getMyShopInfo = function(headers, query, callback) {
 	logger.log("HTTP_HANDER", "start getMyShopInfo uid: " + headers['uid']);
 
-	var json_result = ShopCache.getInstance().getMyShopBasicInfo(headers['uid'], true);
+	var json_result = ShopCache.getInstance().getMyShopBasicInfo(headers['uid'],
+		true);
 
 	callback(0, json_result);
 }
@@ -471,14 +481,16 @@ exports.getGameShopList = function(headers, query, callback) {
 	}
 	let last_index = 0;
 
-	logger.log("HTTP_HANDER", "getShopList param: category = ", category, 'city=', city, 'page_size=', page_size, 'search_key=,', search_key,
+	logger.log("HTTP_HANDER", "getShopList param: category = ", category, 'city=',
+		city, 'page_size=', page_size, 'search_key=,', search_key,
 		'longitude=', longitude,
 		'latitude=', latitude,
 		'last_index=', last_index,
 		'area_code=', zone
 	);
 
-	var shop_list = ShopCache.getInstance().getShopList(uid, city, zone, category, last_index, page_size, search_key, longitude, latitude, distance);
+	var shop_list = ShopCache.getInstance().getShopList(uid, city, zone, category,
+		last_index, page_size, search_key, longitude, latitude, distance);
 
 
 	var json_result = {
@@ -512,7 +524,8 @@ exports.getGameItemList = function(headers, query, callback) {
 
 	var keyword = "";
 
-	var query_result = ShopCache.getInstance().getShopSpread(last_index, longitude, latitude, city_no, area_code, distance, cate_code, keyword);
+	var query_result = ShopCache.getInstance().getShopSpread(last_index,
+		longitude, latitude, city_no, area_code, distance, cate_code, keyword);
 	var json_value = {
 		'error': 0,
 		'list': query_result['list'],
@@ -558,7 +571,8 @@ exports.getShopAttentionBoard = function(headers, query, callback) {
 		if (shop_basic_info != null) {
 			shop_basic_info['attention_num'] = shop_attention_num_info['num'];
 			json_result['list'].push(shop_basic_info);
-			json_result['is_attention'] = AttentionService.isAttentionThisShop(uid, shop_attention_num_info['shop_id']);
+			json_result['is_attention'] = AttentionService.isAttentionThisShop(uid,
+				shop_attention_num_info['shop_id']);
 		}
 	});
 
@@ -587,7 +601,8 @@ exports.getBeSellerData = function(headers, query, callback) {
 		let shop_id = ShopService.getOwnShopId(uid);
 		logger.log("HTTP_HANDER", "shop_id:" + shop_id + " uid:" + headers['uid']);
 		if (shop_id > 0) {
-			json_result['shop_info'] = ShopCache.getInstance().getMyShopSellerInfo(shop_id);
+			json_result['shop_info'] = ShopCache.getInstance().getMyShopSellerInfo(
+				shop_id);
 		}
 	}
 	callback(0, json_result);
@@ -636,7 +651,8 @@ exports.getAttentionGroup = function(headers, query, callback) {
 			assert.equal(typeof attention_uid, 'number', 'attention_uid is a string');
 
 			if (attention_uid != uid) {
-				let playerInfo = PlayerCache.getInstance().getAttentionInfo(attention_uid);
+				let playerInfo = PlayerCache.getInstance().getAttentionInfo(
+					attention_uid);
 				result.append(playerInfo);
 			}
 		});
@@ -690,3 +706,69 @@ exports.getSearchResult = function(headers, query, callback) {
 	});
 
 }
+
+exports.getGroupMsgHistory = function(headers, query, callback) {
+	let uid = headers['uid'];
+	if (uid <= 0) {
+		callback(0, {
+			'error': ErrorCode.USER_NO_LOGIN,
+		});
+		return;
+	}
+
+	let shop_id = ShopService.getOwnShopId(uid);
+	if (shop_id <= 0) {
+		callback(0, {
+			'error': ErrorCode.USER_NO_SHOP,
+		});
+		return;
+	}
+
+	GroupMsgService.getShopGroupMsgList(shop_id, (list) => {
+		let json_list = [];
+		for (bean of list) {
+			json_list.push(bean.getJsonValue());
+		}
+		callback(0, {
+			'error': 0,
+			'list': json_list,
+		});
+
+	});
+
+};
+
+exports.getGroupMsgList = function(headers, query, callback) {
+	let uid = headers['uid'];
+	if (uid <= 0) {
+		callback(0, {
+			'error': ErrorCode.USER_NO_LOGIN,
+		});
+		return;
+	}
+	let shop_id = Number(query['shop_id']);
+	if (shop_id <= 0) {
+		callback(0, {
+			'error': ErrorCode.USER_NO_SHOP,
+		});
+		return;
+	}
+	if (!AttentionService.isAttentionThisShop(uid, shop_id)) {
+		callback(0, {
+			'error': ErrorCode.USER_NO_ATTENTION,
+		});
+		return;
+	}
+	GroupMsgService.getShopGroupMsgList(shop_id, (list) => {
+		let json_list = [];
+		for (bean of list) {
+			json_list.push(bean.getJsonValue());
+		}
+		callback(0, {
+			'error': 0,
+			'list': json_list,
+		});
+	})
+
+	return;
+};

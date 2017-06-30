@@ -18,6 +18,7 @@ var ItemImageModel = sequelize.import("./model/ItemImageModel.js");
 var ItemPropertyModel = sequelize.import("./model/ItemPropertyModel.js");
 var FavoriteMode = sequelize.import("./model/FavoriteMode.js");
 var VerifyCodeInfo = sequelize.import("./model/VerifyCodeInfo.js");
+var GroupMsgModel = sequelize.import("./model/GroupMsgModel.js");
 exports.TestFindOrCreate = function(name) {
 
 }
@@ -325,11 +326,12 @@ exports.closeShop = function(shop_id, callback) {
 	});
 
 	let p = Promise.resolve(true);
-	p.then(delete_shop_from_shop_info).then(delete_shop_from_shop_attention).then(() => {
-		callback(null);
-	}, () => {
-		callback(true);
-	});
+	p.then(delete_shop_from_shop_info).then(delete_shop_from_shop_attention).then(
+		() => {
+			callback(null);
+		}, () => {
+			callback(true);
+		});
 }
 
 exports.removeShopItem = function(item_id, callback) {
@@ -459,10 +461,10 @@ exports.updateVerifyCodeInfo = function(db_row, callback) {
 }
 exports.changePassword = function(telephone, password, callback) {
 	UserLogin.update({
-		'Password' : password,
+		'Password': password,
 	}, {
 		'where': {
-			'Account' : telephone,
+			'Account': telephone,
 		}
 	}).then((affected_numbers, result1) => {
 		callback(null);
@@ -471,3 +473,37 @@ exports.changePassword = function(telephone, password, callback) {
 	})
 
 }
+
+exports.addGroupMsg = function(shop_id, msg, images, callback) {
+	GroupMsgModel.create({
+		'shop_id': shop_id,
+		'msg': msg,
+		'image1': images[0],
+		'image2': images[1],
+		'image3': images[2],
+		'image4': images[3],
+		'image5': images[4],
+		'image6': images[5],
+		'image7': images[6],
+		'image8': images[7],
+		'image9': images[8],
+	}, {}).then((Model) => {
+		callback(null, {
+			'id': Model.id,
+			'shop_id': Model.shop_id,
+			'msg': Model.msg,
+			'image1' : Model.image1,
+			'image2' : Model.image2,
+			'image3' : Model.image3,
+			'image4' : Model.image4,
+			'image5' : Model.image5,
+			'image6' : Model.image6,
+			'image7' : Model.image7,
+			'image8' : Model.image8,
+			'image9' : Model.image9,
+			'createdAt' : Model.createdAt,
+		})
+	}).catch((error) => {
+		callback(error);
+	});
+};
