@@ -52,6 +52,8 @@ module.exports = function(server,socket,jsonLogin){
 				
 				user_info['shop_id'] = ShopService.getBindShopId(user_info['uid']);
 				user_info['shop_state'] = ShopService.getShopState(user_info['shop_id']);
+				
+				user_info['claim'] = ShopService.getClaimShop(user_info['uid']);
 				response['error'] = 0;
 				response['user_info'] = user_info;
 				response['guid'] = guid;

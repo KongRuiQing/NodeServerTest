@@ -44,7 +44,6 @@ class ShopBean {
 		this.__fix_telephone = "";
 		this.__itemGroup = [];
 
-		this.__claim = 0; // shop_state == 2 时,代表认领人的信息
 		//events.EventEmitter.call(this);
 
 		this.__cs = 0;
@@ -512,13 +511,8 @@ ShopBean.prototype.getShopState = function() {
 	return this.state;
 }
 
-ShopBean.prototype.getClaim = function() {
-	return this.__claim;
-}
 
-ShopBean.prototype.setClaim = function(uid) {
-	this.__claim = uid;
-}
+
 
 ShopBean.prototype.changeShopBasicInfo = function(image, address, telephone) {
 	
@@ -759,7 +753,6 @@ ShopBean.prototype.getClaimState = function() {
 		'shop_state': this.state,
 		'city_no': this.city_no,
 		'area_code': this.area_code,
-		'claim': this.__claim,
 	};
 }
 ShopBean.prototype.updateState = function(state) {

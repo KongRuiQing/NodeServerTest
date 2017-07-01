@@ -34,43 +34,6 @@ let g_playerlist = new PlayerManager();
 let PLAYER_LIST = "playerList.js";
 
 
-PlayerManager.prototype.chekcCanClaim = function(uid){
-	if(uid in this.playerCache){
-		let userBean = this.playerCache[uid];
-		if(userBean == null){
-			return false;
-		}
-		
-		if(userBean.getShopId() != 0){
-			logger.log("INFO","[chekcCanClaim] shop_id =", userBean.getShopId());
-			return false;
-		}
-		if(userBean.getClaim()  != 0){
-			logger.log("INFO","[chekcCanClaim] claim =", userBean.getClaim());
-			return false;
-		}
-		return true;
-	}
-
-	return false;
-}
-
-PlayerManager.prototype.setClaimShop = function(uid,shop_id){
-	if(uid in this.playerCache){
-		let userBean = this.playerCache[uid];
-		if(userBean != null){
-			userBean.setClaim(shop_id);
-		}
-	}
-}
-
-PlayerManager.prototype.removeClaimShop = function(uid){
-	let player = this.getPlayer(uid);
-	if(player != null){
-		player.setClaim(0);
-	}
-}
-
 exports.getInstance = function(){
 	return g_playerlist;
 }
@@ -142,13 +105,7 @@ exports.InitFromDb = function(
 		FavoriteService.addFavoriteItem(uid,item_id);
 	}
 	
-	for(var i in shop_claims){
-		let uid = Number(shop_claims[i]['uid']);
-		let shop_id = Number(shop_claims[i]['shop_id']);
-		if(uid in g_playerlist['playerCache']){
-			g_playerlist['playerCache'][uid].setClaim(shop_id);
-		}
-	}
+	// shop_claim
 }
 
 PlayerManager.prototype.addUserInfo = function(db_row){
