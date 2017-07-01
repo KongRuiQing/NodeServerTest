@@ -728,7 +728,7 @@ exports.getGroupMsgHistory = function(headers, query, callback) {
 
 	GroupMsgService.getShopGroupMsgList(shop_id, (list) => {
 		let json_list = [];
-		
+
 		for (var key in list) {
 			json_list.push(list[key].getJsonValue());
 		}
@@ -756,16 +756,22 @@ exports.getGroupMsgList = function(headers, query, callback) {
 		});
 		return;
 	}
+	let own_shop_id = ShopService.getOwnShopId(uid);
 	if (!AttentionService.isAttentionThisShop(uid, shop_id)) {
-		callback(0, {
-			'error': ErrorCode.USER_NO_ATTENTION,
-		});
-		return;
+		if (own_shop_id != shop_id) {
+			callback(0, {
+				'error': ErrorCode.USER_NO_ATTENTION,
+			});
+			return;
+		}
+
 	}
+
+
 	GroupMsgService.getShopGroupMsgList(shop_id, (list) => {
 		let json_list = [];
-		for (bean of list) {
-			json_list.push(bean.getJsonValue());
+		for (var key in list) {
+			json_list.push(list[key].getJsonValue());
 		}
 		callback(0, {
 			'error': 0,
