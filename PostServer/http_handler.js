@@ -24,6 +24,8 @@ let AttentionService = require("../Logic/Attentions.js");
 let FavoriteService = require("../Logic/favorite.js");
 var AppConfig = require('config');
 
+var GroupMsgService = require("../Logic/groupMsgService.js");
+
 exports.new_feed = function(header, fields, files, callback) {
 
 };
@@ -42,7 +44,7 @@ function check_dir(dirs) {
 
 function upload_file_to_json(files, map, result) {
 
-	check_dir(map[file_key]);
+	check_dir(map);
 
 	for (var file_key in map) {
 		if (file_key in files) {
@@ -1570,7 +1572,6 @@ exports.offShelveShopItem = function(header, fields, files, cb) {
 exports.closeShop = function(header, fields, files, cb) {
 	let uid = Number(header['uid']);
 
-
 	ShopService.closeShop(uid, (error) => {
 		if (error) {
 			cb(true, {
@@ -1604,37 +1605,39 @@ exports.addGroupMsg = function(header, fields, files, cb) {
 		return;
 	}
 	let uploadFileKey = {
-		'image1' : 'shop/group/',
-		'image2' : 'shop/group/',
-		'image3' : 'shop/group/',
-		'image4' : 'shop/group/',
-		'image5' : 'shop/group/',
-		'image6' : 'shop/group/',
-		'image7' : 'shop/group/',
-		'image8' : 'shop/group/',
-		'image9' : 'shop/group/',
+		'image_0': 'shop/group/',
+		'image_1': 'shop/group/',
+		'image_2': 'shop/group/',
+		'image_3': 'shop/group/',
+		'image_4': 'shop/group/',
+		'image_5': 'shop/group/',
+		'image_6': 'shop/group/',
+		'image_7': 'shop/group/',
+		'image_8': 'shop/group/',
 	};
 	let images = {};
+	
 	upload_file_to_json(files, uploadFileKey, images);
-
-	_db.addGroupMsg(shop_id, msg, images, (error,db_row) => {
-			if (error) {
-				cb(true, {
-					'error': ErrorCode.SQL_ERROR,
-				});
-				return;
-			}
-
-			GroupMsgService.addFromDb(db_row);
-
+	let msg = fields['msg'];
+	_db.addGroupMsg(shop_id, msg, images, (error, db_row) => {
+		if (error) {
+			logger.log("ERROR", "_db.addGroupMsg Error:", error);
 			cb(true, {
-					'error': 0,
-					'bean': {
-						'msg': msg,
-						'images': ['image1','image2','image3','image4','image5','image6','image7','image8','image9'],
-					],
-					'time': db_row['createdAt'].format("YYYY.MM.DD"),
-				}
+				'error': ErrorCode.SQL_ERROR,
 			});
+			return;
+		}
+
+		GroupMsgService.addFromDb(db_row);
+
+		cb(true, {
+			'error': 0,
+			'bean': {
+				'id' : Number(db_row['id']),
+				'msg': msg,
+				'images': [db_row['image1'], db_row['image2'], db_row['image3'], db_row['image4'], db_row['image5'], db_row['image6'], db_row['image7'], db_row['image8'], db_row['image9']],
+				'time': moment(db_row['createdAt']).format("YYYY.MM.DD"),
+			}
+		});
 	});
 }

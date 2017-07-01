@@ -16,53 +16,53 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: "",
       allowNull: false,
     },
-    'image1' {
+    'image1': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image2' {
+    'image2': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image3' {
+    'image3': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image4' {
+    'image4': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image5' {
+    'image5': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image6' {
+    'image6': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image7' {
+    'image7': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image8' {
+    'image8': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     },
-    'image9' {
+    'image9': {
       type: DataTypes.STRING(512),
       defaultValue: "",
       allowNull: false,
     }
   }, {
     'tableName': 'group_msg',
-    'updatedAt' : false,
+    'updatedAt': false,
   });
 };

@@ -1,7 +1,7 @@
 'use strict';
 
 var http = require('http');
-var url=require('url');
+var url = require('url');
 
 var http_test = require("./http_test");
 var logger = require('../logger').logger();
@@ -25,99 +25,105 @@ http_header[500] = 'text/plain';
 http_header[600] = 'text/plain';
 http_header[304] = 'text/plain';
 
-function handle_route(request,response,next){
+function handle_route(request, response, next) {
 
-	var request_url = url.parse(request.url,true);
+	var request_url = url.parse(request.url, true);
 	var pathname = request_url.pathname;
 	var headers = request.headers;
 	//logger.log("QUERY_SERVER","pathname:" + pathname);
-	if(!(pathname in route)){
+	if (!(pathname in route)) {
 		next(new Error(pathname + ' is not in route'));
 		return;
 	}
-	if (typeof route[pathname] === 'function'){
-		
-		//logger.log("QUERY_SERVER","query params:\n" + util.inspect(request_url.query,{depth:null}) + "\n");
-		setImmediate(()=>{
-			route[pathname](headers,request_url.query,function(error_code,content){
+	if (typeof route[pathname] === 'function') {
 
-				logger.log("INFO","[",pathname,']:',"QUERY RESULT: \n" + util.inspect(content,{depth:null}) + "\n");
+		logger.log("QUERY_SERVER", "query params:\n" + util.inspect(request_url.query, {
+			depth: null
+		}) + "\n");
+		route[pathname](headers, request_url.query, function(error_code, content) {
 
-				if(error_code == 0){
-					let status_code = 200;
-					response.writeHead(status_code, {
-						'Content-Type': http_header[status_code],
-					});
-					response.write(JSON.stringify(content));				
-				}else{
-					logger.error("INFO","Error pathname:" + pathname + " error_code = " + error_code);
-					response.writeHead(200, {
-						'Content-Type': http_header[200],
-						'Cache-Control' : 'Cache-Control: public, max-age=60,max-stale=120'
-					});
-					var json_content = {};
-					json_content['error'] = error_code;
-					response.write(JSON.stringify(json_content));
-				}
-				response.end();
-				return;
-			});
+			//logger.log("INFO", "[", pathname, ']:', "QUERY RESULT: \n" + util.inspect(content, {depth: null}) + "\n");
+			logger.log("INFO", "[", pathname, ']:', "QUERY RETURN \n");
+			if (error_code == 0) {
+				let status_code = 200;
+				response.writeHead(status_code, {
+					'Content-Type': http_header[status_code],
+				});
+				response.write(JSON.stringify(content));
+			} else {
+				logger.error("INFO", "Error pathname:" + pathname + " error_code = " + error_code);
+				response.writeHead(200, {
+					'Content-Type': http_header[200],
+					'Cache-Control': 'Cache-Control: public, max-age=60,max-stale=120'
+				});
+				var json_content = {};
+				json_content['error'] = error_code;
+				response.write(JSON.stringify(json_content));
+			}
+			response.end();
+			return;
 		});
 		return;
-		
-	}else{
+
+	} else {
 		next(new Error(pathname + ' is not in route'));
 		return;
 	}
 }
 
-function handleError(err, req, res, next){
-	logger.error("INFO",err);
+function handleError(err, req, res, next) {
+	logger.error("INFO", err);
 	res.writeHead(500, {
 		'Content-Type': http_header[500],
 	});
-	
+
 	res.end(util.inspect(err));
 }
 
 
 
-function handle_test(req,rsp,next){
-	var request_url = url.parse(req.url,true);
+function handle_test(req, rsp, next) {
+	var request_url = url.parse(req.url, true);
 	var pathname = request_url.pathname;
 	var headers = req.headers;
-	
-	if(pathname in test_route){
 
-		test_route[pathname](headers,request_url.query,function(err,rsp_data){
-			logger.log('INFO',rsp_data);
+	if (pathname in test_route) {
+
+		test_route[pathname](headers, request_url.query, function(err, rsp_data) {
+			logger.log('INFO', rsp_data);
 			rsp.writeHead(200, {
 				'Content-Type': http_header[200]
 			});
 			rsp.end(rsp_data);
 
 		});
-		
+
 		return;
 	}
 	next();
 }
 
 
-function printCostTime(req,rsp,time){
+function printCostTime(req, rsp, time) {
 
-	logger.log("QUERY_SERVER",url.parse(req.url,true).pathname," COST TIME: "  + " : " + time + "ms");
+	logger.log("INFO", url.parse(req.url, true).pathname, " COST TIME: " + " : " + time + "ms");
 }
+var app = null;
+exports.start = function(Host, Port) {
+	if (app == null) {
+		var app = connect()
+			.use(favicon("favicon.ico"))
+			.use(responseTime(printCostTime))
+			.use(handle_test)
+			.use(handle_login)
+			.use(handle_head_304)
+			.use(handle_route)
+			.use(handleError)
+		app.listen(Port);
+		logger.log("INFO",'STAET QUERY_SERVER');
+	}
+	else{
+		logger.log("ERROR",'restart  server');
+	}
 
-exports.start = function(Host,Port)
-{
-	var app = connect()
-	.use(favicon("favicon.ico"))
-	.use(responseTime(printCostTime))
-	.use(handle_test)
-	.use(handle_login)
-	.use(handle_head_304)
-	.use(handle_route)
-	.use(handleError)
-	app.listen(Port);
 }

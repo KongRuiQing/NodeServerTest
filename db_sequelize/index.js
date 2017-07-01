@@ -478,15 +478,15 @@ exports.addGroupMsg = function(shop_id, msg, images, callback) {
 	GroupMsgModel.create({
 		'shop_id': shop_id,
 		'msg': msg,
-		'image1': images[0],
-		'image2': images[1],
-		'image3': images[2],
-		'image4': images[3],
-		'image5': images[4],
-		'image6': images[5],
-		'image7': images[6],
-		'image8': images[7],
-		'image9': images[8],
+		'image1': images['image_0'],
+		'image2': images['image_1'],
+		'image3': images['image_2'],
+		'image4': images['image_3'],
+		'image5': images['image_4'],
+		'image6': images['image_5'],
+		'image7': images['image_6'],
+		'image8': images['image_7'],
+		'image9': images['image_8'],
 	}, {}).then((Model) => {
 		callback(null, {
 			'id': Model.id,
@@ -507,3 +507,17 @@ exports.addGroupMsg = function(shop_id, msg, images, callback) {
 		callback(error);
 	});
 };
+
+
+exports.syncGroupMsgByShopId = function(shop_id,callback){
+	GroupMsgModel.findAll({
+		'where' : {
+			'shop_id' : shop_id,
+		},
+		'order' : [['createdAt', 'DESC']],
+	}).then((all_rows,b)=>{
+		callback(all_rows);
+	}).catch(()=>{
+		callback([]);
+	})
+}

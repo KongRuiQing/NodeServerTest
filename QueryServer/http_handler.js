@@ -17,6 +17,8 @@ const assert = require('assert');
 var AttentionBoardService = require("../Logic/AttentionBoard.js");
 let FavoriteService = require("../Logic/favorite.js");
 let ErrorCode = require("../error.js");
+let GroupMsgService = require("../Logic/groupMsgService.js");
+
 
 function watchApkVersion(root_path) {
 
@@ -726,8 +728,9 @@ exports.getGroupMsgHistory = function(headers, query, callback) {
 
 	GroupMsgService.getShopGroupMsgList(shop_id, (list) => {
 		let json_list = [];
-		for (bean of list) {
-			json_list.push(bean.getJsonValue());
+		
+		for (var key in list) {
+			json_list.push(list[key].getJsonValue());
 		}
 		callback(0, {
 			'error': 0,
