@@ -26,7 +26,7 @@ class GroupMsgBean{
 			'shop_id' : this.__shop_id,
 			'msg' : this.__msg,
 			'images' : this.__image,
-			'time' : this.__time.format("YYYY.MM.HH hh:MM:SS"),
+			'time' : this.__time.format("YYYY.MM.DD HH:MM"),
 		}
 	}
 	getShopId(){

@@ -41,4 +41,5 @@ handle_http['/send_message'] = http_handler.sendMessage;
 handle_http['/off_shelve_shop_item'] = http_handler.offShelveShopItem;
 handle_http['/close_shop'] = http_handler.closeShop;
 handle_http['/group_msg'] = http_handler.addGroupMsg;
+handle_http['/clear_group_msg'] = http_handler.clearGroupMsg;
 module.exports = handle_http;

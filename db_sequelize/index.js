@@ -19,6 +19,7 @@ var ItemPropertyModel = sequelize.import("./model/ItemPropertyModel.js");
 var FavoriteMode = sequelize.import("./model/FavoriteMode.js");
 var VerifyCodeInfo = sequelize.import("./model/VerifyCodeInfo.js");
 var GroupMsgModel = sequelize.import("./model/GroupMsgModel.js");
+var UserAttentionModel = sequelize.import("./model/UserAttentionModel.js");
 exports.TestFindOrCreate = function(name) {
 
 }
@@ -492,16 +493,16 @@ exports.addGroupMsg = function(shop_id, msg, images, callback) {
 			'id': Model.id,
 			'shop_id': Model.shop_id,
 			'msg': Model.msg,
-			'image1' : Model.image1,
-			'image2' : Model.image2,
-			'image3' : Model.image3,
-			'image4' : Model.image4,
-			'image5' : Model.image5,
-			'image6' : Model.image6,
-			'image7' : Model.image7,
-			'image8' : Model.image8,
-			'image9' : Model.image9,
-			'createdAt' : Model.createdAt,
+			'image1': Model.image1,
+			'image2': Model.image2,
+			'image3': Model.image3,
+			'image4': Model.image4,
+			'image5': Model.image5,
+			'image6': Model.image6,
+			'image7': Model.image7,
+			'image8': Model.image8,
+			'image9': Model.image9,
+			'createdAt': Model.createdAt,
 		})
 	}).catch((error) => {
 		callback(error);
@@ -509,15 +510,41 @@ exports.addGroupMsg = function(shop_id, msg, images, callback) {
 };
 
 
-exports.syncGroupMsgByShopId = function(shop_id,callback){
+exports.syncGroupMsgByShopId = function(shop_id, callback) {
 	GroupMsgModel.findAll({
-		'where' : {
-			'shop_id' : shop_id,
+		'where': {
+			'shop_id': shop_id,
 		},
-		'order' : [['createdAt', 'DESC']],
-	}).then((all_rows,b)=>{
+		'order': [
+			['createdAt', 'DESC']
+		],
+	}).then((all_rows, b) => {
 		callback(all_rows);
-	}).catch(()=>{
+	}).catch(() => {
 		callback([]);
 	})
+}
+
+exports.clearGroupMsg = function(shop_id, callback) {
+	GroupMsgModel.destroy({
+		'where': {
+			'shop_id': shop_id,
+		}
+	}).then(() => {
+		callback(null);
+	}).catch((error) => {
+		callback(error);
+	});
+}
+exports.removeGroupMsg = function(shop_id, msg_id, callback) {
+	GroupMsgModel.destroy({
+		'where': {
+			'shop_id': shop_id,
+			'id': msg_id,
+		}
+	}).then(() => {
+		callback(null);
+	}).catch((error) => {
+		callback(error);
+	});
 }

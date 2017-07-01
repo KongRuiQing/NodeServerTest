@@ -53,6 +53,23 @@ class GroupMsgService {
 		}
 	}
 
+	clearGroupMsg(shop_id){
+		if(this.__all_msg.has(shop_id)){
+			this.__all_msg.delete(shop_id);
+		}
+	}
+	removeGroupMsg(shop_id,msg_id){
+		if(this.__all_msg.has(shop_id)){
+			let list = this.__all_msg.get(shop_id);
+			let find_index = list.findIndex((element)=>{
+				return shop_id == element.getShopId();
+			});
+			if(find_index >= 0){
+				list.splice(find_index,1);
+			}
+		}
+	}
+
 
 
 }
