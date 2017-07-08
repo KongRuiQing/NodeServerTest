@@ -118,11 +118,11 @@ function handle_recvMessage(message){
 		if(cmd in handler_route){
 			handler_route[cmd](app,this,recvMsg);
 		}else{
-			handler_route['error'](app,this,null);
+			handler_route['error'](app,this,cmd + ' not in handler_route');
 		}
 		
 	}else{
-		handler_route['error'](app,this,null);
+		handler_route['error'](app,this,'cmd is null or undefined');
 	}
 }
 

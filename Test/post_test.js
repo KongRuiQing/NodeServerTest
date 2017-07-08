@@ -35,6 +35,7 @@ test_route['close_shop'] = close_shop;
 test_route['remove_shop_item'] = remove_item;
 test_route['add_fav'] = add_fav_item;
 test_route['rm_fav'] = remove_fav_item;
+test_route['group_chat'] = add_group_chat;
 
 function off_shelve_shop_item() {
   let data = {
@@ -93,6 +94,15 @@ function remove_fav_item(param){
   post('remove_favorites_item', data, param[0], handle_result);
 }
 
+function add_group_chat(param){
+  let data = {
+    'shop_id' : param[1],
+    'msg' : param[2],
+  };
+  post('group_chat', data, param[0], handle_result);
+}
+
+
 function test(cmd) {
   //console.log(cmd);
   if (cmd[0] in test_route) {
@@ -113,3 +123,4 @@ if (args instanceof Array) {
 } else {
   console.log("参数不是数组");
 }
+

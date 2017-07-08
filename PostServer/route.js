@@ -1,7 +1,8 @@
 
 var http_handler = require("./http_handler");
 var http_handler_upload = require("./handle_upload");
-var http_notify = require("./http_notify");
+var http_notify = require("./http_notify.js");
+var handle_group = require("./handle_group.js");
 var handle_http = {};
 
 
@@ -40,6 +41,8 @@ handle_http['/admin/v1/shop_item']  = http_notify.notifyShopItem;
 handle_http['/send_message'] = http_handler.sendMessage;
 handle_http['/off_shelve_shop_item'] = http_handler.offShelveShopItem;
 handle_http['/close_shop'] = http_handler.closeShop;
-handle_http['/group_msg'] = http_handler.addGroupMsg;
-handle_http['/clear_group_msg'] = http_handler.clearGroupMsg;
+// group
+handle_http['/group_msg'] = handle_group.addGroupMsg;
+handle_http['/clear_group_msg'] = handle_group.clearGroupMsg;
+handle_http['/group_chat'] = handle_group.addGroupChat;
 module.exports = handle_http;

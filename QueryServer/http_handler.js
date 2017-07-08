@@ -781,3 +781,7 @@ exports.getGroupMsgList = function(headers, query, callback) {
 
 	return;
 };
+
+exports.getGroupChatList = function(headers, query, callback){
+	
+}
