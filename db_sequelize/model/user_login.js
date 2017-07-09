@@ -35,6 +35,11 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue : 0,
       'comment' : '经度',
     },
+    'last_login_time' : {
+      type : DataTypes.INTEGER(12),
+      allowNull : false,
+      defaultValue : 0,
+    }
     
   },{
     'tableName' : 'userLogin',

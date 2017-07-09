@@ -19,6 +19,7 @@ var ItemPropertyModel = sequelize.import("./model/ItemPropertyModel.js");
 var FavoriteMode = sequelize.import("./model/FavoriteMode.js");
 var VerifyCodeInfo = sequelize.import("./model/VerifyCodeInfo.js");
 var GroupMsgModel = sequelize.import("./model/GroupMsgModel.js");
+var GroupChatModel = sequelize.import("./model/GroupChatModel.js");
 var UserAttentionModel = sequelize.import("./model/UserAttentionModel.js");
 exports.TestFindOrCreate = function(name) {
 
@@ -547,4 +548,61 @@ exports.removeGroupMsg = function(shop_id, msg_id, callback) {
 	}).catch((error) => {
 		callback(error);
 	});
+}
+
+exports.getAllGroupChat = function(callback) {
+	GroupChatModel.findAll({
+		'order': [
+			['shop_id', 'ASC'],
+			['createdAt', 'ASC']
+		],
+
+	}).then((db_list) => {
+		let list = [];
+		for (let db_row in db_list) {
+			list.push({
+				'id': db_row['id'],
+				'uid': db_row['uid'],
+				'shop_id': db_row['shop_id'],
+				'msg': db_row['msg'],
+				'createdAt': db_row['createdAt'],
+			});
+		}
+		callback(null, list);
+	}).catch((error) => {
+		callback(error);
+	})
+}
+
+exports.addGroupChat = function(uid, shop_id, msg, callback) {
+	GroupChatModel.create({
+		'uid': uid,
+		'shop_id': shop_id,
+		'msg': msg,
+	}, {}).then((db_row) => {
+		callback(null, {
+			'id': db_row['id'],
+			'uid': db_row['uid'],
+			'shop_id': db_row['shop_id'],
+			'msg': db_row['msg'],
+			'createdAt': db_row['createdAt'],
+		});
+	}).catch((error) => {
+		console.log(error);
+		callback(error);
+	})
+}
+
+exports.updateLastLoginInfo = function(uid,last_login_time,callback){
+	UserLogin.update({
+		'last_login_time' : last_login_time,
+	},{
+		'where' : {
+			'Id' : uid,
+		}
+	}).then(()=>{
+		callback(null);
+	}).catch((error)=>{
+		callback(error);
+	})
 }

@@ -28,6 +28,7 @@ class LoginInfo{
 		this.__password = "";
 		this.__uid = 0;
 		this.__state = LoginState.LOGIN_NORMAL;
+		
 	}
 	setLoginInfo(uid,password,state){
 		this.__password = password;
@@ -58,6 +59,7 @@ class LoginInfo{
 			'state' : this.getState(),
 		};
 	}
+	
 }
 class Login{
 	constructor(){
@@ -66,13 +68,13 @@ class Login{
 		logger.log("INFO",'[LoginModule]','account size:',this.__login.size);
 	}
 
-	addLoginInfo(account,uid,password,state){
+	addLoginInfo(account,uid,password,state,last_login_time){
 		if(this.__login.has('account')){
 
 		}else{
 			//logger.log('INFO',"add account:",account,'typeof accoount'  , typeof account);
 			let loginInfo = new LoginInfo();
-			loginInfo.setLoginInfo(uid,password,state);
+			loginInfo.setLoginInfo(uid,password,state,last_login_time);
 			this.__login.set(account,loginInfo);
 		
 		}
@@ -103,7 +105,7 @@ class Login{
 
 		return {
 			'error' : 0,
-			'login_info' : loginInfo.toJSONObject()
+			'login_info' : loginInfo.toJSONObject(),
 		};
 
 	}
@@ -131,6 +133,8 @@ class Login{
 	printData(){
 		logger.log("INFO",'[LoginModule]','account size:',this.__login.size);
 	}
+
+	
 }
 
 

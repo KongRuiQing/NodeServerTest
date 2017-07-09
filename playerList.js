@@ -48,7 +48,7 @@ exports.InitFromDb = function(
 
 	for(var i in all_login_info){
 		let db_row = all_login_info[i];
-		LoginModule.addLoginInfo(db_row['Account'],db_row['Id'],db_row['Password'],db_row['state']);
+		LoginModule.addLoginInfo(db_row['Account'],db_row['Id'],db_row['Password'],db_row['state'],db_row['last_login_time']);
 	}
 
 	LoginModule.printData();
