@@ -592,3 +592,17 @@ exports.addGroupChat = function(uid, shop_id, msg, callback) {
 		callback(error);
 	})
 }
+
+exports.updateLastLoginInfo = function(uid,last_login_time,callback){
+	UserLogin.update({
+		'last_login_time' : last_login_time,
+	},{
+		'where' : {
+			'Id' : uid,
+		}
+	}).then(()=>{
+		callback(null);
+	}).catch((error)=>{
+		callback(error);
+	})
+}

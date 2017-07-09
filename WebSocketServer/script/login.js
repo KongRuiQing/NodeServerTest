@@ -2,19 +2,20 @@
 
 var PlayerManager = require("../../playerList.js");
 const Joi = require('joi');
-
+let moment = require('moment');
 let LoginModule = require("../../Logic/login.js");
 let OnlineModule = require("../../Logic/online.js");
 let UserModule = require("../../playerList.js");
 let ShopService = require("../../Logic/shop.js");
 let GroupChatService = require("../../Logic/groupChatService.js");
 let AttentionService = require("../../Logic/Attentions.js");
-
+let _db = require("../../db_sequelize");
 function vaildLogin(jsonLogin) {
 	const schema = Joi.object().keys({
 		'account': Joi.string().required(),
 		'password': Joi.string().required(),
 		'nid': Joi.string().required(),
+		'last_group_chat_time' : Joi.number().integer().required(),
 	});
 	const result = Joi.validate(jsonLogin, schema);
 	if (result.error != null) {
@@ -39,6 +40,8 @@ module.exports = function(server, socket, jsonLogin) {
 			if (error == 0) {
 				// kick other
 				let login_info = login_result['login_info'];
+				
+
 				let login_socket_id = OnlineModule.isLogin(login_info['uid']);
 				if (login_socket_id != null && login_socket_id != "") {
 					if (jsonLogin['nid'] != login_socket_id) {
@@ -46,7 +49,6 @@ module.exports = function(server, socket, jsonLogin) {
 							'reason': 1002,
 						});
 					}
-
 				}
 				// end
 
@@ -63,9 +65,14 @@ module.exports = function(server, socket, jsonLogin) {
 				response['error'] = 0;
 				response['user_info'] = user_info;
 				response['guid'] = guid;
+				let last_group_chat_time = moment(jsonLogin['last_group_chat_time']);
+				response['group_chat'] = GroupChatService.getGroupChatLogin(last_group_chat_time,AttentionService.getAttentionShops(user_info['uid']));
 
-				response['group_chat'] = GroupChatService.getGroupChatLogin(AttentionService.getAttentionShops(user_info['uid']));
-
+				_db.updateLastLoginInfo(user_info['uid'],moment().unix(),(error)=>{
+					if(error){
+						console.log("updateLastLoginInfo:",error);
+					}
+				});
 			} else {
 				response['error'] = error;
 			}

@@ -19,7 +19,7 @@ class GroupChat {
 	
 	getChat(time){
 		let isAfterTime = function(bean){
-			return bean.getTime().isAfter(moment(time));
+			return bean.getTime().isAfter(time);
 		}
 		return this.__all_msg.filter(isAfterTime).slice(0,300);
 	}
@@ -34,6 +34,7 @@ class GroupChat {
 class Service {
 	constructor() {
 		this.__all_chat = new Map();
+		this.__last_chat_time = new Map();
 	}
 
 	addFromDb(db_row) {
@@ -62,25 +63,23 @@ class Service {
 			logger.log('ERROR','No groupChat with shop_id = ', bean.getShopId());
 		}
 	}
-	getChatInShop(shop_id,time){
+	getChatInShop(shop_id,last_login_time){
 		if(this.__all_chat.has(shop_id)){
-			return this.__all_chat.get(shop_id).getChat(time);
+			return this.__all_chat.get(shop_id).getChat(last_login_time);
 		}
 		return [];
 	}
 
-	getGroupChatLogin(shop_id_list){
+	getGroupChatLogin(last_login_time,shop_id_list){
 		let result = [];
-		let id = 1;
+
 		for(let shop_id of shop_id_list){ //this.getChatInShop(shop_id,0)
-			result.push({
-				'id' : id,
-				'shop_id' : 53,
-				'uid' : 110,
-				'msg' : '11',
-				'createdAt' : 0
-			});
-			id = id + 1;
+			let list = this.getChatInShop(shop_id,last_login_time);
+			for(let bean of list){
+				Array.prototype.push.apply(result,bean.getJson());
+			}
+			
+			
 		}
 		return result;
 	}

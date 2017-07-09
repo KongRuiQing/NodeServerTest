@@ -194,7 +194,7 @@ exports.register = function(header, fields, files, callback) {
 					userinfo);
 
 				LoginModule.addLoginInfo(logininfo['Account'], logininfo['Id'],
-					logininfo['Password'], logininfo['state']);
+					logininfo['Password'], logininfo['state'],moment());
 
 				VerifyCodeService.remove(telephone);
 
