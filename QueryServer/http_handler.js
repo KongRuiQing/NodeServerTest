@@ -803,11 +803,13 @@ exports.getAllGroupList = function(headers, query, callback) {
 			result.push({
 				'uid': uid,
 				'name': player.getName(),
+				'head' : player.getHead(),
 			});
 		}else{
 			result.push({
 				'uid': uid,
 				'name': "用户",
+				'head' : '',
 			});
 		}
 

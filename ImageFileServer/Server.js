@@ -38,7 +38,7 @@ exports.start = function(Host,Port)
 	form.keepExtensions = true;
 	server = http.createServer(function (request, response) {
 		var pathname = decodeURI(url.parse(request.url).pathname);
-		//logger.log("IMAGE_SERVER",'pathname: ' + decodeURI(pathname));
+		
 		if(request.method.toLowerCase() === 'get'){
 
 			var fileName = path.normalize(pathname.replace(/\.\./g, ""));
