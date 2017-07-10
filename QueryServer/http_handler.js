@@ -768,6 +768,7 @@ exports.getGroupMsgList = function(headers, query, callback) {
 	}
 
 
+
 	GroupMsgService.getShopGroupMsgList(shop_id, (list) => {
 		let json_list = [];
 		for (var key in list) {
@@ -776,12 +777,43 @@ exports.getGroupMsgList = function(headers, query, callback) {
 		callback(0, {
 			'error': 0,
 			'list': json_list,
+			'attention_num': AttentionService.getShopAttentionNum(shop_id),
 		});
 	})
 
 	return;
 };
 
-exports.getGroupChatList = function(headers, query, callback){
-	
+exports.getGroupChatList = function(headers, query, callback) {
+
+}
+
+exports.getGroupChatList = function(headers, query, callback) {
+	let shop_id = Number(query['shop_id']);
+}
+
+exports.getAllGroupList = function(headers, query, callback) {
+	let shop_id = Number(query['shop_id']);
+
+	let all_attention_users = AttentionService.getAttentionUsers(shop_id);
+	let result = [];
+	for (let uid of all_attention_users) {
+		let player = PlayerCache.getInstance().getPlayer(uid);
+		if (player != null) {
+			result.push({
+				'uid': uid,
+				'name': player.getName(),
+			});
+		}else{
+			result.push({
+				'uid': uid,
+				'name': "用户",
+			});
+		}
+
+	}
+	callback(0, {
+		'error': 0,
+		'list': result,
+	})
 }

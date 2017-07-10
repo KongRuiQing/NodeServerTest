@@ -35,4 +35,5 @@ handle_http['/search'] = http_handler.getSearchResult;
 handle_http['/history_group_msg'] = http_handler.getGroupMsgHistory;
 handle_http['/shop_group_msg'] = http_handler.getGroupMsgList;
 handle_http['/shop_group_chat'] = http_handler.getGroupChatList;
+handle_http['/group_people'] = http_handler.getAllGroupList;
 module.exports = handle_http;

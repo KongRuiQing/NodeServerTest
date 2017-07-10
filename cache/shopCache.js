@@ -489,7 +489,7 @@ ShopManager.prototype.getShopSpread = function(last_index, longitude, latitude, 
 			if (distance <= 0 || dis < distance) {
 				//logger.log("INFO",'city_no:',city_no,'area_code:',area_code);
 				if (shop_info.matchFilter(city_no, area_code, 0)) {
-					logger.log("INFO", "b");
+					
 					arr_result.push(shop_item.getSpreadItemInfo(dis));
 				}
 			}

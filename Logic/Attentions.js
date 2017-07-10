@@ -82,9 +82,17 @@ class ShopAttentions extends EventEmitter {
 	}
 	getShopAttentionNum(shop_id) {
 		if (this.__shop_attention.has(shop_id)) {
+			
 			return this.__shop_attention.get(shop_id).size;
 		}
 		return 0;
+	}
+
+	getAttentionUsers(shop_id){
+		if (this.__shop_attention.has(shop_id)) {
+			return this.__shop_attention.get(shop_id).values();
+		}
+		return [];
 	}
 }
 let _instance = new ShopAttentions();

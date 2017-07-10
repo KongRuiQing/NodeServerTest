@@ -73,14 +73,16 @@ var Player = function() {
 
 }
 
-
+Player.prototype.getName = function(){
+	return this.name;
+}
 
 Player.prototype.initNewPlayer = function(uid) {
 	this.id = Number(uid);
 	this.head = "";
 	this.sex = 1;
 	this.shop_id = 0;
-	this.nick_name = "用户" + uid;
+	//this.nick_name = "用户" + uid;
 	this.name = "用户" + uid;
 }
 
