@@ -245,7 +245,7 @@ class VerifyCodeService {
 	}
 
 	send_sms(telephone, verify_code, callback) {
-		logger.log("INFO", 'telephone:', telephone, 'verify_code:', verify_code)
+		logger.log("INFO",'[VerifyCodeService] send_sms','telephone:', telephone, 'verify_code:', verify_code)
 		let that = this;
 		sms.send_sms(telephone, verify_code, (error) => {
 			if (!error) {
@@ -263,6 +263,7 @@ class VerifyCodeService {
 				})
 				return;
 			} else {
+				logger.log("ERROR",'[VerifyCodeService] send_sms error:',error);
 				callback(error);
 				return;
 			}
