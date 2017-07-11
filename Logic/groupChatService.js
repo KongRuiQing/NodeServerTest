@@ -4,6 +4,7 @@ var GroupChatBean = require("../bean/GroupChatBean.js");
 var _db = require("../db_sequelize");
 var logger = require("../logger.js").logger();
 var OnlineService = require("./online.js");
+var PlayerService = require("../playerList.js");
 class GroupChat {
 	constructor() {
 		this.__last_chat_time = null;
@@ -25,8 +26,14 @@ class GroupChat {
 	}
 
 	notifyNewGroupChat(bean){
-		for(let uid of this.__group){
-			OnlineService.sendMessage(uid,'group_chat',bean.getJson());
+		for(let send_to of this.__group){
+			let json = bean.getJson();
+			let player = PlayerService.getInstance().getPlayer(bean.getUID());
+			if(player != null){
+				json['head'] = player.getHead();
+			}
+			
+			OnlineService.sendMessage(send_to,'group_chat',json);
 		}
 	}
 }
@@ -76,7 +83,12 @@ class Service {
 		for(let shop_id of shop_id_list){ //this.getChatInShop(shop_id,0)
 			let list = this.getChatInShop(shop_id,last_login_time);
 			for(let bean of list){
-				Array.prototype.push.apply(result,bean.getJson());
+				let json = bean.getJson();
+				let player = PlayerService.getInstance().getPlayer(bean.getUID());
+				if(player != null){
+					json['head'] = player.getHead();
+				}
+				Array.prototype.push.apply(result,json);
 			}
 			
 			

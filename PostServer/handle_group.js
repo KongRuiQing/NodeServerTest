@@ -21,7 +21,7 @@ var AppConfig = require('config');
 var GroupMsgService = require("../Logic/groupMsgService.js");
 var GroupChatService = require("../Logic/groupChatService.js");
 var help = require("./post_helputil.js");
-
+var ShopService = require("../Logic/shop.js")
 exports.addGroupMsg = function(header, fields, files, cb) {
 	let uid = Number(header['uid']);
 	if (uid <= 0) {

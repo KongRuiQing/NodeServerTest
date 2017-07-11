@@ -21,7 +21,7 @@ let VerifyCodeService = require("../Logic/VerifyCodeService.js");
 var OnlineService = require("../Logic/online.js");
 const Joi = require('joi');
 let AttentionService = require("../Logic/Attentions.js");
-let FavoriteService = require("../Logic/favorite.js");
+let FavoirteService = require("../Logic/favorite.js");
 var AppConfig = require('config');
 
 var GroupMsgService = require("../Logic/groupMsgService.js");
@@ -115,6 +115,18 @@ exports.register = function(header, fields, files, callback) {
 			return;
 		}
 	}
+	if (step >= 4) {
+		callback(true, {
+			'error': ErrorCode.FIELD_PARAM_ERROR,
+		});
+		return
+	}
+	if (step <= 0) {
+		callback(true, {
+			'error': ErrorCode.FIELD_PARAM_ERROR,
+		});
+		return;
+	}
 
 	if (step == 1) {
 		let checkCanSendResult = VerifyCodeService.checkCanSend(telephone);
@@ -194,7 +206,7 @@ exports.register = function(header, fields, files, callback) {
 					userinfo);
 
 				LoginModule.addLoginInfo(logininfo['Account'], logininfo['Id'],
-					logininfo['Password'], logininfo['state'],moment());
+					logininfo['Password'], logininfo['state'], moment());
 
 				VerifyCodeService.remove(telephone);
 
@@ -225,7 +237,6 @@ exports.register = function(header, fields, files, callback) {
 			});
 		}
 		//RegisterService.removeRegisterInfo(register_id);
-
 	}
 
 }
@@ -1459,47 +1470,7 @@ exports.setShopItemImage = function(header, fields, files, cb) {
 	cb(true, json_result);
 }
 
-exports.claimShop = function(header, fields, files, cb) {
-	logger.log("HTTP_HANDLER", "[claimShop] params: " + util.inspect(fields));
-	if (!('uid' in header)) {
-		cb(true, {
-			'error': 1001,
-			'error_msg': '没有登录',
-		});
-		return;
-	}
-	let shop_id = Number(fields['shop_id']);
 
-	let uid = header['uid'];
-
-	let claim_check_result = ShopService.checkCanClaim(uid, shop_id);
-	if (claim_check_result == false) {
-		cb(true, {
-			'error': ErrorCode.CLAIM_ERROR,
-			'error_msg': '用户或商铺不满足认领条件',
-		});
-		return;
-	}
-
-
-	let json_param = {
-		'name': fields['name'],
-		'telephone': fields['telephone'],
-		'uid': Number.parseInt(header['uid']),
-		'shop_id': Number.parseInt(fields['shop_id'])
-	};
-
-	_db.insertClaimInfo(json_param, function(err, db_row) {
-		let uid = Number(db_row['uid']);
-		let shop_id = Number(db_row['shop_id']);
-		ShopService.addClaim(uid, shop_id);
-		cb(true, {
-			'claim_shop_id': shop_id,
-		});
-		HeadInstance.getInstance().emit('shop_claim', shop_id);
-	});
-
-}
 
 exports.offShelveShopItem = function(header, fields, files, cb) {
 	let uid = Number(header['uid']);
@@ -1588,4 +1559,3 @@ exports.closeShop = function(header, fields, files, cb) {
 
 	});
 }
-
