@@ -128,14 +128,11 @@ exports.saveSellerInfo = function(jsonObject, callback) {
 }
 
 exports.insertClaimInfo = function(jsonObject, callback) {
-	ClaimModel.findOrCreate({
-		'defaults': jsonObject,
-		'where': {
-			'id': null,
-		},
-	}).then(function(Instance, created) {
+	ClaimModel.create(jsonObject,{}).then(function(Instance, created) {
 		let dbRow = Instance[0]['dataValues'];
 		callback(null, dbRow);
+	}).catch((error)=>{
+		callback(error);
 	});
 }
 
