@@ -20,7 +20,7 @@ function printCostTime(req,rsp,time){
 }
 
 function handle_post(pathname,headers,fields,files,response){
-	logger.log("INFO","[POST_SERVER]","fields:",fields);
+	logger.log("INFO","[POST_SERVER] handle_post","fields:",fields);
 	handle_http[pathname](headers,fields,files,function(success,json_result){
 
 		logger.log("INFO","response:\n" + util.inspect(json_result));
@@ -79,7 +79,7 @@ http_header[600] = 'text/plain';
 http_header[304] = 'text/plain';
 
 function handle_Error(err, req, res, next){
-	logger.error("POST_SERVER",err);
+	logger.error("ERROR","POST_SERVER:error",err);
 	res.writeHead(500, {
 		'Content-Type': http_header[500]
 	});

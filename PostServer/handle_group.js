@@ -49,7 +49,7 @@ exports.addGroupMsg = function(header, fields, files, cb) {
 		'image_8': 'shop/group/',
 	};
 	let images = {};
-	help.getAllUploadFile(fields,uploadFileKey,images);
+	help.getAllUploadFile(files,uploadFileKey,images);
 
 	//upload_file_to_json(files, uploadFileKey, images);
 	let msg = fields['msg'];

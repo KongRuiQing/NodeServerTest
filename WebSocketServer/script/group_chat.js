@@ -39,8 +39,14 @@ module.exports = function(server, socket, json) {
 		}
 		let shop_id = Number(json['shop_id']);
 		let msg = json['msg'];
-		console.log('uid:',uid,'shop_id:',shop_id);
-		if (AttentionService.isAttentionThisShop(uid, shop_id)) {
+
+		let check_can_send = AttentionService.isAttentionThisShop(uid, shop_id);
+		if (!check_can_send) {
+			let own_shop_id = ShopService.getOwnShopId(uid);
+			check_can_send = (own_shop_id == shop_id);
+		}
+
+		if (check_can_send) {
 
 			_db.addGroupChat(uid, shop_id, msg, (error, db_row) => {
 				if (error) {
@@ -57,6 +63,8 @@ module.exports = function(server, socket, json) {
 			server.reply(socket, "group_chat_rep", {
 				'error': ErrorCode.USER_NO_ATTENTION,
 			});
+			return;
+
 		}
 
 
