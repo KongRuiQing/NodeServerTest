@@ -5,6 +5,7 @@ const fs = require('fs');
 var util = require('util');
 var logger = require('../logger').logger();
 let BASE_SHOP_IMAGE = "../../www/SaySystemWeb/Files";
+
 function check_dir(dirs){
 	for(var key in dirs){
 		var dir_name = path.join(BASE_SHOP_IMAGE,dirs[key]);
@@ -19,12 +20,14 @@ function upload_file_to_json(files,map,result){
 
 	check_dir(map[file_key]);
 	for(var file_key in map){
+
 		if(file_key in files){
 			let upload_file = files[file_key];
 			let virtual_file_name = path.join(map[file_key],path.basename(upload_file.path));
 			let newPath = path.join(BASE_SHOP_IMAGE,virtual_file_name);
 			fs.renameSync(upload_file.path, newPath);
-			result[file_key] = path.join(virtual_file_name).replace(/\\/g,"\\\\");
+			result[file_key] = path.join('Files',virtual_file_name).replace(/\\/g,"\\\\");
+			logger.log("INFO","upload_file:",file_key,"to : ", result[file_key]);
 		}
 	} 
 }
