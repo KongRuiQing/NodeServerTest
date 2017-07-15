@@ -514,7 +514,7 @@ exports.syncGroupMsgByShopId = function(shop_id, callback) {
 			'shop_id': shop_id,
 		},
 		'order': [
-			['createdAt', 'DESC']
+			['createdAt', 'ASC']
 		],
 	}).then((all_rows, b) => {
 		callback(all_rows);

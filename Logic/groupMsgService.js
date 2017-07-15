@@ -12,10 +12,10 @@ class GroupMsgService {
 	addFromDb(db_row) {
 		let bean = new GroupMsgBean(db_row);
 		if (this._getShopGroupMsgList(bean.getShopId()) != null) {
-			this.__all_msg.get(bean.getShopId()).push(bean);
+			this.__all_msg.get(bean.getShopId()).unshift(bean);
 		} else {
 			let list = [];
-			list.push(bean);
+			list.unshift(bean);
 			this.__all_msg.set(bean.getShopId(),list);
 		}
 	}
