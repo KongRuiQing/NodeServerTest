@@ -6,7 +6,6 @@ var AreaBean = require("../bean/AreaBean");
 var CategoryMenuBean = require("../bean/CategoryMenuBean");
 var moment = require('moment');
 
-var HeadInstance = require("../HttpHeadInstance");
 var VerifyCodeService = require("../Logic/VerifyCodeService.js");
 console.log("require","cache/DbCache.js");
 
@@ -241,7 +240,7 @@ DbCacheManager.prototype.addCategory = function(json){
 		}
 	}
 	if(changed){
-		HeadInstance.getInstance().emit("category",json['type']);
+		
 	}
 	return {
 		'error' : changed?0:1,
@@ -262,7 +261,7 @@ DbCacheManager.prototype.updateCategory = function(json){
 		}
 	}
 	if(changed){
-		HeadInstance.getInstance().emit("/category",json['type']);
+		
 	}
 	logger.log("INFO","[DbCache][OBJ][updateCategory] result:",
 		'changed:',changed,
@@ -290,7 +289,7 @@ DbCacheManager.prototype.removeCategory = function(json){
 	}
 
 	if(changed){
-		//HeadInstance.getInstance().emit("category",json['type']);
+		
 	}
 
 	return {
@@ -344,7 +343,7 @@ DbCacheManager.prototype.changeAd = function(addAdJson){
 	}
 	logger.log("INFO","query_cache:",util.inspect(this.query_cache['ad_image']));
 
-	HeadInstance.getInstance().emit('/admin/v1/ad',position);
+	
 
 	return {
 		'error' : 0,
@@ -381,7 +380,7 @@ DbCacheManager.prototype.removeAd = function(removeAdJson){
 		if(position in this.query_cache['ad_image']){
 			this.query_cache['ad_image'][position]['dirty'] = true;
 		}
-		HeadInstance.getInstance().emit('/admin/v1/ad',position);
+		
 		return {
 			'error' : 0,
 		}

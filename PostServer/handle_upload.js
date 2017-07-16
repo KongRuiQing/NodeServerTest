@@ -12,7 +12,7 @@ var moment = require('moment');
 let BASE_SHOP_IMAGE = "../Image";
 let db_sequelize = require("../db_sequelize");
 
-let HeadInstance = require("../HttpHeadInstance");
+
 var HelpUtil = require("./post_helputil.js");
 var ShopService = require("../Logic/shop.js");
 

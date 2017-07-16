@@ -13,7 +13,7 @@ let BASE_SHOP_IMAGE = "../../www/SaySystemWeb/Files";
 
 let _db = require("../db_sequelize");
 
-let HeadInstance = require("../HttpHeadInstance");
+
 let Ws = require("../WebSocketServer");
 let LoginModule = require("../Logic/login.js");
 let RegisterService = require("../Logic/register.js");
@@ -473,7 +473,7 @@ exports.attentionShop = function(header, fields, files, callback) {
 			//ShopProxy.getInstance().addAttention(uid,shop_id,is_attention);
 
 			let shop_info = ShopProxy.getInstance().getShopAttentionInfo(shop_id);
-			HeadInstance.getInstance().emit('/shop_attention', uid, shop_id);
+
 			callback(true, {
 				'error': 0,
 				'is_attention': is_attention,

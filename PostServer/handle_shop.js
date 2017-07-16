@@ -71,7 +71,7 @@ exports.claimShop = function(header, fields, files, cb) {
 		cb(true, {
 			'claim_shop_id': shop_id,
 		});
-		HeadInstance.getInstance().emit('shop_claim', shop_id);
+		
 	});
 
 }

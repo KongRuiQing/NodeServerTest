@@ -13,7 +13,6 @@ var resutapi_server = require("./RestfulApi");
 var webSocket = require("./WebSocketServer");
 var logger = require('./logger').logger();
 var moment = require('moment');
-require("./HttpHeadInstance");
 
 require("./Logic/load.js");
 

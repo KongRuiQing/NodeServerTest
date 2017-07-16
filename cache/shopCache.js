@@ -12,7 +12,7 @@ var events = require('events');
 var ShopComment = require("../bean/ShopComment.js");
 
 var DbCache = require("../cache/DbCache.js")
-var HeadInstance = require("../HttpHeadInstance");
+
 let TAG = "[ShopCache]"
 
 
@@ -71,7 +71,7 @@ ShopManager.prototype.saveShopItem = function(json_item, json_image, json_proper
 
 		this.refreshShopItem(itemBean, json_item, json_image, json_propertys);
 
-		HeadInstance.getInstance().emit("/get_my_shop_item_detail", item_id);
+
 
 	} else {
 
@@ -141,7 +141,7 @@ ShopManager.prototype.addShopItem = function(json_value, json_image, json_proper
 
 		let shopBean = this.getShop(shop_id);
 		shopBean.addItemToShop(item_id);
-		HeadInstance.getInstance().emit("/get_my_shop_item_detail", item_id);
+
 	} else {
 		logger.log("WARN", "[ShopCache][addShopItem]", 'item_id', item_id, 'this.shop_items:', util.inspect(this.shop_items.get(item_id)));
 		return {
@@ -890,7 +890,7 @@ ShopManager.prototype.removeShopByShopId = function(shop_id) {
 		}
 	});
 
-	HeadInstance.getInstance().emit("/shop_list", shop_id);
+
 }
 
 ShopManager.prototype.updateShopByApi = function(json_shop) {
@@ -1010,7 +1010,7 @@ ShopManager.prototype.offShelveShopItem = function(shop_id, items, state) {
 
 		}
 	});
-	HeadInstance.getInstance().emit("/shop_detail", shop_id);
+
 }
 
 ShopManager.prototype.removeSpreadItem = function(find_item_id) {

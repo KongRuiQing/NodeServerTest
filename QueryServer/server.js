@@ -15,7 +15,7 @@ var test_route = {};
 test_route['/test/v1/ad'] = http_test.testAddAdImage;
 test_route['/test/v1/Shop'] = http_test.testShop;
 test_route['/test/v1/ShopItem'] = http_test.testShopItem;
-var handle_head_304 = require("./http_head.js");
+
 var handle_login = require("./handle_login");
 
 var http_header = {};
@@ -116,7 +116,6 @@ exports.start = function(Host, Port) {
 			.use(responseTime(printCostTime))
 			.use(handle_test)
 			.use(handle_login)
-			.use(handle_head_304)
 			.use(handle_route)
 			.use(handleError)
 		app.listen(Port);
