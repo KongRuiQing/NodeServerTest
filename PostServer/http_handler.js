@@ -21,7 +21,7 @@ let VerifyCodeService = require("../Logic/VerifyCodeService.js");
 var OnlineService = require("../Logic/online.js");
 const Joi = require('joi');
 let AttentionService = require("../Logic/Attentions.js");
-let FavoirteService = require("../Logic/favorite.js");
+let FavoriteService = require("../Logic/favorite.js");
 var AppConfig = require('config');
 
 var GroupMsgService = require("../Logic/groupMsgService.js");
