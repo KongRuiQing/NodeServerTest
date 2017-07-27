@@ -96,7 +96,7 @@ exports.saveSellerInfo = function(jsonObject, callback) {
 		'telephone': jsonObject['telephone'],
 		'business': jsonObject['business'],
 		'distribution': jsonObject['distribution'],
-		'fix_telephon': jsonObject['fix_telephon'],
+		'fix_telephone': jsonObject['fix_telephone'],
 		'qq': jsonObject['qq'],
 		'wx': jsonObject['wx'],
 		'email': jsonObject['email'],

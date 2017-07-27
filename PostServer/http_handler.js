@@ -894,7 +894,7 @@ exports.saveSellerInfo = function(header, fields, files, callback) {
 		'telephone': 'STRING',
 		'business': 'STRING',
 		'distribution': 'STRING',
-		'fix_telephont': 'STRING',
+		'fix_telephone': 'STRING',
 		'qq': 'STRING',
 		'wx': 'STRING',
 		'email': 'STRING',

@@ -23,7 +23,7 @@ var connection = mysql.createConnection(db_config);
 function handleMySqlError(err){
 	if(err){
 		if(err.code === 'PROTOCOL_CONNECTION_LOST'){
-			reconnect_mysql();
+			//reconnect_mysql();
 		}
 	}
 }
@@ -72,7 +72,7 @@ function initUserInfoFromDB(callback){
 		var all_user_info = result[0];
 		var all_login_info = result[1];
 		var all_claim_info = result[4];
-		logger.log("INFO",all_claim_info);
+		
 		PlayerProxy.InitFromDb(all_user_info,all_login_info,result[2],result[3],all_claim_info);
 		logger.log("INFO","init userinfo from db");
 	});

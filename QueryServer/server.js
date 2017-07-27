@@ -40,30 +40,36 @@ function handle_route(request, response, next) {
 		logger.log("QUERY_SERVER", "query params:\n" + util.inspect(request_url.query, {
 			depth: null
 		}) + "\n");
-		route[pathname](headers, request_url.query, function(error_code, content) {
 
-			logger.log("INFO", "[", pathname, ']:', "QUERY RESULT: \n" + util.inspect(content, {depth: 2}) + "\n");
-			//logger.log("INFO", "[", pathname, ']:', "QUERY RETURN \n");
-			if (error_code == 0) {
-				let status_code = 200;
-				response.writeHead(status_code, {
-					'Content-Type': http_header[status_code],
-				});
-				response.write(JSON.stringify(content));
-			} else {
-				logger.error("INFO", "Error pathname:" + pathname + " error_code = " + error_code);
-				response.writeHead(200, {
-					'Content-Type': http_header[200],
-					'Cache-Control': 'Cache-Control: public, max-age=60,max-stale=120'
-				});
-				var json_content = {};
-				json_content['error'] = error_code;
-				response.write(JSON.stringify(json_content));
-			}
-			response.end();
-			return;
+		new Promise((resolve, reject) => {
+			route[pathname](headers, request_url.query, function(error_code, content) {
+
+				logger.log("INFO", "[", pathname, ']:', "QUERY RESULT: \n" + util.inspect(content, {
+					depth: null
+				}) + "\n");
+				
+				if (error_code == 0) {
+					resolve(content);
+				} else {
+					reject(error_code);
+				}
+			});
+		}).then((content) => {
+			let status_code = 200;
+			response.writeHead(status_code, {
+				'Content-Type': http_header[status_code],
+				'Cache-Control': 'Cache-Control: public, max-age=60,max-stale=120'
+			});
+			response.end(JSON.stringify(content));
+		}).catch((error_code) => {
+			
+			response.writeHead(200, {
+				'Content-Type': http_header[200],
+			});
+			let json_content = {};
+			json_content['error'] = error_code;
+			response.end(JSON.stringify(json_content));
 		});
-		return;
 
 	} else {
 		next(new Error(pathname + ' is not in route'));
@@ -119,10 +125,9 @@ exports.start = function(Host, Port) {
 			.use(handle_route)
 			.use(handleError)
 		app.listen(Port);
-		logger.log("INFO",'STAET QUERY_SERVER');
-	}
-	else{
-		logger.log("ERROR",'restart  server');
+		logger.log("INFO", 'STAET QUERY_SERVER');
+	} else {
+		logger.log("ERROR", 'restart  server');
 	}
 
 }
