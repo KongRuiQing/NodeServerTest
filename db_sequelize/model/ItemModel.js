@@ -18,7 +18,7 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue : "",
     },
     'price': { 
-      type: DataTypes.BIGINT(11),  
+      type: DataTypes.FLOAT(11,1),  
       allowNull: false,
       comment:'',
       defaultValue : 0, 
