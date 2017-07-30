@@ -167,6 +167,7 @@ ShopItem.prototype.isSpreadItem = function(){
 }
 
 ShopItem.prototype.isShelve = function(){
+	
 	return this.__state == ShopItemState.SHELVE_STATE;
 }
 
@@ -301,6 +302,7 @@ ShopItem.prototype.getFavoritesItemJsonValue = function(){
 }
 
 ShopItem.prototype.matchFilter = function(keyword){
+
 	if(this.name == null){
 		return false;
 	}

@@ -464,7 +464,8 @@ ShopManager.prototype.getShopSpread = function(last_index, longitude, latitude, 
 
 	this.shop_items.forEach((shop_item, item_id) => {
 
-		if (shop_item.matchFilter(keyword)) {
+		
+		if (shop_item.matchFilter(keyword) && shop_item.isShelve()) {
 
 			let item_category = shop_item.getCategoryCode();
 
