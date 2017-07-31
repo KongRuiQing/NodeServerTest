@@ -205,11 +205,33 @@ exports.getShopSpread = function(headers, query, callback) {
 
 	var query_result = ShopCache.getInstance().getShopSpread(last_index,
 		longitude, latitude, city_no, area_code, distance, cate_code, keyword);
+
 	var json_value = {
-		'spread_list': query_result['list'],
-		'page_size': 30,
-		'length': query_result['list'].length,
+		'spread_list': [],
+		'page_size': 0,
+		'length': 0,
 	};
+
+	if (query_result.length > 0) {
+
+		query_result.sort(function(left, right) {
+			return left['distance'] - right['distance'];
+		});
+		var page_size = 30;
+		let arr_list = query_result.slice(last_index, last_index + page_size);
+
+		json_value['spread_list'] = arr_list;
+		json_value['page_size'] = page_size;
+		json_value['length'] = arr_list.length;
+		//json_value['last_index'] = last_index + arr_list.length;
+		
+
+	} else {
+		json_value['spread_list'] = [];
+		json_value['length'] = 0;
+	}
+
+	
 
 	callback(0, json_value);
 }
@@ -528,11 +550,12 @@ exports.getGameItemList = function(headers, query, callback) {
 
 	var query_result = ShopCache.getInstance().getShopSpread(last_index,
 		longitude, latitude, city_no, area_code, distance, cate_code, keyword);
+
 	var json_value = {
 		'error': 0,
-		'list': query_result['list'],
+		'list': query_result.slice(0,100),
 		'page_size': 100,
-		'length': query_result['list'].length,
+		'length': query_result.length,
 	};
 
 	callback(0, json_value);

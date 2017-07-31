@@ -62,16 +62,16 @@ class GroupMsgService {
 		if(this.__all_msg.has(shop_id)){
 			let list = this.__all_msg.get(shop_id);
 			let find_index = list.findIndex((element)=>{
-				return shop_id == element.getShopId();
+				return msg_id == element.getId();
 			});
 			if(find_index >= 0){
-				list.splice(find_index,1);
+				list = list.splice(find_index,1);
+			}else{
+				logger.log('ERROR',"can't find ",find_index,'in list');
 			}
+			logger.log("INFO",list);
 		}
 	}
-
-
-
 }
 
 

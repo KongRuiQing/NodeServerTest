@@ -32,6 +32,9 @@ class GroupMsgBean{
 	getShopId(){
 		return this.__shop_id;
 	}
+	getId(){
+		return this.__id;
+	}
 }
 
 

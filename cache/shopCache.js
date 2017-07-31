@@ -497,29 +497,7 @@ ShopManager.prototype.getShopSpread = function(last_index, longitude, latitude, 
 		}
 	});
 
-
-
-	if (arr_result.length > 0) {
-
-		arr_result.sort(function(left, right) {
-			return left['distance'] - right['distance'];
-		});
-		var page_size = 30;
-		let arr_list = arr_result.slice(last_index, last_index + page_size);
-		return {
-			'list': arr_list,
-			'page_size': page_size,
-			'total': arr_result.length,
-		};
-
-	} else {
-		return {
-			'list': [],
-			'total': 0,
-		}
-	}
-
-
+	return arr_result;
 }
 
 
