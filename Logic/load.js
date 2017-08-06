@@ -11,6 +11,8 @@ require('./AttentionBoard.js');
 require('./favorite.js');
 require('./FindPassword.js');
 require('./VerifyCodeService.js');
+require('./ShopActivityService.js');
+
 let groupChatService = require('./groupChatService.js');
 
 function _loadGroupChat() {

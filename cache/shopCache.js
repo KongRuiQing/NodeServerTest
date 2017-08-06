@@ -269,16 +269,7 @@ exports.InitFromDb = function(
 
 	}
 
-	for (var i in activity_list) {
-		var activity_bean = new ActivityBean();
-		activity_bean.initFromDb(activity_list[i]);
-
-		g_shop_cache['activity_list'][activity_bean.getShopId()] = activity_bean;
-		g_shop_cache['max_activity_id'] = Math.max(g_shop_cache['max_activity_id'], activity_bean.getId());
-		//logger.log("SHOP_CACHE",util.inspect(g_shop_cache['activity_list']));
-	}
-	//logger.log("SHOP_CACHE",util.inspect(shop_item_images));
-
+	
 	for (var i in shop_item_images) {
 		var item_id = Number(shop_item_images[i]['item_id']);
 		var image = shop_item_images[i]['image'];

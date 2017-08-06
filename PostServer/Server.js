@@ -36,7 +36,8 @@ function handle_post(pathname, headers, fields, files, response) {
 		});
 
 		response.end(JSON.stringify(json_result));
-	}).catch(()=>{
+	}).catch((error)=>{
+		logger.log("ERROR",error);
 		response.writeHead(500, {
 			'content-type': 'text/html'
 		});

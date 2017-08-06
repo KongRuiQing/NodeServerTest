@@ -18,9 +18,9 @@ function check_dir(dirs){
 
 function upload_file_to_json(files,map,result){
 
-	check_dir(map[file_key]);
+	
 	for(var file_key in map){
-
+		check_dir(map);
 		if(file_key in files){
 			let upload_file = files[file_key];
 			let virtual_file_name = path.join(map[file_key],path.basename(upload_file.path));

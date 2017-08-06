@@ -18,7 +18,7 @@ var AttentionBoardService = require("../Logic/AttentionBoard.js");
 let FavoriteService = require("../Logic/favorite.js");
 let ErrorCode = require("../error.js");
 let GroupMsgService = require("../Logic/groupMsgService.js");
-
+let ShopActivityService = require("../Logic/ShopActivityService.js");
 
 function watchApkVersion(root_path) {
 
@@ -224,14 +224,14 @@ exports.getShopSpread = function(headers, query, callback) {
 		json_value['page_size'] = page_size;
 		json_value['length'] = arr_list.length;
 		//json_value['last_index'] = last_index + arr_list.length;
-		
+
 
 	} else {
 		json_value['spread_list'] = [];
 		json_value['length'] = 0;
 	}
 
-	
+
 
 	callback(0, json_value);
 }
@@ -259,11 +259,69 @@ exports.getExchangeItemDetail = function(headers, query, callback) {
 
 exports.getActivityList = function(headers, query, callback) {
 
-	var page = query['page'] || 1;
-	var size = 10;
-	var json_result = ShopCache.getShopActivityList(page, size);
+	let begin_distance = Number(query['last_distance']);
 
-	callback(0, json_result);
+	logger.log("INFO", "get headers:", headers['longitude'],headers['latitude']);
+
+	ShopActivityService.getActivityList((list) => {
+		
+		let list_with_distance = [];
+		for (let bean of list) {
+			let shop_id = bean.getShopId();
+			let shop_info = ShopCache.getInstance().getShop(shop_id);
+			if (shop_info != null) {
+				let beanDistance = {
+					'bean': bean,
+					'distance': shop_info.calcDistance(headers['longitude'],headers['latitude']),
+				}
+				//logger.log("INFO",beanDistance['distance'],' ',begin_distance);
+				if (beanDistance['distance'] > begin_distance) {
+					list_with_distance.push(beanDistance);
+				}
+			}else{
+
+			}
+
+		}
+
+		list_with_distance.sort((a, b) => {
+			return a['distance'] < b['distance'];
+		});
+
+		let json_result = {
+			'distance' : 0,
+			'list' : [],
+		};
+		
+		const page_size = 10;
+		//logger.log("INFO","list_with_distance:",list_with_distance);
+		if (list_with_distance.length > 0) {
+
+			if (list_with_distance.length <= page_size) {
+				for (let beanWithDistance of list_with_distance) {
+					json_result['list'].push(beanWithDistance['bean']);
+				}
+				json_result['distance'] = list_with_distance[json_result['list'].length -1]['distance'];
+			} else {
+				for (let i = 0; i < page_size; ++i) {
+					json_result['list'].push(list_with_distance[i]['bean']);
+				}
+				for (let i = page_size; i < list_with_distance.length; ++i) {
+					if (list_with_distance[json_result['list'].length - 1]['distance'] == list_with_distance[i]['distance']) {
+						json_result['list'].push(list_with_distance[i]['bean']);
+					} else {
+						break;
+					}
+				}
+				json_result['distance'] = list_with_distance[json_result['list'].length -1]['distance'];
+			}
+		}
+
+	
+		callback(0, json_result);
+	});
+
+
 
 }
 
@@ -453,27 +511,51 @@ exports.getMyShopInfo = function(headers, query, callback) {
 }
 
 exports.getMyActivity = function(headers, query, callback) {
-	logger.log("HTTP_HANDER", "start getMyActivity");
-	if ('guid' in headers) {
-		var user_info = PlayerCache.checkMyActivity(headers['guid']);
-		if (user_info != null) {
-			var json_result = ShopCache.getMyActivity(user_info);
-			json_result['error'] = 0;
-			json_result['price'] = 1;
-			callback(0, json_result);
-			return;
-		} else {
+	logger.log("INFO", "start getMyActivity");
+
+	let uid = headers['uid'];
+	if (uid <= 0) {
+
+		callback(0, {
+			'error': ErrorCode.USER_NO_LOGIN,
+		});
+		return;
+	}
+	let shop_id = ShopService.getOwnShopId(uid);
+	if (shop_id <= 0) {
+
+		callback(0, {
+			'error': ErrorCode.USER_NO_SHOP,
+		});
+		return;
+	}
+
+	ShopActivityService.getActivity(shop_id, (error, activity_bean) => {
+
+		if (error != null) {
+			logger.log("ERROR", "[getMyActivity] SQL_ERROR:", error);
 			callback(0, {
-				'error': 2
+				'error': ErrorCode.SQL_ERROR,
 			});
 			return;
 		}
-
-	}
-
-	callback(0, {
-		'error': 1
+		if (activity_bean == null) {
+			callback(0, {
+				'error': 0,
+			});
+			return;
+		} else {
+			callback(0, {
+				'error': 0,
+				'bean': activity_bean.getJsonValue(),
+			});
+			return;
+		}
 	});
+
+
+
+	logger.log("INFO", "end getMyActivity");
 	return;
 }
 
@@ -553,7 +635,7 @@ exports.getGameItemList = function(headers, query, callback) {
 
 	var json_value = {
 		'error': 0,
-		'list': query_result.slice(0,100),
+		'list': query_result.slice(0, 100),
 		'page_size': 100,
 		'length': query_result.length,
 	};
@@ -826,13 +908,13 @@ exports.getAllGroupList = function(headers, query, callback) {
 			result.push({
 				'uid': uid,
 				'name': player.getName(),
-				'head' : player.getHead(),
+				'head': player.getHead(),
 			});
-		}else{
+		} else {
 			result.push({
 				'uid': uid,
 				'name': "用户",
-				'head' : '',
+				'head': '',
 			});
 		}
 

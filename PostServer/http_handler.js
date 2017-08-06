@@ -791,26 +791,6 @@ exports.addShopSpreadItem = function(header, fields, files, callback) {
 	callback(true, json_result);
 }
 
-exports.addShopActivity = function(header, fields, files, callback) {
-
-	var json_result = {};
-
-	var uploadFileKey = {
-		"image": "shop/activity/",
-	};
-
-	check_dir(uploadFileKey);
-
-	var image = {};
-	upload_file_to_json(files, uploadFileKey, image);
-
-	var json_result = ShopProxy.addShopActivity(fields['guid'], fields['title'],
-		fields['discard'], image['image']);
-	if (json_result != null) {
-		db.addShopActivity(json_result);
-	}
-	callback(true, json_result);
-}
 
 exports.removeFavoritesItem = function(header, fields, files, callback) {
 	let uid = Number(header['uid']);

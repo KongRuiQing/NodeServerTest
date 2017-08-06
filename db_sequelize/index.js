@@ -21,6 +21,8 @@ var VerifyCodeInfo = sequelize.import("./model/VerifyCodeInfo.js");
 var GroupMsgModel = sequelize.import("./model/GroupMsgModel.js");
 var GroupChatModel = sequelize.import("./model/GroupChatModel.js");
 var UserAttentionModel = sequelize.import("./model/UserAttentionModel.js");
+var ShopActivityModel = sequelize.import("./model/ShopActivityModel.js");
+
 exports.TestFindOrCreate = function(name) {
 
 }
@@ -599,6 +601,48 @@ exports.updateLastLoginInfo = function(uid,last_login_time,callback){
 		}
 	}).then(()=>{
 		callback(null);
+	}).catch((error)=>{
+		callback(error);
+	})
+}
+
+exports.upsertShopActivity = function(json_row,callback){
+	
+	ShopActivityModel.upsert(json_row,{
+	}).then((created)=>{
+		callback(null);
+	}).catch((error)=>{
+		callback(error);
+	});
+}
+
+exports.loadAllShopActivity = function(callback){
+	ShopActivityModel.findAll({
+	}).then((all_rows)=>{
+		callback(null,all_rows);
+	}).catch((error)=>{
+		callback(error);
+	})
+}
+
+exports.getActivityByShopId = function(shop_id,callback){
+	
+	ShopActivityModel.findAll({
+		'where' : {
+			'shop_id' : shop_id,
+		}
+	}).then((all_rows)=>{
+		
+		if(all_rows.length == 1){
+			callback(null,all_rows[0]['dataValues']);
+		}else{
+			if(all_rows.length == 0){
+				callback(null,null);
+			}else{
+				callback('error');
+			}
+		}
+		
 	}).catch((error)=>{
 		callback(error);
 	})

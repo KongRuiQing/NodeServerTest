@@ -23,7 +23,7 @@ var GroupMsgService = require("../Logic/groupMsgService.js");
 var GroupChatService = require("../Logic/groupChatService.js");
 var help = require("./post_helputil.js");
 var ShopService = require("../Logic/shop.js");
-
+let ShopActivityService = require("../Logic/ShopActivityService.js");
 exports.claimShop = function(header, fields, files, cb) {
 
 	logger.log("HTTP_HANDLER", "[claimShop] params: " + util.inspect(fields));
@@ -72,6 +72,52 @@ exports.claimShop = function(header, fields, files, cb) {
 			'claim_shop_id': shop_id,
 		});
 		
+	});
+
+}
+
+exports.addShopActivity = function(header, fields, files, callback) {
+
+
+	let uploadFileKey = {
+		"image": "shop/activity/",
+	};
+
+	
+	let image = {};
+	if('image' in files){
+		help.getAllUploadFile(files, uploadFileKey, image);
+	}
+	let uid = header['uid'];
+	if(uid <= 0){
+		callback(true, {
+			'error' : ErrorCode.USER_NO_LOGIN,
+		});
+		return;
+	}
+
+	let shop_id = ShopService.getOwnShopId(uid);
+	if(shop_id <= 0){
+		callback(true, {
+			'error' : ErrorCode.USER_NO_SHOP,
+		});
+		return;
+	}
+	let title = fields['title'];
+	let image_pathname = null;
+	if('image' in image){
+		image_pathname = image['image'];
+	}
+
+	logger.log("INFO","[addShopActivity] title:",title," image:",image_pathname);
+	
+	ShopActivityService.addActivity(shop_id,title,image_pathname,(json_bean)=>{
+		let json_result = {};
+		if(json_bean != null){
+			json_result['error'] = 0;
+			json_result['bean'] = json_bean;
+		}
+		callback(true, json_result);
 	});
 
 }

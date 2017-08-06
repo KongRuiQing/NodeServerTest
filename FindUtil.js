@@ -1,7 +1,7 @@
 var moment = require('moment');
 
 var EARTH_RADIUS = 6378137.0;    //单位M
-var PI = Math.PI;
+var PI = 3.14159;
 
 function getRad(d){
 	return d*PI/180.0;
@@ -16,7 +16,7 @@ exports.getFlatternDistance = function(lat1,lng1,lat2,lng2){
 	var f = getRad((lat1 + lat2)/2);
 	var g = getRad((lat1 - lat2)/2);
 	var l = getRad((lng1 - lng2)/2);
-
+	
 	var sg = Math.sin(g);
 	var sl = Math.sin(l);
 	var sf = Math.sin(f);

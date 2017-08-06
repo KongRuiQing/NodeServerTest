@@ -743,7 +743,9 @@ ShopBean.prototype.getSheduleInfo = function() {
 }
 ShopBean.prototype.calcDistance = function(longitude, latitude) {
 	//logger.log("INFO","shopBean:",longitude,latitude,this.__longitude,this.__latitude);
-	return FindUtil.getFlatternDistance(longitude, latitude, this.__longitude, this.__latitude)
+	return FindUtil.getFlatternDistance(
+		Number(longitude), Number(latitude), 
+		Number(this.__longitude), Number(this.__latitude));
 }
 
 ShopBean.prototype.getClaimState = function() {
