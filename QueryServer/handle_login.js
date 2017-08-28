@@ -14,7 +14,7 @@ var handle_login = function(req,rsp,next){
 			headers['uid'] = 0;
 		}
 	}else{
-		console.log('guid is null');
+		
 		headers['uid'] = 0;
 	}
 	if(!('longitude' in headers)){

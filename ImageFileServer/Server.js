@@ -59,7 +59,7 @@ exports.start = function(Host,Port)
 			fs.exists(realPath, function (exists) {
 				if (!exists) {
 
-					logger.log("INFO","can find image in server",realPath);
+					//logger.log("INFO","can find image in server",realPath);
 
 					response.writeHead(404, {
 						'Content-Type': 'text/plain'
@@ -82,7 +82,7 @@ exports.start = function(Host,Port)
 						if(fs_state.isFile()){
 							fs.readFile(realPath, "binary", function (err, file) {
 								if (err) {
-									console.log(err);
+									logger.log("ERROR",err);
 									response.writeHead(500, {
 										'Content-Type': 'text/plain'
 									});

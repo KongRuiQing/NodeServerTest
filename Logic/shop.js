@@ -6,6 +6,8 @@ const ErrorCode = require("../error.js");
 var logger = require('../logger').logger();
 const ShopState = require("../enum/shopState.js")
 
+var ShopEventDispatcher = require("../EventDispatcher/ShopEventDispatcher.js");
+
 class ShopService extends EventEmitter {
 	constructor(){
 		super();
@@ -174,7 +176,7 @@ class ShopService extends EventEmitter {
 	}
 
 	changeShopState(shop_id,to_state){
-
+		logger.log("INFO","[Logic/Shop]changeShopState shop_id:%d,to_state %d",shop_id,to_state);
 		if(this.__shopState.has(shop_id)){
 			let from_state = this.__shopState.get(shop_id);
 			logger.log("INFO","[ShopService][changeShopState]",`shop_id(${shop_id}) from(${from_state}) to ${to_state}`);
@@ -188,6 +190,7 @@ class ShopService extends EventEmitter {
 					logger.log("INFO","[Shop] emit pass_pending_shop");
 					this.emit('pass_pending_shop',uid,shop_id);
 
+					ShopEventDispatcher.fireEvent('pass_pending_shop',shop_id);
 					return uid;
 				}
 				if(from_state == ShopState.CLOSE_SHOP_STATE){

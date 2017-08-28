@@ -19,13 +19,16 @@ let TAG = "[ShopCache]"
 var ShopService = require("../Logic/shop.js");
 var AttentionService = require("../Logic/Attentions.js");
 var ShopState = require("../enum/shopState.js");
+var SpreadItemService = require("../Logic/SpreadItemService.js");
+var ShopItemEventDispatcher = require("../EventDispatcher/ShopItemEventDispatcher.js");
+var ShopEventDispatcher = require("../EventDispatcher/ShopEventDispatcher.js");
 
 function ShopManager() {
 	this.dict = new Map();
 	this.item_property_name = {};
 	this.shop_item_property = {};
 	this.shop_items = new Map();
-	this.show_items = [];
+	
 	this.activity_list = {};
 	this.max_shop_item_id = 0;
 
@@ -34,6 +37,8 @@ function ShopManager() {
 	let that = this;
 	ShopService.on("close_shop_by_player", (shop_id) => {
 		that.removeShopByShopId(shop_id);
+
+		ShopEventDispatcher.fireEvent("close_shop",shop_id);
 	});
 	ShopService.on("new_shop", (db_row) => {
 		that.addShop(db_row);
@@ -71,6 +76,7 @@ ShopManager.prototype.saveShopItem = function(json_item, json_image, json_proper
 
 		this.refreshShopItem(itemBean, json_item, json_image, json_propertys);
 
+		ShopItemEventDispatcher.fireEvent("refresh_shop_item",itemBean);
 
 
 	} else {
@@ -86,18 +92,7 @@ ShopManager.prototype.refreshShopItem = function(itemBean, json_value, json_imag
 
 	itemBean.initFromDb(json_value);
 
-	if (itemBean.isSpreadItem()) {
-		let find_shop_item_in_spraed_list = false;
-		for (var key in this.show_items) {
-			if (this.show_items[key] == itemBean.getId()) {
-				find_shop_item_in_spraed_list = true;
-				break;
-			}
-		}
-		if (!find_shop_item_in_spraed_list) {
-			this.show_items.push(itemBean.getId());
-		}
-	}
+	
 
 	if (json_image != null) {
 		for (var key in json_image) {
@@ -158,12 +153,10 @@ ShopManager.prototype.removeShopItem = function(to_remove_item_id) {
 	if (item_bean != null) {
 		let shop_id = item_bean.getShopId();
 		this.shop_items.delete(to_remove_item_id);
-		let find_index = this.show_items.findIndex(function(item_id) {
-			return item_id == to_remove_item_id;
-		});
-		if (find_index >= 0) {
-			this.show_items.splice(find_index, 1);
-		}
+
+		ShopItemEventDispatcher.fireEvent("remove_shop_item",to_remove_item_id);
+
+		
 		let shop_bean = this.getShop(shop_id);
 		if (shop_bean != null) {
 			shop_bean.removeShopItem(to_remove_item_id);
@@ -200,6 +193,8 @@ exports.InitFromDb = function(
 		let state = Number(shop_list[i]['state']);
 
 		ShopService.addShopIdWithUid(uid, shop_id, state);
+
+		SpreadItemService.registerShopInfo(shop_list[i]);
 	}
 	//console.log(g_shop_cache['dict'].size);
 
@@ -217,6 +212,8 @@ exports.InitFromDb = function(
 	for (var i in shop_item_list) {
 
 		var item = shop_item_list[i];
+
+		
 		var shop_id = Number(item['shop_id']);
 
 		var shop_info = g_shop_cache['dict'].get(shop_id);
@@ -227,13 +224,10 @@ exports.InitFromDb = function(
 			shop_info.addItemToShop(item_id);
 			let shop_item = new ShopItem();
 			shop_item.initFromDb(shop_item_list[i]);
-
 			g_shop_cache['shop_items'].set(item_id, shop_item);
 
-
 			if (shop_item.isSpreadItem()) {
-
-				g_shop_cache['show_items'].push(item['id']);
+				SpreadItemService.registerSpreadItemInfo(item);
 			}
 
 			g_shop_cache['max_shop_item_id'] = Math.max(g_shop_cache['max_shop_item_id'], parseInt(item['id']));
@@ -275,6 +269,8 @@ exports.InitFromDb = function(
 		var image = shop_item_images[i]['image'];
 		var index = shop_item_images[i]['index'];
 		var image_type = Number(shop_item_images[i]['image_type']);
+
+		SpreadItemService.registerSpreadItemImage(shop_item_images[i]);
 
 		if (g_shop_cache['shop_items'].has(item_id)) {
 			if (image_type == 1) {
@@ -851,16 +847,7 @@ ShopManager.prototype.removeShopByShopId = function(shop_id) {
 		that.shop_items.delete(to_remove_item_id);
 	});
 
-	all_remove_item.forEach(function(to_remove_item_id) {
-		let find_index = that.show_items.findIndex(function(item_id) {
-			return item_id == to_remove_item_id;
-		});
-		if (find_index >= 0) {
-			that.show_items.splice(find_index, 1);
-		}
-	});
-
-
+	ShopItemEventDispatcher.fireEvent("off_shelve_item_list",all_remove_item);
 }
 
 ShopManager.prototype.updateShopByApi = function(json_shop) {
@@ -969,7 +956,8 @@ ShopManager.prototype.isShopItem = function(shop_id, item_id) {
 ShopManager.prototype.offShelveShopItem = function(shop_id, items, state) {
 
 	let that = this;
-
+	let shelve_item_bean_list = [];
+	let shop = this.getShop(shop_id);
 	items.forEach(function(item_id) {
 		let itemBean = that.getItemBean(Number(item_id));
 		if (itemBean != null) {
@@ -977,19 +965,24 @@ ShopManager.prototype.offShelveShopItem = function(shop_id, items, state) {
 			if (state == 2 && itemBean.isSpreadItem()) {
 				that.removeSpreadItem(itemBean.getId());
 			}
+			if(state == 1){
+				shelve_item_bean_list.push(itemBean);
+			}
 
 		}
 	});
-
+	if(state == 2){
+		ShopItemEventDispatcher.fireEvent("off_shelve_item_list",items);
+	}else if (state == 1){
+		ShopItemEventDispatcher.fireEvent("shelve_item_list",{
+			'items' : shelve_item_bean_list,
+			'shop' : shop,
+		});
+	}
 }
 
 ShopManager.prototype.removeSpreadItem = function(find_item_id) {
-	let find_index = this.show_items.findIndex(function(item_id) {
-		return find_item_id == item_id;
-	});
-	if (find_index >= 0) {
-		this.show_items.splice(find_index, 1);
-	}
+	ShopItemEventDispatcher.fireEvent('remove_shop_item',find_item_id);
 }
 
 ShopManager.prototype.closeShop = function(shop_id) {

@@ -19,6 +19,7 @@ let FavoriteService = require("../Logic/favorite.js");
 let ErrorCode = require("../error.js");
 let GroupMsgService = require("../Logic/groupMsgService.js");
 let ShopActivityService = require("../Logic/ShopActivityService.js");
+var SpreadItemService = require("../Logic/SpreadItemService.js");
 
 function watchApkVersion(root_path) {
 
@@ -194,17 +195,24 @@ exports.getShopSpread = function(headers, query, callback) {
 		latitude = parseFloat(headers['latitude']);
 	}
 
-	let last_index = Number(query['last_index'] || 0);
+	let last_distance = Number(query['last_distance'] || 0);
 
 	let keyword = "";
 	if ('keyword' in query) {
 		keyword = query['keyword'];
 	}
 	logger.log("INFO", "[HTTP_HANDER]getShopSpread param:", city_no, area_code,
-		cate_code, sort_code, distance, longitude, latitude, last_index, keyword);
+		cate_code, sort_code, distance, longitude, latitude, last_distance, keyword);
 
-	var query_result = ShopCache.getInstance().getShopSpread(last_index,
-		longitude, latitude, city_no, area_code, distance, cate_code, keyword);
+	//var query_result = ShopCache.getInstance().getShopSpread(last_distance,longitude, latitude, city_no, area_code, distance, cate_code, keyword);
+
+	let spread_item_query = SpreadItemService.buildQuery();
+
+	spread_item_query.withLongitude(longitude).withLatitude(latitude).withCity(city_no);
+	spread_item_query.withArea(area_code).withSearch(keyword).withDistance(distance);
+	spread_item_query.withLastDistance(last_distance);
+
+	let query_result = SpreadItemService.getItemList(spread_item_query);
 
 	var json_value = {
 		'spread_list': [],
@@ -212,13 +220,31 @@ exports.getShopSpread = function(headers, query, callback) {
 		'length': 0,
 	};
 
+	logger.log("INFO","query_result",query_result.length);
+
 	if (query_result.length > 0) {
 
-		query_result.sort(function(left, right) {
-			return left['distance'] - right['distance'];
-		});
-		var page_size = 30;
-		let arr_list = query_result.slice(last_index, last_index + page_size);
+		
+		let page_size = 30;
+
+		
+
+		if(query_result.length > page_size){
+			while(page_size < query_result.length){
+				let last_dis = query_result[page_size - 1]['distance'];
+				let last_shop = query_result[page_size - 1]['shop_id'];
+				if(last_shop == query_result[key]['shop_id']){
+					page_size += 1;
+					continue;
+				}
+				if(Math.abs(last_dis - query_result[key]['distance']) <= 0.5){
+					page_size += 1;
+					continue;
+				}
+			}
+		}
+
+		let arr_list = query_result.slice(0, page_size - 1);
 
 		json_value['spread_list'] = arr_list;
 		json_value['page_size'] = page_size;
@@ -261,24 +287,24 @@ exports.getActivityList = function(headers, query, callback) {
 
 	let begin_distance = Number(query['last_distance']);
 
-	logger.log("INFO", "get headers:", headers['longitude'],headers['latitude']);
+	logger.log("INFO", "get headers:", headers['longitude'], headers['latitude']);
 
 	ShopActivityService.getActivityList((list) => {
-		
+
 		let list_with_distance = [];
 		for (let bean of list) {
 			let shop_id = bean.getShopId();
 			let shop_info = ShopCache.getInstance().getShop(shop_id);
 			if (shop_info != null) {
 				let beanDistance = {
-					'bean': bean,
-					'distance': shop_info.calcDistance(headers['longitude'],headers['latitude']),
-				}
-				//logger.log("INFO",beanDistance['distance'],' ',begin_distance);
+						'bean': bean,
+						'distance': shop_info.calcDistance(headers['longitude'], headers['latitude']),
+					}
+					//logger.log("INFO",beanDistance['distance'],' ',begin_distance);
 				if (beanDistance['distance'] > begin_distance) {
 					list_with_distance.push(beanDistance);
 				}
-			}else{
+			} else {
 
 			}
 
@@ -289,10 +315,10 @@ exports.getActivityList = function(headers, query, callback) {
 		});
 
 		let json_result = {
-			'distance' : 0,
-			'list' : [],
+			'distance': 0,
+			'list': [],
 		};
-		
+
 		const page_size = 10;
 		//logger.log("INFO","list_with_distance:",list_with_distance);
 		if (list_with_distance.length > 0) {
@@ -301,7 +327,7 @@ exports.getActivityList = function(headers, query, callback) {
 				for (let beanWithDistance of list_with_distance) {
 					json_result['list'].push(beanWithDistance['bean']);
 				}
-				json_result['distance'] = list_with_distance[json_result['list'].length -1]['distance'];
+				json_result['distance'] = list_with_distance[json_result['list'].length - 1]['distance'];
 			} else {
 				for (let i = 0; i < page_size; ++i) {
 					json_result['list'].push(list_with_distance[i]['bean']);
@@ -313,11 +339,11 @@ exports.getActivityList = function(headers, query, callback) {
 						break;
 					}
 				}
-				json_result['distance'] = list_with_distance[json_result['list'].length -1]['distance'];
+				json_result['distance'] = list_with_distance[json_result['list'].length - 1]['distance'];
 			}
 		}
 
-	
+
 		callback(0, json_result);
 	});
 

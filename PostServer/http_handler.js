@@ -26,6 +26,8 @@ var AppConfig = require('config');
 
 var GroupMsgService = require("../Logic/groupMsgService.js");
 
+var ShopEventDispatcher = require("../EventDispatcher/ShopEventDispatcher.js");
+
 exports.new_feed = function(header, fields, files, callback) {
 
 };
@@ -691,10 +693,12 @@ exports.addShopItem = function(header, fields, files, callback) {
 			if (err) {
 				logger.log("WARN", "[HTTP_HANDLER][addShopItem] json_value:", util.inspect(
 					json_value));
+
 				callback(true, {
 					'error': 2,
 					'error_msg': err,
 				});
+				//MyShopService.addItemToShop(uid,json_value,json_image);
 				return;
 			} else {
 				logger.log("INFO", '[HTTP_HANDLER][addShopItem]', 'add_item_id:',
@@ -1477,7 +1481,7 @@ exports.offShelveShopItem = function(header, fields, files, cb) {
 	if (Number.isNaN(state)) {
 		cb(true, {
 			'error': 3,
-			'error_msg': '指定下架的一个物品并不是自己商铺的',
+			'error_msg': '指定商品并不是自己商铺的',
 		});
 		return;
 	}
@@ -1495,7 +1499,7 @@ exports.offShelveShopItem = function(header, fields, files, cb) {
 	if (out_my_shop_item) {
 		cb(true, {
 			'error': 3,
-			'error_msg': '指定下架的一个物品并不是自己商铺的',
+			'error_msg': '指定商品并不是自己商铺的',
 		});
 		return;
 	}

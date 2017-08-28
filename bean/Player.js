@@ -40,6 +40,7 @@ PlayerFavoritesItemInfo.prototype.getItemId = function() {
 }
 
 
+
 var Player = function() {
 	this.id = 0;
 
@@ -82,7 +83,7 @@ Player.prototype.initNewPlayer = function(uid) {
 	this.head = "";
 	this.sex = 1;
 	this.shop_id = 0;
-	//this.nick_name = "用户" + uid;
+	
 	this.name = "用户" + uid;
 }
 

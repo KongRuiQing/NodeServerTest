@@ -12,6 +12,7 @@ require('./favorite.js');
 require('./FindPassword.js');
 require('./VerifyCodeService.js');
 require('./ShopActivityService.js');
+require('./SpreadItemService.js');
 
 let groupChatService = require('./groupChatService.js');
 

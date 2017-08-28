@@ -151,6 +151,23 @@ ShopBean.prototype.initFromDbRow = function(db_row) {
 	this.__cs = Number(db_row['cs_id']);
 	this.__big_image = db_row['big_image'];
 }
+ShopBean.prototype.getId = function(){
+	return this.id;
+}
+ShopBean.prototype.getLongitude = function(){
+	return this.__longitude;
+}
+ShopBean.prototype.getLatitude = function(){
+	return this.__latitude;
+}
+ShopBean.prototype.getCity = function(){
+	return this.city_no;
+}
+
+ShopBean.prototype.getAreaCode = function(){
+	return this.area_code;
+}
+
 
 ShopBean.prototype.updateShopInfo = function(json_value) {
 	if (this.id == 0 && 'Id' in json_value) {
