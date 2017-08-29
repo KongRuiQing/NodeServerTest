@@ -29,9 +29,9 @@ class SpreadItemBean {
 		let image = db_image['image'];
 		let index = db_image['index'];
 		let image_type = Number(db_image['image_type']);
-		logger.log("INFO","[SpreadItemService]setImage param:",db_image);
+		//logger.log("INFO","[SpreadItemService]setImage param:",db_image);
 		if (this.image == null) {
-			if (this.image_type == 1) {
+			if (image_type == 1) {
 				this.image = image;
 			}
 		} else {
@@ -39,7 +39,7 @@ class SpreadItemBean {
 				this.image = image;
 			}
 		}
-		logger.log("INFO","[SpreadItemService]setImage result:",this.image);
+		//logger.log("INFO","[SpreadItemService]setImage result:",this.image);
 	}
 	getItemId() {
 		return this.item_id;
