@@ -35,7 +35,7 @@ class SpreadItemBean {
 				this.image = image;
 			}
 		} else {
-			if (image_type == 1 && index == 1) {
+			if (image_type == 1 && index == 0) {
 				this.image = image;
 			}
 		}
