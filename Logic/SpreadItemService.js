@@ -29,6 +29,7 @@ class SpreadItemBean {
 		let image = db_image['image'];
 		let index = db_image['index'];
 		let image_type = Number(db_image['image_type']);
+		logger.log("INFO","[SpreadItemService]setImage:",db_image);
 		if (this.image == null) {
 			if (this.image_type == 1) {
 				this.image = image;
@@ -177,7 +178,7 @@ class SpreadItemService {
 		this.__item.set(bean.getItemId(), bean);
 	}
 	registerSpreadItemImage(db_item) {
-		let item_id = db_item['item_id'];
+		let item_id = Number(db_item['item_id']);
 		if (this.__item.has(item_id)) {
 			this.__item.get(item_id).setImage(db_item);
 		}
