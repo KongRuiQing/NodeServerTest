@@ -111,7 +111,9 @@ WebSocketApp.prototype.broadcast = function(cmd, sendData) {
 			'cmd': cmd,
 			'data': sendData,
 		}),(error)=>{
-			logger.log("WARN","[WebSocket][broadcast] send error:",error);
+			if(error){
+				logger.log("WARN","[WebSocket][broadcast] send error:",error);
+			}
 		});
 	});
 }
@@ -119,14 +121,17 @@ WebSocketApp.prototype.broadcast = function(cmd, sendData) {
 
 WebSocketApp.prototype.removeClient = function(socket) {
 	let nid = socket.nid;
-
+	logger.log("INFO","[WebSocket][removeClient] nid:",socket.nid);
 	if (this.clients.has(nid)) {
 		this.clients.delete(nid);
+	}else{
+		logger.log("WARN","[WebSocket][removeClient] close client not in clients:");
 	}
 }
 
-WebSocketApp.prototype.register = function(nid, socket) {
-	this.clients.set(nid, socket);
+WebSocketApp.prototype.register = function(socket) {
+	logger.log("INFO","[WebSocket][register] nid:",socket.nid);
+	this.clients.set(socket.nid, socket);
 }
 
 WebSocketApp.prototype.reply = function(socket, cmd, replyData) {
