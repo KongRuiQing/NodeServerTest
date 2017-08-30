@@ -53,7 +53,8 @@ module.exports = function(server, socket, jsonLogin) {
 				// end
 
 				let guid = OnlineModule.registerLogin(login_info['uid'], jsonLogin['nid']);
-				server.register(jsonLogin['nid'], socket);
+				socket.nid = jsonLogin['nid'];
+				server.register(socket);
 				socket.uid = Number(login_info['uid']);
 				
 				let user_info = UserModule.getInstance().getUserInfo(login_info['uid']);
