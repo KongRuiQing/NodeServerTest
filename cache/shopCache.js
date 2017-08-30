@@ -418,7 +418,7 @@ ShopManager.prototype.getMyShopItemDetail = function(uid, shop_id, item_id) {
 }
 
 ShopManager.prototype.getShopItemDetail = function(uid, shop_id, shop_item_id) {
-	logger.log("SHOP_CACHE", TAG, "[getShopItemDetail] params:[ uid:" + uid + ",shop_id:" + shop_id + ",shop_item_id:" + shop_item_id + "]");
+	logger.log("INFO", TAG, "[getShopItemDetail] params:[ uid:" + uid + ",shop_id:" + shop_id + ",shop_item_id:" + shop_item_id + "]");
 	var shop_item_detail = {};
 	shop_item_detail['error'] = 0;
 
