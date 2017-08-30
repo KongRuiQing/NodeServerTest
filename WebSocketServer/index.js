@@ -110,7 +110,9 @@ WebSocketApp.prototype.broadcast = function(cmd, sendData) {
 		client.send(JSON.stringify({
 			'cmd': cmd,
 			'data': sendData,
-		}));
+		}),(error)=>{
+			logger.log("WARN","[WebSocket][broadcast] send error:",error);
+		});
 	});
 }
 
