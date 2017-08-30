@@ -558,7 +558,11 @@ exports.getAllGroupChat = function(callback) {
 
 	}).then((db_list) => {
 		let list = [];
-		for (let db_row in db_list) {
+		//console.log("db_list",db_list);
+
+		for (let db_row_index in db_list) {
+			let db_row = db_list[db_row_index]['dataValues'];
+
 			list.push({
 				'id': db_row['id'],
 				'uid': db_row['uid'],

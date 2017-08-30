@@ -66,7 +66,7 @@ module.exports = function(server, socket, jsonLogin) {
 				response['error'] = 0;
 				response['user_info'] = user_info;
 				response['guid'] = guid;
-				let last_group_chat_time = moment(jsonLogin['last_group_chat_time']);
+				let last_group_chat_time = moment(jsonLogin['last_group_chat_time'] * 1000);
 				response['group_chat'] = GroupChatService.getGroupChatLogin(last_group_chat_time,AttentionService.getAttentionShops(user_info['uid']));
 
 				_db.updateLastLoginInfo(user_info['uid'],moment().unix(),(error)=>{
