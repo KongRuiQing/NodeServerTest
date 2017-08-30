@@ -78,6 +78,7 @@ class Service {
 	}
 
 	getGroupChatLogin(last_login_time,shop_id_list){
+		logger.log("INFO","[groupChatService][getGroupChatLogin] last_login_time,shop_id_list",last_login_time,shop_id_list);
 		let result = [];
 
 		for(let shop_id of shop_id_list){ //this.getChatInShop(shop_id,0)
