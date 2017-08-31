@@ -130,7 +130,7 @@ exports.getShopDetail = function(headers, query, callback) {
 	var shop_id = Number(query['shop_id']);
 
 	var json_result = null;
-	logger.log('INFO', '[getShopDetail]', 'shop_id:', shop_id);
+	logger.log('INFO', '[getShopDetail]', "uid:", uid, 'shop_id:', shop_id);
 	if (shop_id > 0) {
 		json_result = ShopCache.getInstance().getShopDetail(shop_id);
 
@@ -220,24 +220,24 @@ exports.getShopSpread = function(headers, query, callback) {
 		'length': 0,
 	};
 
-	logger.log("INFO","query_result",query_result.length);
+	logger.log("INFO", "query_result", query_result.length);
 
 	if (query_result.length > 0) {
 
-		
+
 		let page_size = 30;
 
-		
 
-		if(query_result.length > page_size){
-			while(page_size < query_result.length){
+
+		if (query_result.length > page_size) {
+			while (page_size < query_result.length) {
 				let last_dis = query_result[page_size - 1]['distance'];
 				let last_shop = query_result[page_size - 1]['shop_id'];
-				if(last_shop == query_result[key]['shop_id']){
+				if (last_shop == query_result[key]['shop_id']) {
 					page_size += 1;
 					continue;
 				}
-				if(Math.abs(last_dis - query_result[key]['distance']) <= 0.5){
+				if (Math.abs(last_dis - query_result[key]['distance']) <= 0.5) {
 					page_size += 1;
 					continue;
 				}
@@ -295,10 +295,11 @@ exports.getActivityList = function(headers, query, callback) {
 		for (let bean of list) {
 			let shop_id = bean.getShopId();
 			let shop_info = ShopCache.getInstance().getShop(shop_id);
+			bean['distance'] = shop_info.calcDistance(headers['longitude'], headers['latitude']);
 			if (shop_info != null) {
 				let beanDistance = {
 						'bean': bean,
-						'distance': shop_info.calcDistance(headers['longitude'], headers['latitude']),
+						'distance':bean['distance'] ,
 					}
 					//logger.log("INFO",beanDistance['distance'],' ',begin_distance);
 				if (beanDistance['distance'] > begin_distance) {
