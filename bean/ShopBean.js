@@ -379,6 +379,8 @@ ShopBean.prototype.getShopDetailInfo = function(uid) {
 		'fix_telephone': this.__fix_telephone,
 		'business': this.__business,
 		'big_image': this.__big_image,
+		'longitude' : this.__longitude,
+		'latitude' : this.__latitude,
 	}
 }
 
