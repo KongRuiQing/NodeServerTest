@@ -295,8 +295,9 @@ exports.getActivityList = function(headers, query, callback) {
 		for (let bean of list) {
 			let shop_id = bean.getShopId();
 			let shop_info = ShopCache.getInstance().getShop(shop_id);
-			bean['distance'] = shop_info.calcDistance(headers['longitude'], headers['latitude']);
+
 			if (shop_info != null) {
+				bean['distance'] = shop_info.calcDistance(headers['longitude'], headers['latitude']);
 				let beanDistance = {
 						'bean': bean,
 						'distance':bean['distance'] ,
