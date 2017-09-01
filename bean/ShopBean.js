@@ -808,8 +808,4 @@ ShopBean.prototype.getName = function(){
 	return this.name;
 }
 
-ShopBean.prototype.search = function(keywords){
-	return this.name === keywords;
-}
-
 module.exports = ShopBean;
