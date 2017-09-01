@@ -12,7 +12,20 @@ exports.getCurrentTime = function(){
 }
 
 
-exports.getFlatternDistance = function(lat1,lng1,lat2,lng2){
+exports.getFlatternDistance = function(){ //lat1,lng1,lat2,lng2
+	
+	if(arguments.length != 4){
+		console.error("getFlatternDistance error");
+		if(args){
+			
+		}
+	}
+	
+	let lat1 = arguments[1];
+	let lng1 = arguments[0];
+	let lat2 = arguments[3];
+	let lng2 = arguments[2];
+	
 	var f = getRad((lat1 + lat2)/2);
 	var g = getRad((lat1 - lat2)/2);
 	var l = getRad((lng1 - lng2)/2);
