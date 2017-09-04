@@ -335,7 +335,7 @@ ShopItem.prototype.matchFilter = function(keyword) {
 	if (this.name == null) {
 		return false;
 	}
-	if (this.__state == ShopItemState.OFF_SHELVE_STATE) {
+	if (!this.isShelve()) {
 		return false;
 	}
 	if (keyword == null) {

@@ -1010,7 +1010,7 @@ ShopManager.prototype.addAttentionGroupMessage = function(shop_id, msg) {
 ShopManager.prototype.search = function(keyword, search_type) {
 	let SEARCH_TYPE = require("../enum/searchType.js");
 	let result = new Map();
-	logger.log("INFO", 'SEARCH_TYPE:', SEARCH_TYPE);
+	//logger.log("INFO", 'SEARCH_TYPE:', SEARCH_TYPE);
 	let that = this;
 	if (SEARCH_TYPE.SEARCH_SHOP == search_type) {
 		this.dict.forEach((shopBean, shop_id) => {
