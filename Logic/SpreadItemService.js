@@ -202,38 +202,48 @@ class SpreadItemService {
 			return [];
 		}
 		let item_list = this.__item.values();
+		logger.log("INFO","[SpreadItemService][getItemList] this.__item.size = ",this.__item.size);
 
 		let cache = [];
+
+		let map_distance = new Map();
 
 		for (let item of item_list) {
 
 			let shop = this.__shop.get(item.getShopId());
 
 			if (shop == null) {
-				logger.log("ERROR", "[SpreadItemService]getItemList shop is not exist");
+				logger.log("ERROR", "[SpreadItemService]getItemList shop is not exist shop_id %d",item.getShopId());
 				continue;
 			}
 
 
 			if (!shop.match(query)) {
-				//logger.log("ERROR","[SpreadItemService]getItemList shop is not match");
+				logger.log("ERROR","[SpreadItemService]getItemList shop is not match,",item.getShopId());
 				continue;
 			}
 
 
 			if (!item.match(query)) {
-				//logger.log("ERROR","[SpreadItemService]getItemList item is not match");
+				logger.log("ERROR","[SpreadItemService]getItemList item is not match, item:",item);
 				continue;
+			}
+			let distance = 0;
+			if(map_distance.has(shop.getShopId())){
+				distance = map_distance.get(shop.getShopId());
+			}else{
+				distance = shop.getDistance(query['longitude'], query['latitude']);
+				map_distance.set(shop.getShopId(),distance);
 			}
 
 			cache.push({
-				'distance': shop.getDistance(query['longitude'], query['latitude']),
+				'shop_id': item.shop_id,
+				'item_id': item.item_id,
 				'image': item.image,
 				'item_name': item.item_name,
 				'item_price': item.item_price,
 				'item_show_price': item.item_show_price,
-				'item_id': item.item_id,
-				'shop_id': item.shop_id,
+				'distance': distance,
 				'created_time': item.created_time,
 			});
 		}
