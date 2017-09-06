@@ -25,28 +25,28 @@ http_header[500] = 'text/plain';
 http_header[600] = 'text/plain';
 http_header[304] = 'text/plain';
 
+var query_num = 1;
+
 function handle_route(request, response, next) {
 
 	var request_url = url.parse(request.url, true);
 	var pathname = request_url.pathname;
 	var headers = request.headers;
-	//logger.log("QUERY_SERVER","pathname:" + pathname);
+	
 	if (!(pathname in route)) {
 		next(new Error(pathname + ' is not in route'));
 		return;
 	}
+
 	if (typeof route[pathname] === 'function') {
 
-		logger.log("QUERY_SERVER", "query params:\n" + util.inspect(request_url.query, {
-			depth: null
-		}) + "\n");
+		query_num = query_num + 1;
+		logger.log("INFO", "[%d][%s] params:%s",query_num,pathname,request_url.query);
 
 		new Promise((resolve, reject) => {
 			route[pathname](headers, request_url.query, function(error_code, content) {
 
-				logger.log("INFO", "[", pathname, ']:', "QUERY RESULT: \n" + util.inspect(content, {
-					depth: null
-				}) + "\n");
+				logger.log("INFO", "[%d] result:[%s]",query_num,content);
 				
 				if (error_code == 0) {
 					resolve(content);
