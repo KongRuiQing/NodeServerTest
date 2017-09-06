@@ -34,11 +34,6 @@ module.exports = function (sequelize, DataTypes) {
       defaultValue : "",
       comment : "外部网络链接",
     },
-    'is_show' :{
-      type:DataTypes.BIGINT(2),
-      allowNull : false,
-      defaultValue : 0
-    },
     'category_code':{
       type : DataTypes.BIGINT(11),
       allowNull : false,
