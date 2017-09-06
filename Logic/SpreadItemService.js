@@ -250,7 +250,9 @@ class SpreadItemService {
 				'distance': distance,
 				'created_time': item.created_time,
 			});
+
 		}
+		logger.log("INFO","[SpreadItemService][getItemList] cache:",cache);
 
 		cache.sort((left, right) => {
 			if (left['shop_id'] == right['shop_id']) {
