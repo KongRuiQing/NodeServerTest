@@ -26,7 +26,7 @@ var ShopItem = function() {
 	this.name = "";
 	this.price = 0;
 	this.show_price = 0;
-	this.is_show = false;
+	
 	this.__groupIndex = 0;
 	this.__category_code = 0;
 	this.__link = "";
@@ -54,7 +54,7 @@ ShopItem.prototype.getJsonValue = function() {
 		'name': this.name,
 		'price': this.price,
 		'show_price': this.show_price,
-		'is_show': this.is_show,
+		'is_show': this.isSpreadItem(),
 		'item_propertys': this.getItemPropertys()
 	};
 }
@@ -105,18 +105,6 @@ ShopItemProperty.prototype.setItemProperty = function(name, value) {
 	this.property_value = value;
 }
 
-ShopItem.prototype.getSpreadJsonValue = function() {
-	var json_result = {
-		'id': this.id,
-		'shop_id': this.shop_id,
-		'spread_image': this.__show_images[0],
-		'name': this.name,
-		'price': this.price,
-		'show_price': this.show_price,
-		'is_show': this.is_show
-	};
-	return json_result;
-}
 
 ShopItem.prototype.initFromDb = function(db_row) {
 	//console.log(util.inspect(db_row));
@@ -126,7 +114,7 @@ ShopItem.prototype.initFromDb = function(db_row) {
 	this.name = db_row['name'];
 	this.price = parseFloat(db_row['price']);
 	this.show_price = parseFloat(db_row['show_price']);
-	this.is_show = Number(db_row['is_show']) == 1;
+	
 	this.__category_code = Number(db_row['category_code']);
 	if ('group_index' in db_row) {
 		this.__groupIndex = Number(db_row['group_index']);
@@ -192,7 +180,7 @@ ShopItem.prototype.addAttention = function(uid) {
 }
 
 ShopItem.prototype.isSpreadItem = function() {
-	return this.is_show && this.isShelve();
+	return this.isShelve();
 }
 
 ShopItem.prototype.isShelve = function() {
