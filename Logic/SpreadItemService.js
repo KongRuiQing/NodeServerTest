@@ -80,7 +80,7 @@ class SpreadShopBean {
 			Number(inLatitude),
 			Number(this.longitude),
 			Number(this.latitude));
-		logger.log("INFO","[getDistance]:",distance);
+		//logger.log("INFO","[getDistance]:",distance);
 		return distance;
 	}
 	getShopId() {

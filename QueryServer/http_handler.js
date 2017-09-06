@@ -224,7 +224,7 @@ exports.getShopSpread = function(headers, query, callback) {
 	if (query_result.length > 0) {
 		let page_size = 30;
 		if (query_result.length > page_size) {
-			
+
 			while (page_size < query_result.length) {
 				let last_dis = query_result[page_size - 1]['distance'];
 				let last_shop = query_result[page_size - 1]['shop_id'];
@@ -236,6 +236,7 @@ exports.getShopSpread = function(headers, query, callback) {
 					page_size += 1;
 					continue;
 				}
+				break;
 			}
 		}
 
