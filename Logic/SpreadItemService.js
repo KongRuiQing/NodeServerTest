@@ -75,13 +75,13 @@ class SpreadShopBean {
 		this.area_code = Number(db_row['area_code']);
 	}
 	getDistance(inLongitude, inLatitude) {
-		
-		return 
-		FindUtil.getFlatternDistance(
+		let distance = FindUtil.getFlatternDistance(
 			Number(inLongitude),
 			Number(inLatitude),
 			Number(this.longitude),
 			Number(this.latitude));
+		logger.log("INFO","[getDistance]:",distance);
+		return distance;
 	}
 	getShopId() {
 		return this.shop_id;
@@ -252,7 +252,7 @@ class SpreadItemService {
 			});
 
 		}
-		logger.log("INFO","[SpreadItemService][getItemList] cache:",cache);
+		//logger.log("INFO","[SpreadItemService][getItemList] cache:",cache);
 
 		cache.sort((left, right) => {
 			if (left['shop_id'] == right['shop_id']) {
