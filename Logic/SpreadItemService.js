@@ -75,9 +75,13 @@ class SpreadShopBean {
 		this.area_code = Number(db_row['area_code']);
 	}
 	getDistance(inLongitude, inLatitude) {
-		logger.log("INFO", inLatitude, inLongitude, this.latitude, this.longitude);
-		return FindUtil.getFlatternDistance(
-			Number(inLatitude), Number(inLongitude), Number(this.latitude), Number(this.longitude));
+		
+		return 
+		FindUtil.getFlatternDistance(
+			Number(inLongitude),
+			Number(inLatitude),
+			Number(this.longitude),
+			Number(this.latitude));
 	}
 	getShopId() {
 		return this.shop_id;
