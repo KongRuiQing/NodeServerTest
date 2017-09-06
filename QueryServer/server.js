@@ -41,12 +41,12 @@ function handle_route(request, response, next) {
 	if (typeof route[pathname] === 'function') {
 
 		query_num = query_num + 1;
-		logger.log("INFO", "[%d][%s] params:%s",query_num,pathname,request_url.query);
+		logger.log("INFO", query_num,"[query] path:",pathname," query:",request_url.query);
 
 		new Promise((resolve, reject) => {
 			route[pathname](headers, request_url.query, function(error_code, content) {
 
-				logger.log("INFO", "[%d] result:[%s]",query_num,content);
+				logger.log("INFO", query_num,"[query] path:",pathname,' result:',content);
 				
 				if (error_code == 0) {
 					resolve(content);
