@@ -93,6 +93,7 @@ function __usage(method,rsp,error_msg){
 
 function __post(req,rsp){
 
+	console.log(req.body);
 	const schema = Joi.object().keys({
 		'code': Joi.number().integer().min(1).required(),
 		'type': Joi.number().integer().min(1).max(2).required(),
