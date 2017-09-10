@@ -32,7 +32,8 @@ var db_seq = require("./Db_sequelize");
 //db_seq.TestFindOrCreate("1");
 //db_seq.insertRequestBeSeller({'name' : '888','category' : [1,2,3],},function(err,db_row){console.log(db_row);});
 //return;
-
+//var FindUtil = require("./FindUtil.js");
+//FindUtil.getFlatternDistance(11,11,121);
 
 
 var HOST = '';

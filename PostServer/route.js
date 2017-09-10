@@ -34,6 +34,7 @@ handle_http['/remove_shop_from_schedule'] = http_handler.removeShopFromSchedule;
 handle_http['/add_shop_item_image'] = http_handler.setShopItemImage;
 handle_http['/relogin'] = http_handler.reLogin;
 handle_http['/claim_shop'] = handle_shop.claimShop;
+handle_http['/upload_shop_qr_image'] = handle_shop.uploadShopQrImage;
 handle_http['/upload_image'] = http_handler_upload.uploadImage;
 
 handle_http['/admin/v1/ad'] = http_notify.changeAdImage;

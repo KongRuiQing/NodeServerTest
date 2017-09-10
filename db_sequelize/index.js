@@ -22,6 +22,7 @@ var GroupMsgModel = sequelize.import("./model/GroupMsgModel.js");
 var GroupChatModel = sequelize.import("./model/GroupChatModel.js");
 var UserAttentionModel = sequelize.import("./model/UserAttentionModel.js");
 var ShopActivityModel = sequelize.import("./model/ShopActivityModel.js");
+var ShopImageModel = sequelize.import("./model/ShopImageModel.js");
 
 exports.TestFindOrCreate = function(name) {
 
@@ -650,4 +651,41 @@ exports.getActivityByShopId = function(shop_id,callback){
 	}).catch((error)=>{
 		callback(error);
 	})
+}
+
+exports.findShopQRImage = function(shop_id,callback){
+	ShopImageModel.findAll({
+		'where' : {
+			'shop_id' : shop_id,
+			'image_type' : 1,
+		},
+		'order': [
+			['image_index', 'ASC']
+		],
+	}).then((all_rows)=>{
+		let result = [];
+		for(let row of all_rows){
+			result.push({
+				'image_index' : row['dataValues']['image_index'],
+				'image' : row['dataValues']['image'],
+			});
+		}
+		callback(null,result);
+
+	}).catch((error)=>{
+		callback(error,null);
+	});
+}
+
+exports.updateShopImage = function(shop_id,image_type,image_index,image,callback){
+	ShopImageModel.upsert({
+		'shop_id' : shop_id,
+		'image_type' : image_type,
+		'image_index' : image_index,
+		'image' : image,
+	}).then((created)=>{
+		callback(null);
+	}).catch((error)=>{
+		callback(error);
+	});
 }

@@ -5,19 +5,17 @@ var _db = require("../db_sequelize");
 var logger = require("../logger.js").logger();
 var OnlineService = require("./online.js");
 var PlayerService = require("../playerList.js");
+var AttentionService = require("./Attentions.js");
 class GroupChat {
 	constructor() {
 		this.__last_chat_time = null;
 		this.__all_msg = [];
-		this.__group = new Set();
+		
 	}
-
-
 
 	addChat(bean) {
 		this.__all_msg.push(bean);
 		this._updateLastChatTime(bean.getTime());
-		this.__group.add(bean.getUID());
 	}
 	_updateLastChatTime(time){
 		if (this.__last_chat_time == null) {
@@ -48,7 +46,10 @@ class GroupChat {
 	}
 
 	notifyNewGroupChat(bean) {
-		for (let send_to of this.__group) {
+		let shop_id = bean.getShopId();
+		let all_player = AttentionService.getAttentionUsers(shop_id);
+		logger.log("INFO","[WS][notifyNewGroupChat] all_player:",all_player);
+		for (let send_to of all_player) {
 			let json = bean.getJson();
 			let player = PlayerService.getInstance().getPlayer(bean.getUID());
 			if (player != null) {

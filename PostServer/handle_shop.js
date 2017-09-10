@@ -57,21 +57,21 @@ exports.claimShop = function(header, fields, files, cb) {
 	};
 
 	_db.insertClaimInfo(json_param, function(err, db_row) {
-		if(err){
-			logger.log("ERROR","insertClaimInfo:",err);
-			cb(true,{
-				'error' : ErrorCode.SQL_ERROR,
+		if (err) {
+			logger.log("ERROR", "insertClaimInfo:", err);
+			cb(true, {
+				'error': ErrorCode.SQL_ERROR,
 			});
 			return;
 		}
-		
+
 		let uid = Number(db_row['uid']);
 		let shop_id = Number(db_row['shop_id']);
 		ShopService.addClaim(uid, shop_id);
 		cb(true, {
 			'claim_shop_id': shop_id,
 		});
-		
+
 	});
 
 }
@@ -83,41 +83,82 @@ exports.addShopActivity = function(header, fields, files, callback) {
 		"image": "shop/activity/",
 	};
 
-	
+
 	let image = {};
-	if('image' in files){
+	if ('image' in files) {
 		help.getAllUploadFile(files, uploadFileKey, image);
 	}
 	let uid = header['uid'];
-	if(uid <= 0){
+	if (uid <= 0) {
 		callback(true, {
-			'error' : ErrorCode.USER_NO_LOGIN,
+			'error': ErrorCode.USER_NO_LOGIN,
 		});
 		return;
 	}
 
 	let shop_id = ShopService.getOwnShopId(uid);
-	if(shop_id <= 0){
+	if (shop_id <= 0) {
 		callback(true, {
-			'error' : ErrorCode.USER_NO_SHOP,
+			'error': ErrorCode.USER_NO_SHOP,
 		});
 		return;
 	}
 	let title = fields['title'];
 	let image_pathname = null;
-	if('image' in image){
+	if ('image' in image) {
 		image_pathname = image['image'];
 	}
 
-	logger.log("INFO","[addShopActivity] title:",title," image:",image_pathname);
-	
-	ShopActivityService.addActivity(shop_id,title,image_pathname,(json_bean)=>{
+	logger.log("INFO", "[addShopActivity] title:", title, " image:", image_pathname);
+
+	ShopActivityService.addActivity(shop_id, title, image_pathname, (json_bean) => {
 		let json_result = {};
-		if(json_bean != null){
+		if (json_bean != null) {
 			json_result['error'] = 0;
 			json_result['bean'] = json_bean;
 		}
 		callback(true, json_result);
 	});
+
+}
+
+exports.uploadShopQrImage = function(header, fields, files, callback) {
+
+
+	let uid = Number(header['uid']);
+	let shop_id = ShopService.getOwnShopId(uid);
+	if (shop_id <= 0) {
+		callback(true, {
+			'error': ErrorCode.USER_NO_SHOP
+		});
+		return;
+	}
+	let uploadFileKey = {
+		"image": "shop/qr/",
+	};
+	let method = fields['method'];
+	let image_index = Number(fields['image_index']);
+	if (method == "post") {
+		let image = {};
+		if ('image' in files) {
+			help.getAllUploadFile(files, uploadFileKey, image);
+		}
+		_db.updateShopImage(shop_id,1, image_index, image['image'], (error) => {
+			if (error) {
+				logger.log("ERROR",error);
+				callback(true, {
+					'error': ErrorCode.SQL_ERROR
+				});
+				return;
+			} else {
+				callback(true,{
+					'image_index' : image_index,
+					'image' : image['image'],
+				});
+				return;
+			}
+		});
+	}
+
 
 }

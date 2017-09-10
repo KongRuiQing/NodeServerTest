@@ -1,6 +1,6 @@
 var http_handler = require("./http_handler");
-var http_config = require("./logic/http_config.js");
-
+var http_config = require("./handler/http_config.js");
+var shop_handler = require("./handler/shop_handler.js");
 var handle_http = {};
 handle_http['/shop_spread'] = http_handler.getShopSpread;
 handle_http['/shop_list'] = http_handler.getShopList;
@@ -36,4 +36,8 @@ handle_http['/history_group_msg'] = http_handler.getGroupMsgHistory;
 handle_http['/shop_group_msg'] = http_handler.getGroupMsgList;
 handle_http['/shop_group_chat'] = http_handler.getGroupChatList;
 handle_http['/group_people'] = http_handler.getAllGroupList;
+
+handle_http['/shop_qr_image'] = shop_handler.getShopQRCodeImage;
+
+
 module.exports = handle_http;
