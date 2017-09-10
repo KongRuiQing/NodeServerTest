@@ -200,8 +200,12 @@ exports.getShopSpread = function(headers, query, callback) {
 	if ('keyword' in query) {
 		keyword = query['keyword'];
 	}
+	let client_size = 0;
+	if('client_size' in query){
+		client_size = Number(query['client_size']);
+	}
 	logger.log("INFO", "[HTTP_HANDER]getShopSpread param:", city_no, area_code,
-		cate_code, sort_code, distance, longitude, latitude, last_distance, keyword);
+		cate_code, sort_code, distance, longitude, latitude, last_distance, keyword,client_size);
 
 	//var query_result = ShopCache.getInstance().getShopSpread(last_distance,longitude, latitude, city_no, area_code, distance, cate_code, keyword);
 
@@ -222,7 +226,8 @@ exports.getShopSpread = function(headers, query, callback) {
 	//logger.log("INFO", "query_result", query_result.length);
 
 	if (query_result.length > 0) {
-		let page_size = 30;
+		let page_size = Math.min(query_result.length,18);
+		let return_size = page_size;
 		if (query_result.length > page_size) {
 
 			while (page_size < query_result.length) {
@@ -238,10 +243,17 @@ exports.getShopSpread = function(headers, query, callback) {
 				}
 				break;
 			}
+			return_size = page_size;
+			logger.log("INFO",(page_size % 2), "!= ", (client_size % 2), '=',(page_size % 2) != (client_size % 2) );
+			if((page_size % 2) != (client_size % 2)){
+				return_size = return_size + 1;
+			}
 		}
-
-		let arr_list = query_result.slice(0, page_size - 1);
-
+		console.log("return_size",return_size);
+		let arr_list = query_result.slice(0, return_size);
+		console.log(arr_list.length);
+		console.log(arr_list[0]);
+		console.log(arr_list[arr_list.length - 1]);
 		json_value['spread_list'] = arr_list;
 		json_value['page_size'] = page_size;
 		json_value['length'] = arr_list.length;

@@ -49,11 +49,15 @@ class SpreadItemBean {
 	}
 
 	match(query) {
+
 		if (query['keyword'] != null && query['keyword'].length > 0) {
-			if (this.item_name.indexOf(keyword) < 0) {
+			//console.log("1");
+			if (this.item_name.indexOf(query['keyword']) < 0) {
+				//console.log("2");
 				return false;
 			}
 		}
+		console.log("3");
 		if (query['category_code'] > 0) {
 			let match_category = DbCache.getInstance().matchCategor(query['category_code'], this.category_code, "item");
 			if (!match_category) {
@@ -200,38 +204,44 @@ class SpreadItemService {
 
 
 	getItemList(query) {
-		//logger.log("INFO","[SpreadItemService] start getItemList");
+		logger.log("INFO","[SpreadItemService] start getItemList");
 		if (query.isBad()) {
 			logger.log("ERROR", "get spread item list query is bad %d", query['requestFlag']);
 			return [];
 		}
 		let item_list = this.__item.values();
-		logger.log("INFO","[SpreadItemService][getItemList] this.__item.size = ",this.__item.size);
+		//logger.log("INFO","[SpreadItemService][getItemList] this.__item.size = ",this.__item.size);
 
 		let cache = [];
 
 		let map_distance = new Map();
 
 		for (let item of item_list) {
-
+			if(item == null){
+				continue;
+			}
+			//logger.log("ERROR","[SpreadItemService]getItemList item:",item);
 			let shop = this.__shop.get(item.getShopId());
 
 			if (shop == null) {
 				logger.log("ERROR", "[SpreadItemService]getItemList shop is not exist shop_id %d",item.getShopId());
 				continue;
 			}
+			//logger.log("ERROR","[SpreadItemService]getItemList item:",1);
 
 
 			if (!shop.match(query)) {
-				logger.log("ERROR","[SpreadItemService]getItemList shop is not match,",item.getShopId());
+				//logger.log("ERROR","[SpreadItemService]getItemList shop is not match,",item.getShopId());
 				continue;
 			}
-
+			//logger.log("ERROR","[SpreadItemService]getItemList item:",2);
 
 			if (!item.match(query)) {
-				logger.log("ERROR","[SpreadItemService]getItemList item is not match, item:",item);
+				//logger.log("ERROR","[SpreadItemService]getItemList item is not match, item:",item);
 				continue;
 			}
+			//logger.log("ERROR","[SpreadItemService]getItemList item:",3);
+
 			let distance = 0;
 			if(map_distance.has(shop.getShopId())){
 				distance = map_distance.get(shop.getShopId());
@@ -239,6 +249,7 @@ class SpreadItemService {
 				distance = shop.getDistance(query['longitude'], query['latitude']);
 				map_distance.set(shop.getShopId(),distance);
 			}
+			//logger.log("ERROR","[SpreadItemService]getItemList item:",4);
 
 			cache.push({
 				'shop_id': item.shop_id,
@@ -252,7 +263,7 @@ class SpreadItemService {
 			});
 
 		}
-		//logger.log("INFO","[SpreadItemService][getItemList] cache:",cache);
+		logger.log("INFO","[SpreadItemService][getItemList] cache:",cache);
 
 		cache.sort((left, right) => {
 			if (left['shop_id'] == right['shop_id']) {

@@ -46,7 +46,7 @@ function handle_route(request, response, next) {
 		new Promise((resolve, reject) => {
 			route[pathname](headers, request_url.query, function(error_code, content) {
 
-				logger.log("INFO", query_num,"[query] path:",pathname,' result:',content);
+				//logger.log("INFO", query_num,"[query] path:",pathname,'error_code:',error_code,' result:',content);
 				
 				if (error_code == 0) {
 					resolve(content);
