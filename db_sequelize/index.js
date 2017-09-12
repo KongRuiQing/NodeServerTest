@@ -72,7 +72,7 @@ exports.insertRequestBeSeller = function(jsonObject, callback) {
 			'category_code3': jsonObject['category_code3'],
 			'address': jsonObject['address'],
 			'telephone': jsonObject['telephone'],
-			'state': 0,
+			'state': 1,
 		},
 		'where': {
 			'Id': null,

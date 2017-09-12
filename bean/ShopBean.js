@@ -309,7 +309,7 @@ ShopBean.prototype.newShopBean = function(shop_info) {
 
 
 
-ShopBean.prototype.getShopBasicInfo = function(uid, longitude, latitude) {
+ShopBean.prototype.getShopBasicInfo = function(longitude, latitude) {
 	return {
 		'id': this.id,
 		'state': this.state,
@@ -318,9 +318,7 @@ ShopBean.prototype.getShopBasicInfo = function(uid, longitude, latitude) {
 		'shop_image': this.image,
 		'long': this.__longitude,
 		'late': this.__latitude,
-		'shop_attention': "",
-		'attention_num': this.attentions.length,
-		'is_attention': this.ownAttention(uid),
+		
 		'beg': this.beg,
 		'end': this.end,
 		'days': this.days,

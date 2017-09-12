@@ -364,7 +364,7 @@ exports.becomeSeller = function(header, fields, files, callback) {
 		let check_result = ShopService.checkBeShop(uid);
 		if (check_result > 0) {
 			callback(true, {
-				'error': 1,
+				'error': check_result,
 				'error_msg': '用户已经有商铺了,不能再申请',
 			});
 			return;
@@ -387,7 +387,7 @@ exports.becomeSeller = function(header, fields, files, callback) {
 			callback(true, {
 				'error': 0,
 				'shop_id': db_row['Id'],
-				'state': 0,
+				'state': 1,
 			});
 		});
 
@@ -924,6 +924,7 @@ exports.saveSellerInfo = function(header, fields, files, callback) {
 
 	upload_file_to_json(files, uploadFileKey, params);
 
+	
 
 	for (var key in uploadFileKey) {
 		if (key in fields) {

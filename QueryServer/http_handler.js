@@ -138,7 +138,7 @@ exports.getShopDetail = function(headers, query, callback) {
 		if (json_result == null) {
 			error = 1004;
 		} else {
-			json_result['attention'] = AttentionService.isAttentionThisShop(uid,shop_id);
+			json_result['attention'] = AttentionService.isAttentionThisShop(uid, shop_id);
 			if ('error' in json_result) {
 				error = json_result['error'];
 			}
@@ -201,11 +201,11 @@ exports.getShopSpread = function(headers, query, callback) {
 		keyword = query['keyword'];
 	}
 	let client_size = 0;
-	if('client_size' in query){
+	if ('client_size' in query) {
 		client_size = Number(query['client_size']);
 	}
 	logger.log("INFO", "[HTTP_HANDER]getShopSpread param:", city_no, area_code,
-		cate_code, sort_code, distance, longitude, latitude, last_distance, keyword,client_size);
+		cate_code, sort_code, distance, longitude, latitude, last_distance, keyword, client_size);
 
 	//var query_result = ShopCache.getInstance().getShopSpread(last_distance,longitude, latitude, city_no, area_code, distance, cate_code, keyword);
 
@@ -213,6 +213,7 @@ exports.getShopSpread = function(headers, query, callback) {
 
 	spread_item_query.withLongitude(longitude).withLatitude(latitude).withCity(city_no);
 	spread_item_query.withArea(area_code).withSearch(keyword).withDistance(distance);
+	spread_item_query.withCategory(cate_code);
 	spread_item_query.withLastDistance(last_distance);
 
 	let query_result = SpreadItemService.getItemList(spread_item_query);
@@ -226,7 +227,7 @@ exports.getShopSpread = function(headers, query, callback) {
 	//logger.log("INFO", "query_result", query_result.length);
 
 	if (query_result.length > 0) {
-		let page_size = Math.min(query_result.length,18);
+		let page_size = Math.min(query_result.length, 18);
 		let return_size = page_size;
 		if (query_result.length > page_size) {
 
@@ -244,16 +245,16 @@ exports.getShopSpread = function(headers, query, callback) {
 				break;
 			}
 			return_size = page_size;
-			logger.log("INFO",(page_size % 2), "!= ", (client_size % 2), '=',(page_size % 2) != (client_size % 2) );
-			if((page_size % 2) != (client_size % 2)){
+			//logger.log("INFO",(page_size % 2), "!= ", (client_size % 2), '=',(page_size % 2) != (client_size % 2) );
+			if ((page_size % 2) != (client_size % 2)) {
 				return_size = return_size + 1;
 			}
 		}
-		console.log("return_size",return_size);
+		//console.log("return_size",return_size);
 		let arr_list = query_result.slice(0, return_size);
-		console.log(arr_list.length);
-		console.log(arr_list[0]);
-		console.log(arr_list[arr_list.length - 1]);
+		//console.log(arr_list.length);
+		//console.log(arr_list[0]);
+		//console.log(arr_list[arr_list.length - 1]);
 		json_value['spread_list'] = arr_list;
 		json_value['page_size'] = page_size;
 		json_value['length'] = arr_list.length;
@@ -296,6 +297,16 @@ exports.getActivityList = function(headers, query, callback) {
 	let begin_distance = Number(query['last_distance']);
 
 	logger.log("INFO", "get headers:", headers['longitude'], headers['latitude']);
+	let range_distance = Number(query['distance']);
+	let city_no = 167;//Number(query['city_no']);
+	let area_code = Number(query['area_code']);
+	let category_code = Number(query['category_code']);
+	logger.log("INFO",'[getActivityList]',
+		"begin_distance:",begin_distance,
+		"range_distance:",range_distance,
+		'city_no:',city_no,
+		'area_code:',area_code,
+		'category_code:',category_code);
 
 	ShopActivityService.getActivityList((list) => {
 
@@ -303,58 +314,84 @@ exports.getActivityList = function(headers, query, callback) {
 		for (let bean of list) {
 			let shop_id = bean.getShopId();
 			let shop_info = ShopCache.getInstance().getShop(shop_id);
-
-			if (shop_info != null) {
-				bean['distance'] = shop_info.calcDistance(headers['longitude'], headers['latitude']);
-				let beanDistance = {
-						'bean': bean,
-						'distance':bean['distance'] ,
-					}
-					//logger.log("INFO",beanDistance['distance'],' ',begin_distance);
-				if (beanDistance['distance'] > begin_distance) {
-					list_with_distance.push(beanDistance);
-				}
-			} else {
-
+			if (shop_info == null) {
+				continue;
 			}
+			let distance = shop_info.calcDistance(headers['longitude'], headers['latitude']);
+
+			if (distance < begin_distance) {
+				continue;
+			}
+
+			if (range_distance > 0) {
+				if (distance > range_distance) {
+					continue;
+				}
+			}
+			
+			if (!shop_info.matchFilter(city_no, area_code, category_code)) {
+				continue;
+			}
+			bean['distance'] = distance;
+
+			let beanDistance = {
+				'bean': bean,
+				'distance': distance,
+			}
+			list_with_distance.push(beanDistance);
 
 		}
 
 		list_with_distance.sort((a, b) => {
 			return a['distance'] - b['distance'];
 		});
+		//logger.log("INFO",list_with_distance);
 
 		let json_result = {
 			'distance': 0,
 			'list': [],
 		};
-
-		const page_size = 10;
-		//logger.log("INFO","list_with_distance:",list_with_distance);
-		if (list_with_distance.length > 0) {
-
-			if (list_with_distance.length <= page_size) {
-				for (let beanWithDistance of list_with_distance) {
-					json_result['list'].push(beanWithDistance['bean']);
-				}
-				json_result['distance'] = list_with_distance[json_result['list'].length - 1]['distance'];
-			} else {
-				for (let i = 0; i < page_size; ++i) {
-					json_result['list'].push(list_with_distance[i]['bean']);
-				}
-				for (let i = page_size; i < list_with_distance.length; ++i) {
-					if (list_with_distance[json_result['list'].length - 1]['distance'] == list_with_distance[i]['distance']) {
-						json_result['list'].push(list_with_distance[i]['bean']);
-					} else {
-						break;
-					}
-				}
-				json_result['distance'] = list_with_distance[json_result['list'].length - 1]['distance'];
-			}
+		if(list_with_distance == null){
+			callback(0,json_result);
+			return;
+		}
+		if(list_with_distance.length == 0){
+			callback(0,json_result);
+			return;
 		}
 
+		let page_size = 2;
+		//logger.log("INFO","list_with_distance:",list_with_distance);
 
+		if (page_size < list_with_distance.length) {
+
+			
+			for (let i = 0; i < page_size; ++i) {
+				json_result['distance'] = list_with_distance[i]['distance'];
+				json_result['list'].push(list_with_distance[i]['bean']);
+			}
+
+			let _distance = list_with_distance[page_size - 1]['distance'];
+			let activity_index = page_size;
+			while (activity_index < list_with_distance.length && _distance == list_with_distance[activity_index]['distance']) {
+				json_result['list'].push(list_with_distance[activity_index]['bean']);
+				json_result['distance'] = list_with_distance[activity_index]['distance'];
+				activity_index = activity_index + 1;
+			}
+
+
+		} else {
+			json_result['distance'] = list_with_distance[list_with_distance.length - 1]['distance'];
+			for (let bean_with_distance of list_with_distance) {
+				json_result['list'].push(bean_with_distance['bean']);
+			}
+
+		}
+		logger.log("INFO",json_result);
 		callback(0, json_result);
+
+
+
 	});
 
 
@@ -739,8 +776,10 @@ exports.getMyScheduleRouteInfo = function(headers, query, callback) {
 exports.getBeSellerData = function(headers, query, callback) {
 	var json_result = {};
 	let uid = Number(headers['uid']);
+	let city = 167;
 	if (uid > 0) {
 		json_result['category'] = DbCache.getInstance().getShopCategory();
+		json_result['area'] = DbCache.getInstance().getAreaMenu(null, city);
 		let shop_id = ShopService.getOwnShopId(uid);
 		logger.log("HTTP_HANDER", "shop_id:" + shop_id + " uid:" + headers['uid']);
 		if (shop_id > 0) {

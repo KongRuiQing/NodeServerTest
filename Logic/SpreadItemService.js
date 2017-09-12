@@ -57,7 +57,7 @@ class SpreadItemBean {
 				return false;
 			}
 		}
-		console.log("3");
+		//console.log(query['category_code']);
 		if (query['category_code'] > 0) {
 			let match_category = DbCache.getInstance().matchCategor(query['category_code'], this.category_code, "item");
 			if (!match_category) {
@@ -126,7 +126,7 @@ class Query {
 		this.keyword = "";
 		this.distance = -1;
 		this.last_distance = 0;
-
+		this.category_code = 0;
 		this.requestFlag = 0;
 	}
 
@@ -150,6 +150,7 @@ class Query {
 		this.requestFlag |= 0x8;
 		return this;
 	}
+
 	withSearch(keyword) {
 		this.keyword = keyword;
 		this.requestFlag |= 0x16;
@@ -164,6 +165,10 @@ class Query {
 		this.last_distance = last_distance;
 		this.requestFlag |= 0x64;
 		return this;
+	}
+	withCategory(category_code){
+		this.category_code = category_code;
+		this.requestFlag |= 0x128;
 	}
 
 	isBad() {
@@ -263,7 +268,7 @@ class SpreadItemService {
 			});
 
 		}
-		logger.log("INFO","[SpreadItemService][getItemList] cache:",cache);
+		//logger.log("INFO","[SpreadItemService][getItemList] cache:",cache);
 
 		cache.sort((left, right) => {
 			if (left['shop_id'] == right['shop_id']) {

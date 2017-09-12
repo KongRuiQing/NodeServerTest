@@ -28,7 +28,7 @@ function ShopManager() {
 	this.item_property_name = {};
 	this.shop_item_property = {};
 	this.shop_items = new Map();
-	
+
 	this.activity_list = {};
 	this.max_shop_item_id = 0;
 
@@ -38,7 +38,7 @@ function ShopManager() {
 	ShopService.on("close_shop_by_player", (shop_id) => {
 		that.removeShopByShopId(shop_id);
 
-		ShopEventDispatcher.fireEvent("close_shop",shop_id);
+		ShopEventDispatcher.fireEvent("close_shop", shop_id);
 	});
 	ShopService.on("new_shop", (db_row) => {
 		that.addShop(db_row);
@@ -76,7 +76,7 @@ ShopManager.prototype.saveShopItem = function(json_item, json_image, json_proper
 
 		this.refreshShopItem(itemBean, json_item, json_image, json_propertys);
 
-		ShopItemEventDispatcher.fireEvent("refresh_shop_item",itemBean);
+		ShopItemEventDispatcher.fireEvent("refresh_shop_item", itemBean);
 
 
 	} else {
@@ -92,7 +92,7 @@ ShopManager.prototype.refreshShopItem = function(itemBean, json_value, json_imag
 
 	itemBean.initFromDb(json_value);
 
-	
+
 
 	if (json_image != null) {
 		for (var key in json_image) {
@@ -154,9 +154,9 @@ ShopManager.prototype.removeShopItem = function(to_remove_item_id) {
 		let shop_id = item_bean.getShopId();
 		this.shop_items.delete(to_remove_item_id);
 
-		ShopItemEventDispatcher.fireEvent("remove_shop_item",to_remove_item_id);
+		ShopItemEventDispatcher.fireEvent("remove_shop_item", to_remove_item_id);
 
-		
+
 		let shop_bean = this.getShop(shop_id);
 		if (shop_bean != null) {
 			shop_bean.removeShopItem(to_remove_item_id);
@@ -213,7 +213,7 @@ exports.InitFromDb = function(
 
 		var item = shop_item_list[i];
 
-		
+
 		var shop_id = Number(item['shop_id']);
 
 		var shop_info = g_shop_cache['dict'].get(shop_id);
@@ -263,7 +263,7 @@ exports.InitFromDb = function(
 
 	}
 
-	
+
 	for (var i in shop_item_images) {
 		var item_id = Number(shop_item_images[i]['item_id']);
 		var image = shop_item_images[i]['image'];
@@ -309,10 +309,20 @@ ShopManager.prototype.getShopList = function(uid, city_no, area_code, category, 
 				if (shop_info && shop_info.matchFilter(city_no, area_code, category)) {
 					if (search_key.length > 0) {
 						if (shop_info.search(search_key)) {
-							all_list.push(shop_info.getShopBasicInfo(uid, longitude, latitude));
+							let shop_basic_info = shop_info.getShopBasicInfo(longitude, latitude);
+
+							shop_basic_info['attention_num'] = AttentionService.getShopAttentionNum(shop_info.getId());
+							shop_basic_info['is_attention'] = AttentionService.isAttentionThisShop(uid, shop_info.getId());
+							all_list.push(shop_basic_info);
 						}
 					} else {
-						all_list.push(shop_info.getShopBasicInfo(uid, longitude, latitude));
+
+						let shop_basic_info = shop_info.getShopBasicInfo(longitude, latitude);
+						//console.log(shop_basic_info);
+						shop_basic_info['attention_num'] = AttentionService.getShopAttentionNum(shop_info.getId());
+						shop_basic_info['is_attention'] = AttentionService.isAttentionThisShop(uid,shop_info.getId());
+
+						all_list.push(shop_basic_info);
 					}
 				}
 			}
@@ -451,7 +461,7 @@ ShopManager.prototype.getShopSpread = function(last_index, longitude, latitude, 
 
 	this.shop_items.forEach((shop_item, item_id) => {
 
-		
+
 		if (shop_item.matchFilter(keyword) && shop_item.isShelve()) {
 
 			let item_category = shop_item.getCategoryCode();
@@ -477,7 +487,7 @@ ShopManager.prototype.getShopSpread = function(last_index, longitude, latitude, 
 			if (distance <= 0 || dis < distance) {
 				//logger.log("INFO",'city_no:',city_no,'area_code:',area_code);
 				if (shop_info.matchFilter(city_no, area_code, 0)) {
-					
+
 					arr_result.push(shop_item.getSpreadItemInfo(dis));
 				}
 			}
@@ -847,7 +857,7 @@ ShopManager.prototype.removeShopByShopId = function(shop_id) {
 		that.shop_items.delete(to_remove_item_id);
 	});
 
-	ShopItemEventDispatcher.fireEvent("off_shelve_item_list",all_remove_item);
+	ShopItemEventDispatcher.fireEvent("off_shelve_item_list", all_remove_item);
 }
 
 ShopManager.prototype.updateShopByApi = function(json_shop) {
@@ -905,7 +915,7 @@ ShopManager.prototype.getShopClaimState = function(shop_id) {
 		};
 	}
 	let json_result = shopBean.getClaimState();
-	
+
 	json_result['area_name'] = DbCache.getInstance().getAreaName(json_result['city_no'], json_result['area_code']);
 	return json_result;
 }
@@ -965,24 +975,24 @@ ShopManager.prototype.offShelveShopItem = function(shop_id, items, state) {
 			if (state == 2 && itemBean.isSpreadItem()) {
 				that.removeSpreadItem(itemBean.getId());
 			}
-			if(state == 1){
+			if (state == 1) {
 				shelve_item_bean_list.push(itemBean);
 			}
 
 		}
 	});
-	if(state == 2){
-		ShopItemEventDispatcher.fireEvent("off_shelve_item_list",items);
-	}else if (state == 1){
-		ShopItemEventDispatcher.fireEvent("shelve_item_list",{
-			'items' : shelve_item_bean_list,
-			'shop' : shop,
+	if (state == 2) {
+		ShopItemEventDispatcher.fireEvent("off_shelve_item_list", items);
+	} else if (state == 1) {
+		ShopItemEventDispatcher.fireEvent("shelve_item_list", {
+			'items': shelve_item_bean_list,
+			'shop': shop,
 		});
 	}
 }
 
 ShopManager.prototype.removeSpreadItem = function(find_item_id) {
-	ShopItemEventDispatcher.fireEvent('remove_shop_item',find_item_id);
+	ShopItemEventDispatcher.fireEvent('remove_shop_item', find_item_id);
 }
 
 ShopManager.prototype.closeShop = function(shop_id) {
