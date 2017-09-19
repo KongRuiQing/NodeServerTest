@@ -77,6 +77,7 @@ class SpreadShopBean {
 		this.latitude = parseFloat(db_row['latitude']);
 		this.city_no = Number(db_row['city_no']);
 		this.area_code = Number(db_row['area_code']);
+		
 	}
 	getDistance(inLongitude, inLatitude) {
 		let distance = FindUtil.getFlatternDistance(
@@ -97,7 +98,7 @@ class SpreadShopBean {
 			}
 		}
 		if (query['area_code'] != 0) {
-			if (query['area_code'] == this.area_code) {
+			if (query['area_code'] != this.area_code) {
 				return false;
 			}
 		}
