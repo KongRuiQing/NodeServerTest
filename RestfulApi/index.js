@@ -16,7 +16,8 @@ var CustomServiceInstance = require("./API/CustomServiceFulApi.js");
 var ShopStateInstance = require("./API/ShopStateFulApi.js");
 var WebSocketServer = require("./API/WebSocketServer.js");
 var UserInstance = require('./API/UserInstance.js');
-var server = null;
+var MessageInstance = require('./API/MessageInstance.js');
+var server = null; 	
 
 var connect = require('connect');
 var favicon = require('serve-favicon');
@@ -36,6 +37,7 @@ http_obj['/admin/v1/shop_state'] = ShopStateInstance.Instance();
 http_obj['/admin/v1/sendMessage'] = WebSocketServer.Instance();
 
 http_obj['/admin/v1/user'] = UserInstance.Instance();
+http_obj['/admin/v1/message'] = MessageInstance.Instance();
 
 let PORT = 0;
 function handle_route(request,response,next){

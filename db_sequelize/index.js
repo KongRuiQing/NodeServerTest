@@ -23,6 +23,7 @@ var GroupChatModel = sequelize.import("./model/GroupChatModel.js");
 var UserAttentionModel = sequelize.import("./model/UserAttentionModel.js");
 var ShopActivityModel = sequelize.import("./model/ShopActivityModel.js");
 var ShopImageModel = sequelize.import("./model/ShopImageModel.js");
+var UserMessageModel = sequelize.import("./model/UserMessageModel.js");
 
 exports.TestFindOrCreate = function(name) {
 
@@ -688,4 +689,33 @@ exports.updateShopImage = function(shop_id,image_type,image_index,image,callback
 	}).catch((error)=>{
 		callback(error);
 	});
+}
+
+exports.fetchAllMessage = function(last_time,callback){
+	UserMessageModel.findAll({
+		'where' : {
+			$or : [
+				{
+					'createdAt' : {gt : last_time}
+				},{
+					'updatedAt' : {gt : last_time}
+				},{
+					'deletedAt' : {gt : last_time}
+				}
+			]
+		},
+		'order' : [['createdAt', 'DESC']],
+	}).then((all_message_list)=>{
+		let result = [];
+		if(all_message_list != null){
+			for(let message of all_message_list){
+				result.push(message.toJSON());
+			}
+		}
+		//console.log(result);
+		callback(result);
+	}).catch((error)=>{
+		console.log(error);
+		callback(null);
+	})
 }

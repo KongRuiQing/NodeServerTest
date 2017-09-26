@@ -190,3 +190,11 @@ exports.sendMessage = function(nid, cmd, sendData) {
 		logger.log("WARN", 'WebSocketApp is null');
 	}
 }
+
+exports.broadcast = function(cmd,sendData){
+	if (app != null) {
+		app.broadcast(cmd, sendData);
+	} else {
+		logger.log("WARN", 'WebSocketApp is null');
+	}
+}

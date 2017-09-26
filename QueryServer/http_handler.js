@@ -20,7 +20,7 @@ let ErrorCode = require("../error.js");
 let GroupMsgService = require("../Logic/groupMsgService.js");
 let ShopActivityService = require("../Logic/ShopActivityService.js");
 var SpreadItemService = require("../Logic/SpreadItemService.js");
-
+var MyMessageService = require("../Logic/MyMessageService.js");
 function watchApkVersion(root_path) {
 
 	var files = fs.readdirSync(root_path);
@@ -997,5 +997,20 @@ exports.getAllGroupList = function(headers, query, callback) {
 	callback(0, {
 		'error': 0,
 		'list': result,
+	})
+}
+
+exports.getMessage = function(headers, query, callback){
+	//let uid = headers['uid'];
+	let last_time = 0;
+	if('time' in query){
+		last_time = Number(query['time']);
+	}
+	logger.log("INFO","[getMessage] query last_time:",last_time);
+	let all_message = MyMessageService.getQuery().loadUserMessage(last_time);
+
+	callback(0,{
+		'error' : 0,
+		'list' : all_message,
 	})
 }

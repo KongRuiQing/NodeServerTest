@@ -97,6 +97,9 @@ class Online{
 			
 		}
 	}
+	broadcast(cmd,data){
+		WebSocket.broadcast(cmd,data);
+	}
 
 	logout(uid){
 		if(this.__online.has(uid)){

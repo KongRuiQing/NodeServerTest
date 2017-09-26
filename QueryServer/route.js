@@ -39,5 +39,6 @@ handle_http['/group_people'] = http_handler.getAllGroupList;
 
 handle_http['/shop_qr_image'] = shop_handler.getShopQRCodeImage;
 
+handle_http['/my_message'] = http_handler.getMessage;
 
 module.exports = handle_http;

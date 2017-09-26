@@ -21,6 +21,7 @@ var handle_login = require("./handle_login");
 var http_header = {};
 
 http_header[200] = "text/html";
+http_header[404] = "text/html";
 http_header[500] = 'text/plain';
 http_header[600] = 'text/plain';
 http_header[304] = 'text/plain';
@@ -46,7 +47,7 @@ function handle_route(request, response, next) {
 		new Promise((resolve, reject) => {
 			route[pathname](headers, request_url.query, function(error_code, content) {
 
-				//logger.log("INFO", query_num,"[query] path:",pathname,'error_code:',error_code,' result:',content);
+				logger.log("INFO", query_num,"[query] path:",pathname,'error_code:',error_code,' result:',content);
 				
 				if (error_code == 0) {
 					resolve(content);
@@ -62,12 +63,13 @@ function handle_route(request, response, next) {
 			});
 			response.end(JSON.stringify(content));
 		}).catch((error_code) => {
-			
+			logger.log("ERROR",error_code);
+
 			response.writeHead(200, {
 				'Content-Type': http_header[200],
 			});
 			let json_content = {};
-			json_content['error'] = error_code;
+			json_content['error'] = 0;
 			response.end(JSON.stringify(json_content));
 		});
 
