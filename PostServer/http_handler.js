@@ -328,6 +328,14 @@ exports.becomeSeller = function(header, fields, files, callback) {
 		'telephone': {
 			'name': 'telephone',
 			'type': 'string'
+		},
+		'longitude' : {
+			'name' : 'longitude',
+			'type' : 'float'
+		},
+		'latitude' : {
+			'name' : 'latitude',
+			'type' : 'float'
 		}
 	}
 	var shopInfo = {};

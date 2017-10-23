@@ -73,6 +73,8 @@ exports.insertRequestBeSeller = function(jsonObject, callback) {
 			'category_code3': jsonObject['category_code3'],
 			'address': jsonObject['address'],
 			'telephone': jsonObject['telephone'],
+			'longitude' : jsonObject['longitude'],
+			'latitude' : jsonObject['latitude'],
 			'state': 1,
 		},
 		'where': {
@@ -717,5 +719,19 @@ exports.fetchAllMessage = function(last_time,callback){
 	}).catch((error)=>{
 		console.log(error);
 		callback(null);
+	})
+}
+exports.loadAllAdFromDb = function(callback){
+	AdModel.findAll().then((all_message_list)=>{
+		let result = [];
+		if(all_message_list != null){
+			for(let message of all_message_list){
+				result.push(message.toJSON());
+			}
+		}
+		callback(null,result);
+	}).catch((error)=>{
+		console.log(error);
+		callback(error,null);
 	})
 }
