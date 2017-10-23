@@ -27,7 +27,7 @@ exports.getFlatternDistance = function(){// lng0 lat lng lat
 	let lng2 = arguments[2];
 
 	if(lat1 == lat2 && lng1 == lng2){
-		return 0
+		return 1
 	}
 	
 	var f = getRad((lat1 + lat2)/2);
@@ -49,14 +49,14 @@ exports.getFlatternDistance = function(){// lng0 lat lng lat
 	s = sg*(1-sl) + (1-sf)*sl;
 	c = (1-sg)*(1-sl) + sf*sl;
 	if(c == 0){
-		return 0;
+		return 1;
 	}
 	if(s == 0){
-		return 0;
+		return 1;
 	}
 	w = Math.atan(Math.sqrt(s/c));
 	if(w == 0){
-		return 0;
+		return 1;
 	}
 	r = Math.sqrt(s*c)/w;
 	d = 2*w*a;
@@ -64,7 +64,7 @@ exports.getFlatternDistance = function(){// lng0 lat lng lat
 	h2 = (3*r +1)/2/s;
 	var dis = d*(1 + fl*(h1*sf*(1-sg) - h2*(1-sf)*sg));
 	
-	return dis;
+	return Math.max(1,dis);
 }
 
 exports.randVertifyCode = function(){
