@@ -25,6 +25,10 @@ exports.getFlatternDistance = function(){// lng0 lat lng lat
 	let lng1 = arguments[0];
 	let lat2 = arguments[3];
 	let lng2 = arguments[2];
+
+	if(lat1 == lat2 && lng1 == lng2){
+		return 0
+	}
 	
 	var f = getRad((lat1 + lat2)/2);
 	var g = getRad((lat1 - lat2)/2);
@@ -44,8 +48,16 @@ exports.getFlatternDistance = function(){// lng0 lat lng lat
 
 	s = sg*(1-sl) + (1-sf)*sl;
 	c = (1-sg)*(1-sl) + sf*sl;
-
+	if(c == 0){
+		return 0;
+	}
+	if(s == 0){
+		return 0;
+	}
 	w = Math.atan(Math.sqrt(s/c));
+	if(w == 0){
+		return 0;
+	}
 	r = Math.sqrt(s*c)/w;
 	d = 2*w*a;
 	h1 = (3*r -1)/2/c;
