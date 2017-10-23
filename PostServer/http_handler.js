@@ -329,14 +329,6 @@ exports.becomeSeller = function(header, fields, files, callback) {
 			'name': 'telephone',
 			'type': 'string'
 		},
-		'longitude' : {
-			'name' : 'longitude',
-			'type' : 'float'
-		},
-		'latitude' : {
-			'name' : 'latitude',
-			'type' : 'float'
-		}
 	}
 	var shopInfo = {};
 
@@ -363,8 +355,9 @@ exports.becomeSeller = function(header, fields, files, callback) {
 				shopInfo[key_info['name']] = 0.0;
 			}
 		}
-
 	}
+	shopInfo['longitude'] = header['longitude'];
+	shopInfo['latitude'] = header['latitude'];
 
 
 
