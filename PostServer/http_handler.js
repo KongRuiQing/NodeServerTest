@@ -272,7 +272,7 @@ exports.changeSign = function(header, fields, files, callback) {
 	var json_result = PlayerProxy.changeSign(guid, sign);
 	callback(true, json_result);
 }
-
+// become_seller
 exports.becomeSeller = function(header, fields, files, callback) {
 
 	let Tag = "[POST_SERVER][http_handler][becomeSeller]";
@@ -329,6 +329,14 @@ exports.becomeSeller = function(header, fields, files, callback) {
 			'name': 'telephone',
 			'type': 'string'
 		},
+		'latitude' : {
+			'name' : 'latitude',
+			'type' : 'float',
+		},
+		'longitude' : {
+			'name' : 'longitude',
+			'type' : 'float',
+		}
 	}
 	var shopInfo = {};
 
@@ -356,8 +364,12 @@ exports.becomeSeller = function(header, fields, files, callback) {
 			}
 		}
 	}
-	shopInfo['longitude'] = header['longitude'];
-	shopInfo['latitude'] = header['latitude'];
+	if(shopInfo['longitude'] <= 0.0  || shopInfo['latitude'] <= 0.0){
+		logger.log("ERROR", Tag, 'user not set longitude and latitude use header');
+		shopInfo['longitude'] = header['longitude'];
+		shopInfo['latitude'] = header['latitude'];
+	}
+	
 
 
 
