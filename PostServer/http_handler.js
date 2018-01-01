@@ -686,7 +686,7 @@ exports.addShopItem = function(header, fields, files, callback) {
 		json_value['shop_id'] = shop_id;
 		json_value['link'] = link;
 		json_value['group_index'] = group_index;
-
+		json_value['state'] = 2;
 		let json_propertys = [];
 		for (var index = 0; index < 8; ++index) {
 			let property_type_key = "item_property_type_" + index;
