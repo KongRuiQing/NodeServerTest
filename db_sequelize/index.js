@@ -75,7 +75,7 @@ exports.insertRequestBeSeller = function(jsonObject, callback) {
 			'telephone': jsonObject['telephone'],
 			'longitude' : jsonObject['longitude'],
 			'latitude' : jsonObject['latitude'],
-			'state': 1,
+			'state': 0,
 		},
 		'where': {
 			'Id': null,
