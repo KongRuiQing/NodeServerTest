@@ -25,6 +25,7 @@ function vaildLogin(jsonLogin) {
 }
 
 
+
 module.exports = function(server, socket, jsonLogin) {
 
 	if (vaildLogin(jsonLogin)) {
@@ -34,14 +35,13 @@ module.exports = function(server, socket, jsonLogin) {
 		if (login_result != null) {
 			let error = 0;
 			if ('error' in login_result) {
-				error = login_result['error'];
+				error = Number(login_result['error']);
 			}
 			let response = {};
 			if (error == 0) {
 				// kick other
 				let login_info = login_result['login_info'];
 				
-
 				let login_socket_id = OnlineModule.isLogin(login_info['uid']);
 				if (login_socket_id != null && login_socket_id != "") {
 					if (jsonLogin['nid'] != login_socket_id) {
