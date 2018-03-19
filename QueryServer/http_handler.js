@@ -638,7 +638,7 @@ exports.getGameShopList = function(headers, query, callback) {
 	//var guid = headers['guid'];
 	var uid = headers['uid']
 	if (city == 0) city = 167;
-	var category = Number(query['cate_code'] || 0);
+	var category = Number(query['category'] || 0);
 
 	var page_size = 50;
 	if ('page_size' in query) {
