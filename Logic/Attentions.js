@@ -57,6 +57,8 @@ class ShopAttentions extends EventEmitter {
 	}
 
 	attentionShop(uid, shop_id, is_attention) {
+		logger.log("INFO","attentionShop",uid,shop_id,is_attention,typeof(uid),typeof(shop_id));
+
 		this._updateUserAttentionInfo(uid, shop_id, is_attention);
 		this._updateShopAttentionInfo(uid, shop_id, is_attention);
 
@@ -74,6 +76,8 @@ class ShopAttentions extends EventEmitter {
 	}
 
 	isAttentionThisShop(uid, shop_id) {
+		logger.log("INFO","isAttentionThisShop",uid,shop_id,"type as ",typeof(uid),typeof(shop_id));
+		
 		if (this.__user_attention.has(uid)) {
 			let attention = this.__user_attention.get(uid);
 			return attention.has(shop_id);
