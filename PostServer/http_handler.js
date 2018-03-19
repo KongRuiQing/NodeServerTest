@@ -400,7 +400,7 @@ exports.becomeSeller = function(header, fields, files, callback) {
 			callback(true, {
 				'error': 0,
 				'shop_id': db_row['Id'],
-				'state': 1,
+				'state': 0,
 			});
 		});
 
