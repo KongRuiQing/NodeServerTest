@@ -45,6 +45,10 @@ class OnlineInfo{
 	get guid(){
 		return this.__guid;
 	}
+
+	get uid(){
+		return this.__uid;
+	}
 }
 
 class Online{
@@ -118,6 +122,16 @@ class Online{
 		}else{
 			logger.log("INFO",'[Online][kickoff]',`uid:[${uid}] is not online`);
 		}
+	}
+	findUID(nid){
+		
+		for(let [online,uid] of this.__online){
+			if(online.socket_id == nid){
+				return uid;
+			}
+		}
+
+		return 0;
 	}
 }
 

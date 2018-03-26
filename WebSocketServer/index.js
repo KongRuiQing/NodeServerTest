@@ -182,6 +182,15 @@ exports.start = function(HOST, PORT) {
 	}
 }
 
+exports.bind = function(socket_id,uid){
+	if(app != null){
+		let client = this.clients.get(nid);
+		if(client){
+			client.uid = uid;
+		}
+	}
+}
+
 exports.sendMessage = function(nid, cmd, sendData) {
 
 	if (app != null) {

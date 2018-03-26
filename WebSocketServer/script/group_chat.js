@@ -12,7 +12,7 @@ let GroupChatService = require("../../Logic/groupChatService.js");
 let AttentionService = require("../../Logic/Attentions.js");
 let ErrorCode = require("../../error.js");
 let _db = require('../../db_sequelize');
-
+var logger = require('../logger').logger();
 function vaildJSON(jsonLogin) {
 	const schema = Joi.object().keys({
 		'shop_id': Joi.number().required(),
@@ -30,6 +30,11 @@ module.exports = function(server, socket, json) {
 
 	if (vaildJSON(json)) {
 		let uid = socket.uid;
+
+		if(uid === undefined){
+			uid = OnlineModule.findUID(socket.nid)
+			logger.log("INFO", `${uid} is find`);
+		}
 
 		if (uid <= 0) {
 			server.reply(socket, "group_chat_rep", {

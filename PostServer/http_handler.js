@@ -198,6 +198,7 @@ exports.register = function(header, fields, files, callback) {
 				return;
 			}
 			let socket_id = fields['socket_id'];
+			
 			_db.registerPlayer({
 				'telephone': telephone,
 				'password': password,
@@ -214,6 +215,7 @@ exports.register = function(header, fields, files, callback) {
 
 				PlayerProxy.getInstance().addUserInfo(userinfo);
 
+				Ws.bind(socket_id,logininfo['Id']);
 				let guid = OnlineService.registerLogin(logininfo['Id'], socket_id);
 
 				let user_info = PlayerProxy.getInstance().getUserInfo(logininfo['Id']);
