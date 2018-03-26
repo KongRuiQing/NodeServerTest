@@ -184,7 +184,7 @@ exports.start = function(HOST, PORT) {
 
 exports.bind = function(socket_id,uid){
 	if(app != null){
-		let client = this.clients.get(nid);
+		let client = this.clients.get(socket_id);
 		if(client){
 			client.uid = uid;
 		}
