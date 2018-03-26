@@ -32,6 +32,9 @@ module.exports = function(server, socket, jsonLogin) {
 
 		let login_result = LoginModule.checkLogin(jsonLogin['account'], jsonLogin['password']);
 
+		if(jsonLogin['nid'] && socket.nid === undefined){
+			socket.nid = jsonLogin['nid'];
+		}
 		if (login_result != null) {
 			let error = 0;
 			if ('error' in login_result) {
