@@ -125,7 +125,7 @@ class Online{
 	}
 	findUID(nid){
 		
-		for(let [online,uid] of this.__online){
+		for(let [uid,online] of this.__online){
 			if(online.socket_id == nid){
 				return uid;
 			}
