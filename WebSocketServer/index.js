@@ -183,6 +183,7 @@ exports.start = function(HOST, PORT) {
 }
 
 exports.bind = function(socket_id,uid){
+	logger.log("INFO",`call bind socket_id ${socket_id}, uid : ${uid}`)
 	if(app != null){
 		let client = app.clients.get(socket_id);
 		if(client){

@@ -32,6 +32,7 @@ module.exports = function(server, socket, json) {
 		let uid = socket.uid;
 
 		if(uid === undefined){
+			logger.log("INFO","socket not has uid find nid from OnlineModule. ->",socket.nid,"<-");
 			uid = OnlineModule.findUID(socket.nid)
 			logger.log("INFO", `${uid} is find`);
 		}
