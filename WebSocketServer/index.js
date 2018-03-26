@@ -157,7 +157,12 @@ function handle_recvMessage(message) {
 	let recvData = JSON.parse(message);
 	let cmd = recvData['cmd'];
 	let recvMsg = recvData['data'];
-
+	let socket_id = recvData['nid'];
+	if(this.nid === undefined){
+		this.nid = socket_id;
+	}else if(this.nid != socket_id){
+		logger.log("ERROR","socket_id is not equip this.nid",this.nid,socket_id);
+	}
 	if (cmd != undefined && cmd != null) {
 		if (cmd in handler_route) {
 			handler_route[cmd](app, this, recvMsg);

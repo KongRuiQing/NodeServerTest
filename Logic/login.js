@@ -69,10 +69,10 @@ class Login{
 	}
 
 	addLoginInfo(account,uid,password,state,last_login_time){
-		if(this.__login.has('account')){
+		if(this.__login.has(account)){
 
 		}else{
-			//logger.log('INFO',"add account:",account,'typeof accoount'  , typeof account);
+			logger.log('INFO',"add account:",account,'typeof accoount' , typeof account);
 			let loginInfo = new LoginInfo();
 			loginInfo.setLoginInfo(uid,password,state,last_login_time);
 			this.__login.set(account,loginInfo);
