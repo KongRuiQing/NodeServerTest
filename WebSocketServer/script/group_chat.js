@@ -12,7 +12,7 @@ let GroupChatService = require("../../Logic/groupChatService.js");
 let AttentionService = require("../../Logic/Attentions.js");
 let ErrorCode = require("../../error.js");
 let _db = require('../../db_sequelize');
-var logger = require('../../ogger').logger();
+var logger = require('../../logger').logger();
 function vaildJSON(jsonLogin) {
 	const schema = Joi.object().keys({
 		'shop_id': Joi.number().required(),
