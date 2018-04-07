@@ -6,18 +6,19 @@ var logger = require("../logger.js").logger();
 var OnlineService = require("./online.js");
 var PlayerService = require("../playerList.js");
 var AttentionService = require("./Attentions.js");
+var ShopService = require("./shop.js");
 class GroupChat {
 	constructor() {
 		this.__last_chat_time = null;
 		this.__all_msg = [];
-		
+
 	}
 
 	addChat(bean) {
 		this.__all_msg.push(bean);
 		this._updateLastChatTime(bean.getTime());
 	}
-	_updateLastChatTime(time){
+	_updateLastChatTime(time) {
 		if (this.__last_chat_time == null) {
 			this.__last_chat_time = time;
 		} else {
@@ -29,7 +30,7 @@ class GroupChat {
 
 	getChat(time) {
 		if (this.__last_chat_time == null) {
-			logger.log("INFO","[groupChatService][getChat] chat is null","");
+			logger.log("INFO", "[groupChatService][getChat] chat is null", "");
 			return [];
 		}
 		logger.log("INFO", "[groupChatService][getChat] time:", time.unix(), " __last_chat_time:", this.__last_chat_time.unix());
@@ -48,9 +49,12 @@ class GroupChat {
 	notifyNewGroupChat(bean) {
 		let shop_id = bean.getShopId();
 		let all_player = AttentionService.getAttentionUsers(shop_id);
-		logger.log("INFO","[WS][notifyNewGroupChat] all_player:",all_player);
+		logger.log("INFO", "[WS][notifyNewGroupChat] all_player:", all_player);
+
+		let json = bean.getJson();
+
 		for (let send_to of all_player) {
-			let json = bean.getJson();
+
 			let player = PlayerService.getInstance().getPlayer(bean.getUID());
 			if (player != null) {
 				json['head'] = player.getHead();
@@ -58,6 +62,16 @@ class GroupChat {
 
 			OnlineService.sendMessage(send_to, 'group_chat', json);
 		}
+		// self
+		let uid = ShopService.getUidByShopId(shop_id);
+		if (uid && uid > 0) {
+			let player = PlayerService.getInstance().getPlayer(uid);
+			if (player != null) {
+				json['head'] = player.getHead();
+			}
+			OnlineService.sendMessage(uid, 'group_chat', json);
+		}
+
 	}
 }
 
@@ -98,8 +112,8 @@ class Service {
 	getChatInShop(shop_id, last_login_time) {
 		if (this.__all_chat.has(shop_id)) {
 			return this.__all_chat.get(shop_id).getChat(last_login_time);
-		}else{
-			logger.log("INFO","not this shop",'shop_id:',shop_id," typeof shop_id",typeof shop_id);
+		} else {
+			logger.log("INFO", "not this shop", 'shop_id:', shop_id, " typeof shop_id", typeof shop_id);
 		}
 		return [];
 	}
