@@ -1,3 +1,4 @@
+
 'use strict';
 
 console.log("load CategoryRestFulApi.js");
@@ -16,7 +17,7 @@ function CategoryInstance(){
 util.inherits(CategoryInstance, events.EventEmitter);
 
 function __delete(req,rsp){
-
+	logger.log("CategoryRestfulapl delete req.body",req.body);
 	const schema = Joi.object().keys({
 		'code': Joi.number().integer().min(1).required(),
 		'type': Joi.number().integer().min(1).max(2).required(),
