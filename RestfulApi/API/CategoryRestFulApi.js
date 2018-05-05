@@ -19,7 +19,7 @@ util.inherits(CategoryInstance, events.EventEmitter);
 function __delete(req,rsp){
 	logger.log("CategoryRestfulapl delete req.body",req.body);
 	const schema = Joi.object().keys({
-		'code': Joi.number().integer().min(1).required(),
+		'id': Joi.number().integer().min(1).required(),
 		'type': Joi.number().integer().min(1).max(2).required(),
 	});
 	const joi_result = Joi.validate(req.body, schema);
@@ -29,7 +29,7 @@ function __delete(req,rsp){
 	}
 	let error = 0;
 	let error_msg = "";
-	let code = Number(req.body['code']);
+	let code = Number(req.body['id']);
 	let type = Number(req.body['type']);
 
 	
