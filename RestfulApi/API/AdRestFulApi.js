@@ -30,7 +30,6 @@ function __delete(req,rsp){
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	rsp.end(JSON.stringify({
 		'error' : result['error'],
-		'id' : id,
 	}));
 
 	return true;
