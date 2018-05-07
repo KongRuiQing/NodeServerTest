@@ -16,18 +16,15 @@ util.inherits(AdInstance, events.EventEmitter);
 
 function __delete(req,rsp){
 
-	if(!('id' in req.body)){
-		logger.log("WARN","[AdRestFulApi][__delete] ",
-			'error_msg:','position is undefined',
-			'req.body' , util.inspect(req.body,{depth:4}));
-		__usage("DELETE",rsp,"id is undefined");
-		return;
-	}
-	let id = Number(req.body['id']);
+	let position = Number(req.body['position']);
+	let index = Number(req.body["index"]);
+
+	
 	logger.log('INFO','[AdRestFulApi][__delete]',
-		'id:',id);
+		'req:',req.body);
 	let result = DbCacheManager.getInstance().removeAd({
-		'id' : id,
+		'position' : position,
+		'index' : index
 	});
 
 	rsp.writeHead(200, {'content-type': 'text/html'});
