@@ -359,7 +359,7 @@ DbCacheManager.prototype.removeAd = function(removeAdJson){
 	for(var ad_key in this['ad_image']){
 		for(var ad_index in this['ad_image'][ad_key]){
 			var adBean = this['ad_image'][ad_key][ad_index];
-			logger.log("check adbean ", util.inspect(adBean));
+			//logger.log("check adbean ", util.inspect(adBean));
 			if(adBean != null && adBean.getPosition() == removeAdJson['position'] && adBean.getIndex() == removeAdJson['index']){
 				position = adBean.getPosition();
 				delete  this['ad_image'][ad_key][ad_index];
