@@ -89,9 +89,6 @@ function __usage(method,rsp,error_msg){
 	return;
 }
 
-
-
-
 function __post(req,rsp){
 
 	console.log(req.body);
@@ -99,7 +96,7 @@ function __post(req,rsp){
 		'code': Joi.number().integer().min(1).required(),
 		'type': Joi.number().integer().min(1).max(2).required(),
 		'name' : Joi.string().required(),
-		'parent' : Joi.number().integer().min(1).required(),
+		'parent' : Joi.number().integer().min(0).required(),
 	});
 
 	const joi_result = Joi.validate(req.body, schema);
