@@ -187,6 +187,7 @@ DbCacheManager.prototype.getItemCategory = function(){
 	var list = [];
 	for(var i in this.__CategoryMenu["item"]){
 		list.push(this.__CategoryMenu["item"][i].getJsonValue());
+		logger.log("[DBCache.getItemCategory] category :",this.__CategoryMenu["item"][i].getJsonValue());
 	}
 	return list;
 }
