@@ -91,3 +91,4 @@ db_sequelize/model/TestModel.js
 test.js
 Test/a.js
 Test/b.js
+.vscode/settings.json

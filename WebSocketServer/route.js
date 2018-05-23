@@ -4,6 +4,7 @@ var http_login = require("./script/login.js");
 var http_connection = require("./script/connection.js")
 var handle_logout = require("./script/logout.js")
 var handle_group_chat = require("./script/group_chat.js")
+
 var logger = require('../logger').logger();
 
 function __error(app,socket,msg){

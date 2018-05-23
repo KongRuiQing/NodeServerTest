@@ -7,6 +7,8 @@ var logger = require('../../logger').logger();
 
 var DbCacheManager = require("../../cache/DbCache.js");
 var shopCache = require("../../cache/shopCache.js");
+var ShopService = require("../../Logic/shop.js");
+
 const Joi = require('joi');
 function ShopInstance(){
 	logger.log("INFO","create CategoryInstance");
@@ -36,7 +38,7 @@ function __delete(req,rsp){
 	let shop_id = Number.parseInt(req.body['id']);
 	
 	shopCache.getInstance().removeShopByShopId(shop_id);
-	
+	ShopService.deleteShop(shop_id);
 	rsp.writeHead(200, {'content-type': 'text/html'});
 	rsp.end(JSON.stringify({'error' : 0}));
 	return;

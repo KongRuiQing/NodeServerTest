@@ -4,8 +4,8 @@ var db = require('./mysqlproxy');
 var iconv = require('iconv-lite');
 
 var http = require('http');
-var path=require('path');
-var url=require('url');
+var path = require('path');
+var url = require('url');
 var query_server = require("./QueryServer/server");
 var image_file_server = require("./ImageFileServer/Server");
 var post_server = require("./PostServer/Server");
@@ -51,12 +51,31 @@ var HTTP_RESTFUL_API_PORT = 12000;
 //logger.log('Server 监听 ' + HOST +':'+ PORT);
 
 //chatServer.on('connection', function(sock) {
-	//logger.log('connection','新的客户端: ' +sock.remoteAddress +':'+ sock.remotePort);
-	//player.createPlayer(sock);
+//logger.log('connection','新的客户端: ' +sock.remoteAddress +':'+ sock.remotePort);
+//player.createPlayer(sock);
 //});
 
-query_server.start(HOST,QUERY_PORT);
-image_file_server.start(HOST,IMAGE_FILE_PORT);
-post_server.start(HOST,POST_SERVER_PORT);
-resutapi_server.start(HOST,HTTP_RESTFUL_API_PORT);
-webSocket.start(HOST,WEB_SOCKET_SERVER);
+
+//
+
+argv = process.argv;
+
+
+if (argv.length >= 3) {
+	cmd = argv[2]
+
+	if (cmd == "add_account") {
+		
+	}
+}
+else
+{
+	query_server.start(HOST, QUERY_PORT);
+	image_file_server.start(HOST, IMAGE_FILE_PORT);
+	post_server.start(HOST, POST_SERVER_PORT);
+	resutapi_server.start(HOST, HTTP_RESTFUL_API_PORT);
+	webSocket.start(HOST, WEB_SOCKET_SERVER);
+}
+
+
+//

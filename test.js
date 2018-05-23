@@ -1,8 +1,11 @@
 'use strict';
-var http = require('http'); 
+var http = require('http');
 var FindUtil = require("./FindUtil.js");
+
+var db_seq = require("./Db_sequelize");
+
 //console.log(FindUtil.getFlatternDistance(0,0,0,0));
-let args =  process.argv;
+let args = process.argv;
 
 let test_route = {};
 test_route['shop_list'] = test_shop_list;
@@ -18,33 +21,35 @@ test_route['add_category'] = add_category;
 
 test_route['user'] = test_user;
 
+test_route['add_account'] = add_account;
 
 
-if(args instanceof Array){
-  if(args.length > 2){
+
+if (args instanceof Array) {
+  if (args.length > 2) {
     let cmd = args.splice(2);
 
     test(cmd)
-    
-  }else{
+
+  } else {
     console.log("参数长度过小");
   }
-}else{
+} else {
   console.log("参数不是数组");
 }
 
-function test(cmd){
-  //console.log(cmd);
-  if(cmd[0] in test_route){
+function test(cmd) {
+  console.log(cmd);
+  if (cmd[0] in test_route) {
     test_route[cmd[0]](cmd.splice(1));
-  }else{
+  } else {
     console.log(test_route);
   }
 }
 
-function post(send_message,path,callback){
+function post(send_message, path, callback) {
   var options = {
-    host:'192.168.0.120',
+    host: '192.168.0.120',
     port: 12000,
     path: path,
     method: 'POST',
@@ -53,40 +58,40 @@ function post(send_message,path,callback){
     }
   };
 
-  var req = http.request(options,function(serverFeedback){
-    var body = "";  
-      serverFeedback.on('data',function(data){
-        body += data;
-      });
-      serverFeedback.on('end',function(){
-        callback(0,body);
-      });
+  var req = http.request(options, function (serverFeedback) {
+    var body = "";
+    serverFeedback.on('data', function (data) {
+      body += data;
+    });
+    serverFeedback.on('end', function () {
+      callback(0, body);
+    });
   });
   console.log(JSON.stringify(send_message));
   req.write(JSON.stringify(send_message));
   req.end();
 }
 
-function patch(send_message,path,callback){
+function patch(send_message, path, callback) {
   var options = {
-    host:'localhost',
+    host: 'localhost',
     port: 12000,
     path: path,
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      
+
     }
   };
 
-  var req = http.request(options,function(serverFeedback){
-    if(serverFeedback.statusCode ==200){
-      var body = "";  
-      serverFeedback.on('data',function(data){
+  var req = http.request(options, function (serverFeedback) {
+    if (serverFeedback.statusCode == 200) {
+      var body = "";
+      serverFeedback.on('data', function (data) {
         body += data;
       });
-      serverFeedback.on('end',function(){
-        callback(0,body);
+      serverFeedback.on('end', function () {
+        callback(0, body);
       });
     }
 
@@ -95,10 +100,10 @@ function patch(send_message,path,callback){
   req.end();
 }
 
-function __delete(send_message,path,callback){
+function __delete(send_message, path, callback) {
   let sendBuffer = JSON.stringify(send_message);
   var options = {
-    host:'localhost',
+    host: 'localhost',
     port: 12000,
     path: path,
     method: 'delete',
@@ -108,16 +113,16 @@ function __delete(send_message,path,callback){
     }
   };
 
-  var req = http.request(options,function(serverFeedback){
-    if(serverFeedback.statusCode ==200){
-      var body = "";  
-      serverFeedback.on('data',function(data){
+  var req = http.request(options, function (serverFeedback) {
+    if (serverFeedback.statusCode == 200) {
+      var body = "";
+      serverFeedback.on('data', function (data) {
         body += data;
       });
-      serverFeedback.on('end',function(){
-        callback(null,body);
+      serverFeedback.on('end', function () {
+        callback(null, body);
       });
-    }else{
+    } else {
       callback(`state_code : {serverFeedback.statusCode}`);
     }
 
@@ -126,8 +131,8 @@ function __delete(send_message,path,callback){
   req.end();
 }
 
-function get(path){
-  http.get('http://127.0.0.1:9889/'+path,function(res){
+function get(path) {
+  http.get('http://127.0.0.1:9889/' + path, function (res) {
     const statusCode = res.statusCode;
     const contentType = res.headers['content-type'];
 
@@ -141,206 +146,228 @@ function get(path){
     }
     if (error) {
       console.log(error.message);
-    // consume response data to free up memory
-    res.resume();
-    return;
-  }
-
-  res.setEncoding('utf8');
-  let rawData = '';
-  res.on('data', (chunk) => rawData += chunk);
-  res.on('end', () => {
-    try {
-      let parsedData = JSON.parse(rawData);
-      console.log(parsedData);
-    } catch (e) {
-      console.log(e.message);
+      // consume response data to free up memory
+      res.resume();
+      return;
     }
+
+    res.setEncoding('utf8');
+    let rawData = '';
+    res.on('data', (chunk) => rawData += chunk);
+    res.on('end', () => {
+      try {
+        let parsedData = JSON.parse(rawData);
+        console.log(parsedData);
+      } catch (e) {
+        console.log(e.message);
+      }
+    });
+  }).on('error', function (e) {
+    console.log(e);
   });
-}).on('error',function(e){
-  console.log(e);
-});
 }
 
-function test_pathc_shop_state(args){
+function test_pathc_shop_state(args) {
   console.log(args);
   let data = {
-    'shop_id' : Number(args[0]),
-    'state' : Number(args[1]),
+    'shop_id': Number(args[0]),
+    'state': Number(args[1]),
   }
-  patch(data,'/admin/v1/shop_state',function(error,body){
+  patch(data, '/admin/v1/shop_state', function (error, body) {
     console.log(body);
   });
 }
 
-function get_spread(args){
+function get_spread(args) {
   get('shop_spread');
 }
 
-function patch_shop(args){
-    
-    let data = {
-      'id' : args[0],
-      'name' : args[1],
-      'beg' : 1,
-      'end' : 2,
-      'days' : "1100011",
-      'longitude' : 1.0,
-      'latitude' : 2.3,
-      'city_no' : 167,
-      'area_code' : 111,
-      'address' : "dd",
-      'category_code1' : 1,
-      'category_code2' : 2,
-      'category_code3' : 3,
-      'info' : "11111",
-      'distribution' : "222",
-      'telephone' : "123456789",
-      'email' : "abc@123",
-      'qq' : "qq",
-      'wx' : "wx",
-      'image' : "image",
-      'card_number' : "123",
-      'card_image' : "card_image",
-      'qualification' : 'qualification',
-    }
-    patch(data,'/admin/v1/shop',function(error,body){
-      if(error){
-        console.log(error);
-      }else{
-        console.log(body);
-      }
-    });
-  }
+function patch_shop(args) {
 
-  function test_shop_list(args){
-    let last_index = 0;
-
-    get('shop_list?last_index=' + args[0]);
-  }
-
-  function test_shop_detail(args){
-    let shop_id = args[0];
-    get('shop_detail?shop_id=' + shop_id);
-  }
-
-  function test_shop_delete(args){
-    let shop_id = args[0];
-    let data = {
-      'id' : shop_id,
-    };
-
-    __delete(data,'/admin/v1/shop',function(error,body){
-      if(error == null){
-        console.log(body);
-      }else{
-        console.log(222);
-      }
-    });
-  }
-
-  function add_shop(args){
-    let data = {
-      'id' : Number(args[0]),
-      'name' : "name",
-      'beg' : 1,
-      'end' : 2,
-      'days' : "1100011",
-      'longitude' : 1.0,
-      'latitude' : 2.3,
-      'city_no' : 167,
-      'area_code' : 111,
-      'address' : "dd",
-      'category_code1' : 1,
-      'category_code2' : 2,
-      'category_code3' : 3,
-      'info' : "11111",
-      'distribution' : "222",
-      'telephone' : "123456789",
-      'email' : "abc@123",
-      'qq' : "qq",
-      'wx' : "wx",
-      'image' : "image",
-      'card_number' : "123",
-      'card_image' : "card_image",
-      'qualification' : 'qualification',
-    }
-    post(data,'/admin/v1/shop',function(error,body){
-      if(error){
-        console.log(error);
-      }else{
-        console.log(body);
-      }
-    });
-  }
-function test_websocket(args){
   let data = {
-    'guid' : args[0],
-    'cmd' : 'login',
-    'data' : {
-      'guid' : args[0]
-    }
-  };
-  console.log('test_websocket');
-  post(data,'/admin/v1/sendMessage',function(error,body){
-    if(error){
+    'id': args[0],
+    'name': args[1],
+    'beg': 1,
+    'end': 2,
+    'days': "1100011",
+    'longitude': 1.0,
+    'latitude': 2.3,
+    'city_no': 167,
+    'area_code': 111,
+    'address': "dd",
+    'category_code1': 1,
+    'category_code2': 2,
+    'category_code3': 3,
+    'info': "11111",
+    'distribution': "222",
+    'telephone': "123456789",
+    'email': "abc@123",
+    'qq': "qq",
+    'wx': "wx",
+    'image': "image",
+    'card_number': "123",
+    'card_image': "card_image",
+    'qualification': 'qualification',
+  }
+  patch(data, '/admin/v1/shop', function (error, body) {
+    if (error) {
       console.log(error);
-    }else{
+    } else {
       console.log(body);
     }
   });
 }
 
-function delete_category(args){
+function test_shop_list(args) {
+  let last_index = 0;
+
+  get('shop_list?last_index=' + args[0]);
+}
+
+function test_shop_detail(args) {
+  let shop_id = args[0];
+  get('shop_detail?shop_id=' + shop_id);
+}
+
+function test_shop_delete(args) {
+  let shop_id = args[0];
   let data = {
-    'code' : args[0],
-    'type' : args[1],
+    'id': shop_id,
+  };
+
+  __delete(data, '/admin/v1/shop', function (error, body) {
+    if (error == null) {
+      console.log(body);
+    } else {
+      console.log(222);
+    }
+  });
+}
+
+function add_shop(args) {
+  let data = {
+    'id': Number(args[0]),
+    'name': "name",
+    'beg': 1,
+    'end': 2,
+    'days': "1100011",
+    'longitude': 1.0,
+    'latitude': 2.3,
+    'city_no': 167,
+    'area_code': 111,
+    'address': "dd",
+    'category_code1': 1,
+    'category_code2': 2,
+    'category_code3': 3,
+    'info': "11111",
+    'distribution': "222",
+    'telephone': "123456789",
+    'email': "abc@123",
+    'qq': "qq",
+    'wx': "wx",
+    'image': "image",
+    'card_number': "123",
+    'card_image': "card_image",
+    'qualification': 'qualification',
   }
-  __delete(data,'/admin/v1/category',function(error,body){
-    if(error){
-        console.log(error);
-    }else{
+  post(data, '/admin/v1/shop', function (error, body) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log(body);
+    }
+  });
+}
+
+function test_websocket(args) {
+  let data = {
+    'guid': args[0],
+    'cmd': 'login',
+    'data': {
+      'guid': args[0]
+    }
+  };
+  console.log('test_websocket');
+  post(data, '/admin/v1/sendMessage', function (error, body) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log(body);
+    }
+  });
+}
+
+function delete_category(args) {
+  let data = {
+    'code': args[0],
+    'type': args[1],
+  }
+  __delete(data, '/admin/v1/category', function (error, body) {
+    if (error) {
+      console.log(error);
+    } else {
       console.log(body);
     }
   })
 }
 
-function add_category(args){
+function add_category(args) {
   let data = {
-    'type' : 2,
-    'code' : args[0],
-    'name' : '测试',
-    'parent' : 30
+    'type': 2,
+    'code': args[0],
+    'name': '测试',
+    'parent': 30
   };
-  post(data,'/admin/v1/category',function(error,body){
-    if(error){
+  post(data, '/admin/v1/category', function (error, body) {
+    if (error) {
       console.log(error);
-    }else{
+    } else {
       console.log(body);
     }
   });
 }
 
-function output_result(error,body){
-  if(error){
-      console.log(error);
-    }else{
-      console.log(body);
-    }
-}
-
-function test_user(args){
-  if(args[0] == 'delete'){
-    let data = {
-      'id' : args[1]
-    }
-    __delete(data,'/admin/v1/user',output_result);
-  }else if(args[0] == 'patch'){
-    let data = {
-      'id' : args[1],
-      'state' : args[2],
-    }
-    patch(data,'/admin/v1/user',output_result) ;
+function output_result(error, body) {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log(body);
   }
 }
 
+function test_user(args) {
+  if (args[0] == 'delete') {
+    let data = {
+      'id': args[1]
+    }
+    __delete(data, '/admin/v1/user', output_result);
+  } else if (args[0] == 'patch') {
+    let data = {
+      'id': args[1],
+      'state': args[2],
+    }
+    patch(data, '/admin/v1/user', output_result);
+  }
+}
+
+function add_account(argv) {
+
+  let num = argv[0]
+
+  let password = argv[1] || "123456"
+
+  for (let i = 0; i < Number(num); ++i) {
+    let telephone = i + "";
+    while (telephone.length < 4) {
+      telephone = "0" + telephone;
+    }
+    db_seq.registerPlayer({
+      'telephone': "0" + "180522" +  telephone,
+      'password': password,
+      'longitude': 0,
+      'latitude': 0,
+    },function() {
+      console.log("add success!!!!");
+    });
+  }
+}

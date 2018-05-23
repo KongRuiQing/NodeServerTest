@@ -74,19 +74,24 @@ function __post(req,rsp){
 
 function __patch(req,rsp){
 	logger.log("INFO","[UserInstance][__patch] req.body:",req.body);
-	if('state' in req.body){
+
+	let json_result = {};
+
+	if('state' in req.body && 'uid' in req.body){
 		let state = Number(req.body['state']);
 		let uid = Number(req.body['uid']);
 		LoginModule.changeLoginState(uid,state);
 		OnlineModule.notifyUserLoginStateChange(uid,state);
+		json_result["error"] = 0;
 	}else{
-
+		json_result["error"] = 1; 
 	}
 	rsp.writeHead(200, {'content-type': 'text/html'});
-	let json_result = {};
-	json_result["error"] = 0;
+	
+	
 	json_result["state"] = state;
 	rsp.end(JSON.stringify(json_result));
+	logger.log("INFO","[UserInstance][__patch] rsp ==>:",json_result);
 	return
 }
 

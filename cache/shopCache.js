@@ -10,7 +10,7 @@ var FindUtil = require("../FindUtil.js");
 var ActivityBean = require("../bean/ActivityBean");
 var events = require('events');
 var ShopComment = require("../bean/ShopComment.js");
-
+var WebSocket = require("../WebSocketServer");
 var DbCache = require("../cache/DbCache.js")
 
 let TAG = "[ShopCache]"
@@ -858,6 +858,10 @@ ShopManager.prototype.removeShopByShopId = function(shop_id) {
 	});
 
 	ShopItemEventDispatcher.fireEvent("off_shelve_item_list", all_remove_item);
+
+	WebSocket.broadcast("delete_shop",{
+		'shop_id' : Number(shop_id)
+	})
 }
 
 ShopManager.prototype.updateShopByApi = function(json_shop) {
