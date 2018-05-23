@@ -75,6 +75,8 @@ ShopManager.prototype.saveShopItem = function(json_item, json_image, json_proper
 		let itemBean = this.getItemBean(item_id);
 
 		this.refreshShopItem(itemBean, json_item, json_image, json_propertys);
+		
+		logger.log("INFO", "[ShopCache][addShopItem]", 'after :', util.inspect(itemBean));
 
 		ShopItemEventDispatcher.fireEvent("refresh_shop_item", itemBean);
 
