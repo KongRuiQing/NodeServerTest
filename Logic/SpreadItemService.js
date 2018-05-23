@@ -5,7 +5,7 @@ var _db = require("../db_sequelize");
 var FindUtil = require("../FindUtil.js");
 var DbCache = require("../cache/DbCache.js");
 var ShopCache = require("../cache/shopCache.js")
-
+var util = require('util');
 var ShopItemEventDispatcher = require("../EventDispatcher/ShopItemEventDispatcher.js");
 var ShopEventDispatcher = require("../EventDispatcher/ShopEventDispatcher.js");
 class SpreadItemBean {
@@ -295,7 +295,7 @@ class SpreadItemService {
 		});
 
 		ShopItemEventDispatcher.bindEvent("refresh_shop_item", (item) => {
-			logger.log("INFO","[SpreadItemService] refresh_shop_item");
+			logger.log("INFO","[SpreadItemService] refresh_shop_item",util.inspect(item));
 			that._refreshShopItem(item);
 		});
 
