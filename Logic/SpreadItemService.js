@@ -393,7 +393,7 @@ class SpreadItemService {
 			bean.setItem(item_json);
 			let image_json = {
 				'image': item.getFirstShowImage(),
-				'index': 1,
+				'index': 0,
 				'image_type': 1
 			}
 			bean.setImage(image_json);
