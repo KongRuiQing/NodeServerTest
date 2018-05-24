@@ -252,6 +252,8 @@ ShopItem.prototype.getMyShopItemInfo = function() {
 		'item_id': this.id,
 		'shop_id': this.shop_id,
 		'group_index': this.__groupIndex,
+		'show_image' : this.__show_images,
+		'detail_image' : this.__detail_images,
 	};
 }
 
