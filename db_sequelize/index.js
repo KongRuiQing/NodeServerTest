@@ -65,7 +65,7 @@ exports.insertRequestBeSeller = function(jsonObject, callback) {
 			'uid': jsonObject['uid'],
 			'beg': jsonObject['beg'],
 			'end': jsonObject['end'],
-			'days': jsonObject['end'],
+			'days': jsonObject['days'],
 			'area_code': jsonObject['area_code'],
 			'city_no': jsonObject['city_no'],
 			'category_code1': jsonObject['category_code1'],
