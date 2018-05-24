@@ -1032,7 +1032,7 @@ exports.saveShopItem = function(header, fields, files, callback) {
 			});
 		} else if (upload_file_key in fields) {
 			json_image.push({
-				'image_type': 1,
+				'image_type': 3,
 				'index': key - 1,
 				'image': "",
 				'item_id': item_id,
